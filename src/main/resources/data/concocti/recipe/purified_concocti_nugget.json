@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "ingredient": {
+    "item": "concocti:dirty_concocti_ingot"
+  },
+  "result": {
+    "id": "concocti:purified_concocti_nugget"
+  },
+  "experience": 0.1
+}

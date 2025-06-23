@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "top": "concocti:block/concocti_melter_top",
+    "bottom": "concocti:block/concocti_melter_bottom",
+    "front": "concocti:block/concocti_melter_front_on",
+    "side": "concocti:block/concocti_melter_side"
+  }
+}
