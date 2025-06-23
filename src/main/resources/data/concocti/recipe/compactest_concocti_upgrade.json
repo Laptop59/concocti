@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "P#P",
+    "#D#",
+    "P#P"
+  ],
+  "key": {
+    "#": {
+      "item": "concocti:compressed_concocti_block"
+    },
+    "D": {
+      "item": "concocti:diamethyst_block"
+    },
+    "P": {
+      "item": "concocti:compacter_concocti_upgrade"
+    }
+  },
+  "result": {
+    "id": "concocti:compactest_concocti_upgrade",
+    "count": 4
+  }
+}

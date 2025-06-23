@@ -1,0 +1,9 @@
+{
+  "item": [
+    "concocti:meltable_concocti_items",
+    "concocti:concocti_upgrades"
+  ],
+  "fluid": [
+    "concocti:supported_concocti_solidifier_fluids"
+  ]
+}

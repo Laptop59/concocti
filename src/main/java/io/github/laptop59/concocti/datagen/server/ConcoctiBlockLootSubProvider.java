@@ -1,0 +1,35 @@
+package io.github.laptop59.concocti.datagen.server;
+
+import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.data.loot.BlockLootSubProvider;
+import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.level.block.Block;
+import net.neoforged.neoforge.registries.DeferredBlock;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Set;
+import java.util.stream.Collectors;
+
+public class ConcoctiBlockLootSubProvider extends BlockLootSubProvider {
+    public ConcoctiBlockLootSubProvider(HolderLookup.Provider lookupProvider) {
+        super(Set.of(), FeatureFlags.DEFAULT_FLAGS, lookupProvider);
+    }
+
+    @Override
+    protected @NotNull Iterable<Block> getKnownBlocks() {
+        // The contents of our DeferredRegister.
+        return ConcoctiBlocks.BLOCK_MAP.keySet()
+                .stream()
+                .map(DeferredHolder::get)
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    protected void generate() {
+        for (DeferredBlock<? extends Block> block : ConcoctiBlocks.BLOCK_MAP.keySet()) {
+            dropSelf(block.get());
+        }
+    }
+}

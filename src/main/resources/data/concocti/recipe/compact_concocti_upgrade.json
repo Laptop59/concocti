@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " # ",
+    "#D#",
+    " # "
+  ],
+  "key": {
+    "#": {
+      "item": "concocti:purified_concocti_ingot"
+    },
+    "D": {
+      "item": "concocti:diamethyst_crystal"
+    }
+  },
+  "result": {
+    "id": "concocti:compact_concocti_upgrade",
+    "count": 1
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "itemGroup.concocti": "Concocti",
+
+  "block.concocti.diamethyst_block": "Block of Diamethyst",
+  "block.concocti.purified_concocti_block": "Block of Purified Concocti",
+  "block.concocti.dirty_concocti_block": "Block of Dirty Concocti",
+  "block.concocti.tough_concocti_block": "Block of Tough Concocti",
+  "block.concocti.compressed_concocti_block": "Block of Compressed Concocti",
+  "block.concocti.concocti_melter": "Concocti Melter",
+  "block.concocti.concocti_solidifier": "Concocti Solidifier",
+  "block.concocti.molten_concocti": "Molten Concocti",
+  "block.concocti.molten_concoctized_dirt": "Molten Concoctized Dirt",
+
+  "item.concocti.diamethyst_crystal": "Diamethyst Crystal",
+  "item.concocti.concocti_seeds": "Concocti Seeds",
+  "item.concocti.dirty_concocti_ingot": "Dirty Concocti Ingot",
+  "item.concocti.dirty_concocti_nugget": "Dirty Concocti Nugget",
+  "item.concocti.purified_concocti_ingot": "Purified Concocti Ingot",
+  "item.concocti.purified_concocti_nugget": "Purified Concocti Nugget",
+  "item.concocti.tough_concocti_ingot": "Tough Concocti Ingot",
+  "item.concocti.tough_concocti_nugget": "Tough Concocti Nugget",
+  "item.concocti.compressed_concocti_ingot": "Compressed Concocti Ingot",
+  "item.concocti.compressed_concocti_nugget": "Compressed Concocti Nugget",
+  "item.concocti.molten_concocti_bucket": "Bucket of Molten Concocti",
+  "item.concocti.molten_concoctized_dirt_bucket": "Bucket of Molten Concoctized Dirt",
+  "item.concocti.compact_concocti_upgrade": "Compact Concocti Upgrade",
+  "item.concocti.compacter_concocti_upgrade": "Compacter Concocti Upgrade",
+  "item.concocti.compactest_concocti_upgrade": "Compactest Concocti Upgrade",
+
+  "fluid_type.concocti.molten_concocti": "Molten Concocti",
+  "fluid_type.concocti.molten_concoctized_dirt": "Molten Concoctized Dirt",
+
+  "effect.concocti.concoctized": "Concoctized",
+
+  "subtitles.concocti.block.blastfurnace.fire_crackle": "Concocti Melter crackles",
+
+  "tag.item.c.ingots.concocti": "Concocti Ingots",
+  "tag.item.c.nuggets.concocti": "Concocti Nuggets",
+  "tag.item.c.storage_blocks.concocti": "Concocti Storage Blocks",
+
+  "screen.concocti.energy_bar": "Energy: %s/%s FE",
+  "screen.concocti.fluid_bar": "%s: %s/%s mB",
+  "screen.concocti.no_upgrade": "Put a Concocti Upgrade on the top right to increase this block's speed.",
+  "screen.concocti.upgrade_info": "Upgrade units: +%s"
+}
