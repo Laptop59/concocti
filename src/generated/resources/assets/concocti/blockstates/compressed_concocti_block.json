@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "concocti:block/compressed_concocti_block"
+    }
+  }
+}
