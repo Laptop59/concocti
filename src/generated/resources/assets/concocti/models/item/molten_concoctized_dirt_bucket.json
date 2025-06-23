@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "concocti:item/molten_concoctized_dirt_bucket"
+  }
+}
