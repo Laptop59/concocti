@@ -1,6 +1,5 @@
 package io.github.laptop59.concocti.datagen.client;
 
-import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import net.minecraft.data.PackOutput;
 import net.minecraft.world.item.BlockItem;

@@ -1,7 +1,7 @@
 package io.github.laptop59.concocti.network;
 
-import io.github.laptop59.concocti.common.Concocti;
 import io.github.laptop59.concocti.client.ConcoctiClient;
+import io.github.laptop59.concocti.common.Concocti;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;

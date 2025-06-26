@@ -2,15 +2,10 @@ package io.github.laptop59.concocti.common.block;
 
 import io.github.laptop59.concocti.common.block.entity.ConcoctiMelterBlockEntity;
 import io.github.laptop59.concocti.common.block.entity.ConcoctiSolidifierBlockEntity;
-import io.github.laptop59.concocti.common.block.frame.FrameAttributes;
 import io.github.laptop59.concocti.common.block.frame.FrameBlock;
-import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -23,7 +18,6 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 

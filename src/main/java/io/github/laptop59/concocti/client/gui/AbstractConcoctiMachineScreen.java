@@ -1,6 +1,5 @@
 package io.github.laptop59.concocti.client.gui;
 
-import io.github.laptop59.concocti.common.block.frame.FrameAttributes;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.menu.ConcoctiFrameSlot;
 import io.github.laptop59.concocti.common.menu.ConcoctiUpgradeSlot;

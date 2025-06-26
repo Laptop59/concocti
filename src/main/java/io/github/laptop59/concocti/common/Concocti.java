@@ -1,23 +1,28 @@
 package io.github.laptop59.concocti.common;
 
-import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
-import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
+import com.mojang.logging.LogUtils;
 import io.github.laptop59.concocti.client.gui.ConcoctiMelterScreen;
 import io.github.laptop59.concocti.client.gui.ConcoctiSolidifierScreen;
+import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.effect.ConcoctizedMobEffect;
+import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.menu.ConcoctiMenus;
-import io.github.laptop59.concocti.common.recipe.ConcoctiMelterRecipe;
 import io.github.laptop59.concocti.common.recipe.ConcoctiRecipes;
 import io.github.laptop59.concocti.network.ConcoctizedEntitiesPayload;
 import io.github.laptop59.concocti.network.ConcoctizedEntitiesPayloadHandler;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
-import net.minecraft.world.item.*;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
@@ -25,21 +30,9 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.DirectionalPayloadHandler;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
-import org.slf4j.Logger;
-
-import com.mojang.logging.LogUtils;
-
-import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
-
-import java.util.function.Supplier;
+import org.slf4j.Logger;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(Concocti.MODID)

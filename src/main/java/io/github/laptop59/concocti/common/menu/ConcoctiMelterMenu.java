@@ -1,26 +1,14 @@
 package io.github.laptop59.concocti.common.menu;
 
 import io.github.laptop59.concocti.common.block.entity.ConcoctiMelterBlockEntity;
-import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.*;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.templates.FluidHandlerItemStack;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemStackHandler;
-import net.neoforged.neoforge.registries.DeferredItem;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.HashMap;
-import java.util.function.Supplier;
 
 public class ConcoctiMelterMenu extends AbstractConcoctiMachineMenu<ConcoctiMelterMenu> {
 

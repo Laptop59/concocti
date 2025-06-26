@@ -3,7 +3,6 @@ package io.github.laptop59.concocti.mixin.client;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

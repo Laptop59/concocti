@@ -3,7 +3,6 @@ package io.github.laptop59.concocti.integration.jei;
 import io.github.laptop59.concocti.client.gui.components.ArrowProgress;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.recipe.ConcoctiMelterRecipe;
-import io.github.laptop59.concocti.common.recipe.ConcoctiMelterRecipeBuilder;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.ITooltipBuilder;
@@ -23,7 +22,6 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.awt.*;
 import java.util.List;
 
 import static io.github.laptop59.concocti.common.Concocti.MODID;
