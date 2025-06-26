@@ -114,21 +114,13 @@ public class ConcoctiMelterBlock extends BaseEntityBlock implements EntityBlock 
     @Override
     protected @NotNull ItemInteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, Level level, @NotNull BlockPos pos,
             @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hitResult) {
-        // boolean:
-        // use item on front/back: molten concocti
-        // anywhere else: molten concoctized dirt
-        boolean bool = hitResult.getDirection().getAxis() != state.getValue(FACING).getAxis();
-        if (level.getBlockEntity(pos) instanceof ConcoctiMelterBlockEntity e) {
+        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof ConcoctiMelterBlockEntity e) {
             if (stack.is(Items.BUCKET)) {
-                FluidStack fluid;
-                Item item;
-                if (!bool) {
-                    item = ConcoctiItems.MOLTEN_CONCOCTI_BUCKET.get();
-                    fluid = e.fluids.drain(new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, 1000), IFluidHandler.FluidAction.SIMULATE);
-                } else {
-                    item = ConcoctiItems.MOLTEN_CONCOCTIZED_DIRT_BUCKET.get();
-                    fluid = e.fluids.drain(new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT, 1000), IFluidHandler.FluidAction.SIMULATE);
-                }
+                FluidStack fluidStack = e.fluids.getFluidInTank(e.fluids.getFluidInTank(0).getAmount() < 1000 ? 1 : 0)
+                        .copy();
+                fluidStack.setAmount(1000);
+                Item item = fluidStack.getFluid().getBucket();
+                FluidStack fluid = e.fluids.drain(fluidStack, IFluidHandler.FluidAction.SIMULATE);
                 if (!fluid.isEmpty() && fluid.getAmount() == 1000) {
                     e.fluids.drain(fluid, IFluidHandler.FluidAction.EXECUTE);
                     stack.shrink(1);
@@ -139,12 +131,11 @@ public class ConcoctiMelterBlock extends BaseEntityBlock implements EntityBlock 
             }
             IFluidHandlerItem c = stack.getCapability(Capabilities.FluidHandler.ITEM);
             if (c != null) {
-                FluidStack fluid = e.fluids.getFluidInTank(bool ? 1 : 0);
-                FluidStack drained = e.fluids.drain(fluid, IFluidHandler.FluidAction.SIMULATE);
+                FluidStack drained = e.fluids.drain(ConcoctiMelterBlockEntity.TANK_CAPACITY, IFluidHandler.FluidAction.SIMULATE);
                 if (!drained.isEmpty()) {
                     int filled = c.fill(drained, IFluidHandler.FluidAction.SIMULATE);
                     if (filled > 0) {
-                        c.fill(e.fluids.drain(fluid, IFluidHandler.FluidAction.EXECUTE), IFluidHandler.FluidAction.EXECUTE);
+                        c.fill(e.fluids.drain(drained, IFluidHandler.FluidAction.EXECUTE), IFluidHandler.FluidAction.EXECUTE);
                         return ItemInteractionResult.SUCCESS;
                     }
                 }

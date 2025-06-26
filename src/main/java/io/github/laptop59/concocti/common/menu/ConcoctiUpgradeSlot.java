@@ -32,7 +32,7 @@ public class ConcoctiUpgradeSlot extends Slot {
         registerUpgrade(ConcoctiItems.COMPACTEST_CONCOCTI_UPGRADE, 5);
     }
 
-    private static void registerUpgrade(Supplier<Item> item, int units) {
+    private static void registerUpgrade(Supplier<? extends Item> item, int units) {
         upgradeUnits.put(item.get(), units);
     }
 

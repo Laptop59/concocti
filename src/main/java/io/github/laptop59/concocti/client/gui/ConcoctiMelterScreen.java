@@ -3,6 +3,8 @@ package io.github.laptop59.concocti.client.gui;
 import io.github.laptop59.concocti.client.gui.components.ArrowProgress;
 import io.github.laptop59.concocti.client.gui.components.EnergyBar;
 import io.github.laptop59.concocti.client.gui.components.FluidBar;
+import io.github.laptop59.concocti.common.block.frame.FrameAttributes;
+import io.github.laptop59.concocti.common.menu.ConcoctiFrameSlot;
 import io.github.laptop59.concocti.common.menu.ConcoctiMelterMenu;
 import io.github.laptop59.concocti.common.menu.ConcoctiUpgradeSlot;
 import net.minecraft.client.gui.GuiGraphics;
@@ -19,12 +21,12 @@ import org.jetbrains.annotations.NotNull;
 import static io.github.laptop59.concocti.common.Concocti.MODID;
 
 @OnlyIn(Dist.CLIENT)
-public class ConcoctiMelterScreen extends AbstractContainerScreen<ConcoctiMelterMenu> {
+public class ConcoctiMelterScreen extends AbstractConcoctiMachineScreen<ConcoctiMelterMenu> {
 
     private final ResourceLocation texture = ResourceLocation.fromNamespaceAndPath(MODID, "textures/gui/container/concocti_melter.png");
 
-    private final FluidBar<ConcoctiMelterMenu> moltenConcoctiFluid = new FluidBar<>(this, menu, "molten_concocti", 105, 28);
-    private final FluidBar<ConcoctiMelterMenu> moltenConcoctizedDirtFluid = new FluidBar<>(this, menu, "molten_concoctized_dirt", 129, 28);
+    private final FluidBar<ConcoctiMelterMenu> pureFluid = new FluidBar<>(this, menu, 105, 28);
+    private final FluidBar<ConcoctiMelterMenu> byproductFluid = new FluidBar<>(this, menu, 129, 28);
 
     private final EnergyBar<ConcoctiMelterMenu> energyBar = new EnergyBar<>(this, menu, 10, 18);
     private final ArrowProgress<ConcoctiMelterMenu> arrowProgress = new ArrowProgress<>(this, menu, 79 - 7, 34 + 10);
@@ -50,19 +52,14 @@ public class ConcoctiMelterScreen extends AbstractContainerScreen<ConcoctiMelter
         guiGraphics.blit(this.texture, left, top, 0, 0, this.imageWidth, this.imageHeight);
 
         // Render the melt progress and energy bar.
-        arrowProgress.render(guiGraphics, menu.getBurnProgress());
+        arrowProgress.render(guiGraphics, menu.getProgress());
         energyBar.render(guiGraphics, mouseX, mouseY, menu.getNumberEnergyLeft(false), menu.getNumberEnergyLeft(true), font);
 
         // Render the fluids.
-        moltenConcoctiFluid.render(guiGraphics, mouseX, mouseY, menu.getNumberFluidLeft(false), menu.getMaxFluidLeft(), font);
-        moltenConcoctizedDirtFluid.render(guiGraphics, mouseX, mouseY, menu.getNumberFluidLeft(true), menu.getMaxFluidLeft(), font);
+        pureFluid.render(guiGraphics, mouseX, mouseY, menu.getPureFluidStack(), menu.getMaxFluidLeft(), font);
+        byproductFluid.render(guiGraphics, mouseX, mouseY, menu.getByproductFluidStack(), menu.getMaxFluidLeft(), font);
 
-        ConcoctiUpgradeSlot upgradeSlot = menu.getUpgradeSlot();
-        Slot inputSlot = menu.getSlot(0);
-        if (isHovering(inputSlot.x, inputSlot.y, 16, 16, mouseX, mouseY) && inputSlot.getItem().isEmpty()) {
-            guiGraphics.renderTooltip(font,
-                        upgradeSlot.getItem().isEmpty() ? Component.translatable("screen.concocti.no_upgrade") : Component.translatable("screen.concocti.upgrade_info", upgradeSlot.getUpgradeUnits())
-                    , mouseX, mouseY);
-        }
+        // Render the base machine information (like frame and upgrades tooltips).
+        super.renderBg(guiGraphics, partialTick, mouseX, mouseY);
     }
 }

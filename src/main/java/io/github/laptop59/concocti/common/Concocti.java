@@ -7,11 +7,16 @@ import io.github.laptop59.concocti.client.gui.ConcoctiSolidifierScreen;
 import io.github.laptop59.concocti.common.effect.ConcoctizedMobEffect;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.menu.ConcoctiMenus;
+import io.github.laptop59.concocti.common.recipe.ConcoctiMelterRecipe;
+import io.github.laptop59.concocti.common.recipe.ConcoctiRecipes;
 import io.github.laptop59.concocti.network.ConcoctizedEntitiesPayload;
 import io.github.laptop59.concocti.network.ConcoctizedEntitiesPayloadHandler;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
@@ -33,6 +38,8 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
+
+import java.util.function.Supplier;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(Concocti.MODID)
@@ -100,6 +107,8 @@ public class Concocti {
         ConcoctiMenus.MENUS.register(modEventBus);
         ConcoctiFluids.FLUIDS.register(modEventBus);
         ConcoctiFluids.FLUID_TYPES.register(modEventBus);
+        ConcoctiRecipes.RECIPE_SERIALIZERS.register(modEventBus);
+        ConcoctiRecipes.RECIPE_TYPES.register(modEventBus);
 
         MOB_EFFECTS.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);

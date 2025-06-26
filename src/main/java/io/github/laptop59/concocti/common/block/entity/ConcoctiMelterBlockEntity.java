@@ -1,44 +1,48 @@
 package io.github.laptop59.concocti.common.block.entity;
 
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
-import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.menu.ConcoctiMelterMenu;
 import io.github.laptop59.concocti.common.menu.ConcoctiUpgradeSlot;
+import io.github.laptop59.concocti.common.recipe.ConcoctiMelterRecipe;
+import io.github.laptop59.concocti.common.recipe.ConcoctiRecipes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static io.github.laptop59.concocti.common.block.ConcoctiMelterBlock.LIT;
 
-public class ConcoctiMelterBlockEntity extends AbstractPoweredBlockEntity {
-    private static final int INPUT_SLOT = 0;
-    private static final int UPGRADE_SLOT = 1;
+public class ConcoctiMelterBlockEntity extends AbstractConcoctiMachineBlockEntity
+    <ConcoctiMelterBlockEntity, ConcoctiMelterMenu, ItemStack, SingleRecipeInput, ConcoctiMelterRecipe> {
+    private static final int INPUT_SLOT = 2;
+    public static final int TANK_CAPACITY = 8000;
 
-    int ticksLeft = 0;
-    int totalTicks = 0;
-
-    int lastSmeltedItemId = -1;
-
-    private int moltenConcocti = 0;
-    private int moltenConcoctizedDirt = 0;
+    private FluidStack pureFluidOutput = FluidStack.EMPTY.copy();
+    private FluidStack byproductFluidOutput = FluidStack.EMPTY.copy();
 
     public final IFluidHandler fluids = new IFluidHandler() {
         @Override
@@ -49,8 +53,8 @@ public class ConcoctiMelterBlockEntity extends AbstractPoweredBlockEntity {
         @Override
         public @NotNull FluidStack getFluidInTank(int tank) {
             return switch (tank) {
-                case 0 -> new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, moltenConcocti);
-                case 1 -> new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT, moltenConcoctizedDirt);
+                case 0 -> pureFluidOutput;
+                case 1 -> byproductFluidOutput;
                 case 2 -> throw new IllegalArgumentException("Expected tank to be 0 or 1, got " + tank + " instead");
                 default -> FluidStack.EMPTY;
             };
@@ -58,16 +62,12 @@ public class ConcoctiMelterBlockEntity extends AbstractPoweredBlockEntity {
 
         @Override
         public int getTankCapacity(int tank) {
-            return 8000;
+            return TANK_CAPACITY;
         }
 
         @Override
         public boolean isFluidValid(int tank, @NotNull FluidStack stack) {
-            return switch (tank) {
-                case 0 -> stack.is(ConcoctiFluids.MOLTEN_CONCOCTI);
-                case 1 -> stack.is(ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT);
-                default -> false;
-            };
+            return true;
         }
 
         @Override
@@ -76,15 +76,15 @@ public class ConcoctiMelterBlockEntity extends AbstractPoweredBlockEntity {
         @Override
         public @NotNull FluidStack drain(@NotNull FluidStack resource, @NotNull FluidAction action) {
             int amount;
-            if (resource.is(ConcoctiFluids.MOLTEN_CONCOCTI)) {
-                amount = Math.min(resource.getAmount(), moltenConcocti);
+            if (resource.is(pureFluidOutput.getFluidType()) && !pureFluidOutput.isEmpty()) {
+                amount = Math.min(resource.getAmount(), pureFluidOutput.getAmount());
                 if (action != FluidAction.SIMULATE) {
-                    moltenConcocti -= amount;
+                    pureFluidOutput.setAmount(pureFluidOutput.getAmount() - amount);
                 }
-            } else if (resource.is(ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT)) {
-                amount = Math.min(resource.getAmount(), moltenConcoctizedDirt);
+            } else if (resource.is(byproductFluidOutput.getFluidType()) && !byproductFluidOutput.isEmpty()) {
+                amount = Math.min(resource.getAmount(), byproductFluidOutput.getAmount());
                 if (action != FluidAction.SIMULATE) {
-                    moltenConcoctizedDirt -= amount;
+                    byproductFluidOutput.setAmount(byproductFluidOutput.getAmount() - amount);
                 }
             } else {
                 return FluidStack.EMPTY;
@@ -94,43 +94,58 @@ public class ConcoctiMelterBlockEntity extends AbstractPoweredBlockEntity {
 
         @Override
         public @NotNull FluidStack drain(int maxDrain, @NotNull FluidAction action) {
-            if (moltenConcocti > 0) {
-                int amount = Math.min(maxDrain, moltenConcocti);
-                if (action != FluidAction.SIMULATE) moltenConcocti -= amount;
-                return new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, amount);
-            } else {
-                int amount = Math.min(maxDrain, moltenConcoctizedDirt);
-                if (action != FluidAction.SIMULATE) moltenConcoctizedDirt -= amount;
-                return new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT, Math.min(maxDrain, moltenConcoctizedDirt));
+            if (pureFluidOutput.getAmount() > 0) {
+                int amount = Math.min(maxDrain, pureFluidOutput.getAmount());
+                if (action != FluidAction.SIMULATE) pureFluidOutput.setAmount(pureFluidOutput.getAmount() - amount);
+                return new FluidStack(pureFluidOutput.getFluid(), amount);
+            } else if (byproductFluidOutput.getAmount() > 0) {
+                int amount = Math.min(maxDrain, byproductFluidOutput.getAmount());
+                if (action != FluidAction.SIMULATE) byproductFluidOutput.setAmount(byproductFluidOutput.getAmount() - amount);
+                return new FluidStack(byproductFluidOutput.getFluid(), amount);
             }
+            return new FluidStack(Fluids.EMPTY, 0);
         }
     };
 
-    @Override
-    protected boolean isItemValid(int slot, @NotNull ItemStack stack) {
-        return switch (slot) {
-            case 0 -> stack.is(ConcoctiItems.Tags.MELTABLE_CONCOCTI_ITEMS);
-            case 1 -> stack.is(ConcoctiItems.Tags.CONCOCTI_UPGRADES);
-            default -> false;
-        };
+    private int recipeFill(@NotNull FluidStack resource) {
+        int filled = 0;
+        if (pureFluidOutput.isEmpty() || (resource.is(pureFluidOutput.getFluidType()))) {
+            filled += Math.min(TANK_CAPACITY - pureFluidOutput.getAmount(), resource.getAmount());
+        }
+        if (byproductFluidOutput.isEmpty() || (resource.is(byproductFluidOutput.getFluidType()))) {
+            filled += Math.min(TANK_CAPACITY - byproductFluidOutput.getAmount(), resource.getAmount());
+        }
+        return filled;
     }
 
-    record ItemData(int ticks, int moltenConcoctiMade, int moltenConcoctizedDirtMade, int id) { }
+    private void recipeResultFill(@NotNull FluidStack resource) {
+        int filled;
+        if (pureFluidOutput.isEmpty()) {
+            pureFluidOutput = resource;
+            return;
+        } else if (pureFluidOutput.getFluid().isSame(resource.getFluid())) {
+            filled = Math.min(resource.getAmount(), TANK_CAPACITY - pureFluidOutput.getAmount());
+            pureFluidOutput.setAmount(pureFluidOutput.getAmount() + filled);
+            resource.setAmount(resource.getAmount() - filled);
+        }
+        if (resource.isEmpty()) return;
+        // No need to check for overflowing.
+        if (byproductFluidOutput.isEmpty()) {
+            byproductFluidOutput = resource;
+            return;
+        } else if (byproductFluidOutput.getFluid().isSame(resource.getFluid())) {
+            filled = Math.min(resource.getAmount(), TANK_CAPACITY - byproductFluidOutput.getAmount());
+            byproductFluidOutput.setAmount(byproductFluidOutput.getAmount() + filled);
+            resource.setAmount(resource.getAmount() - filled);
+        }
+    }
 
-    private static final HashMap<Item, ItemData> itemDataMap = new HashMap<>();
-
-    static {
-        registerItemData(ConcoctiItems.DIRTY_CONCOCTI_NUGGET, 10, 12, 3);
-        registerItemData(ConcoctiItems.DIRTY_CONCOCTI_INGOT, 80, 12 * 9, 3 * 9);
-        registerItemData(ConcoctiItems.DIRTY_CONCOCTI_BLOCK, 600, 12 * 81, 3 * 81);
-
-        registerItemData(ConcoctiItems.PURIFIED_CONCOCTI_NUGGET, 10, 15, 0);
-        registerItemData(ConcoctiItems.PURIFIED_CONCOCTI_INGOT, 80, 15 * 9, 0);
-        registerItemData(ConcoctiItems.PURIFIED_CONCOCTI_BLOCK, 600, 15 * 81, 0);
+    @Override
+    protected boolean isItemValidInMachine(int slot, @NotNull ItemStack stack) {
+        return slot == INPUT_SLOT;
     }
 
     protected final ContainerData dataAccess = new ContainerData() {
-
         @Override
         public int get(int index) {
             return switch (index) {
@@ -138,9 +153,10 @@ public class ConcoctiMelterBlockEntity extends AbstractPoweredBlockEntity {
                 case 1 -> totalTicks;
                 case 2 -> energy.getEnergyStored();
                 case 3 -> energy.getMaxEnergyStored();
-                case 4 -> moltenConcocti;
-                case 5 -> moltenConcoctizedDirt;
-                case 6 -> lastSmeltedItemId;
+                case 4 -> BuiltInRegistries.FLUID.getId(pureFluidOutput.getFluid());
+                case 5 -> pureFluidOutput.getAmount();
+                case 6 -> BuiltInRegistries.FLUID.getId(byproductFluidOutput.getFluid());
+                case 7 -> byproductFluidOutput.getAmount();
                 default -> 0;
             };
         }
@@ -148,28 +164,23 @@ public class ConcoctiMelterBlockEntity extends AbstractPoweredBlockEntity {
         @Override
         public void set(int index, int value) {
             switch (index) {
-                case 0: ticksLeft = value;
-                case 1: totalTicks = value;
-                case 2, 3: break;
-                case 4: moltenConcocti = value;
-                case 5: moltenConcoctizedDirt = value;
-                case 6: lastSmeltedItemId = value;
+                case 0 -> ticksLeft = value;
+                case 1 -> totalTicks = value;
+                case 5 -> pureFluidOutput.setAmount(value);
+                case 7 -> byproductFluidOutput.setAmount(value);
             }
         }
 
         @Override
         public int getCount() {
-            return 7;
+            return 8;
         }
     };
 
     public ConcoctiMelterBlockEntity(BlockPos pos, BlockState blockState) {
-        super(ConcoctiBlocks.CONCOCTI_MELTER_BLOCK_ENTITY.get(), pos, blockState, 50000, 10000, 2);
-    }
-
-    @Override
-    public int getContainerSize() {
-        return SIZE;
+        super(pos, blockState, 50000, 10000, 3, ConcoctiBlocks.CONCOCTI_MELTER_BLOCK_ENTITY, 25.0f);
+        pureFluidOutput.limitSize(TANK_CAPACITY);
+        byproductFluidOutput.limitSize(TANK_CAPACITY);
     }
 
     @Override
@@ -178,18 +189,13 @@ public class ConcoctiMelterBlockEntity extends AbstractPoweredBlockEntity {
     }
 
     @Override
-    protected @NotNull NonNullList<ItemStack> getItems() {
-        return items;
-    }
-
-    @Override
-    protected void setItems(@NotNull NonNullList<ItemStack> items) {
-        this.items = items;
-    }
-
-    @Override
-    protected @NotNull AbstractContainerMenu createMenu(int containerId, @NotNull Inventory inventory) {
+    protected @NotNull ConcoctiMelterMenu createMenu(int containerId, @NotNull Inventory inventory) {
         return new ConcoctiMelterMenu(containerId, inventory, this, this.dataAccess);
+    }
+
+    @Override
+    public Supplier<RecipeType<ConcoctiMelterRecipe>> getRecipeType() {
+        return ConcoctiRecipes.CONCOCTI_MELTER_RECIPE_TYPE;
     }
 
     @Override
@@ -208,90 +214,68 @@ public class ConcoctiMelterBlockEntity extends AbstractPoweredBlockEntity {
     }
 
     public ItemStack getInputStack() {
-        return this.getItem(0);
+        return this.getItem(INPUT_SLOT);
     }
 
-    private static void registerItemData(Supplier<? extends Item> item, int ticks, int moltenConcoctiMade, int moltenConcoctizedDirtMade) {
-        itemDataMap.put(item.get(), new ItemData(ticks, moltenConcoctiMade, moltenConcoctizedDirtMade, itemDataMap.size()));
-    }
-
-    private int getTickEnergyIntake() {
-        int s = ConcoctiUpgradeSlot.getUpgradeUnits(getItem(1));
-        return Math.toIntExact(Math.round(25.0f * Math.pow(1.2f, s)));
-    }
-
-    private int getTotalTicksNeeded(int base) {
-        return base;
-    }
-
-    private int getTickMultiplier() {
-        int s = ConcoctiUpgradeSlot.getUpgradeUnits(getItem(1));
-        return (int) (Math.clamp(Math.ceil(Math.pow(0.9f, -s)), 1, 19));
-    }
-
-    private boolean canMelt() {
-        ItemStack stack = this.getInputStack();
-        // Check if enough energy is left.
-        if (energy.getEnergyStored() < getTickEnergyIntake()) return false;
-        // If there is nothing to melt, we cannot even melt!
-        if (stack.isEmpty()) return false;
-        // Check for a match between the ID of the stack and the last known stack (via an ID).
-        ItemData data = itemDataMap.get(stack.getItem());
-        if (this.lastSmeltedItemId != -1 && data.id != this.lastSmeltedItemId) return false;
+    @Override
+    public boolean canProcess() {
+        if (!super.canProcess()) return false;
+        ConcoctiMelterRecipe recipe = getCurrentRecipe(getInput());
         // Check whether the fluids obtained from this item will not exceed our fluid limit.
-        return moltenConcocti + data.moltenConcoctiMade <= 8000 && moltenConcoctizedDirt + data.moltenConcoctizedDirtMade <= 8000;
+        FluidStack resultPureFluid = recipe.getOutputPureFluid().copy();
+        FluidStack resultByproductFluid = recipe.getOutputByproductFluid().copy();
+        if (resultPureFluid.getAmount() > recipeFill(resultPureFluid))
+            return false;
+        if (!resultByproductFluid.isEmpty() &&
+                resultByproductFluid.getAmount() > recipeFill(resultByproductFluid))
+            return false;
+        return true;
     }
 
-    public static void serverTick(Level level, BlockPos pos, BlockState state, ConcoctiMelterBlockEntity entity) {
-        if (entity.ticksLeft >= entity.totalTicks) entity.lastSmeltedItemId = -1;
-        if (entity.canMelt()) {
-            ItemData data = itemDataMap.get(entity.getInputStack().getItem());
-            if (entity.lastSmeltedItemId != data.id) {
-                entity.lastSmeltedItemId = data.id;
-                entity.totalTicks = entity.getTotalTicksNeeded(data.ticks);
-                entity.ticksLeft = entity.totalTicks;
-            }
-            entity.ticksLeft -= entity.getTickMultiplier();
-            entity.energy.extractEnergy(entity.getTickEnergyIntake(), false);
-            if (entity.ticksLeft <= 0) {
-                // Produce the fluids.
-                entity.getInputStack().shrink(1);
-                entity.moltenConcocti += data.moltenConcoctiMade;
-                entity.moltenConcoctizedDirt += data.moltenConcoctizedDirtMade;
-                entity.totalTicks = entity.getTotalTicksNeeded(data.ticks);
-                entity.ticksLeft = entity.totalTicks;
-            }
-        } else {
-            if (entity.ticksLeft < entity.totalTicks) entity.ticksLeft += entity.getTickMultiplier();;
-        }
-        if (state.getValue(LIT) != entity.canMelt()) {
-            level.setBlock(pos, state.setValue(LIT, true), 3);
-        }
+    @Override
+    protected SingleRecipeInput recipeInputFrom(ItemStack input) {
+        return new SingleRecipeInput(input);
+    }
+
+    @Override
+    protected ItemStack getInput() {
+        return getInputStack();
+    }
+
+    @Override
+    protected ResourceLocation getRecipeIdFrom(ItemStack input) {
+        return BuiltInRegistries.ITEM.getKey(input.getItem());
+    }
+
+    @Override
+    protected void onRecipeCompleted(ConcoctiMelterRecipe recipe) {
+        getInputStack().shrink(1);
+        recipeResultFill(recipe.getOutputPureFluid().copy());
+        recipeResultFill(recipe.getOutputByproductFluid().copy());
     }
 
     @Override
     protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
         super.loadAdditional(tag, registries);
-        this.moltenConcocti = tag.getInt("molten_concocti");
-        this.moltenConcoctizedDirt = tag.getInt("molten_concoctized_dirt");
-        this.ticksLeft = tag.getInt("ticks_left");
-        this.lastSmeltedItemId = tag.getInt("last_smelted_item_id");
-        // Fill in the total ticks.
-        this.totalTicks = 0;
-        for (ItemData data : itemDataMap.values()) {
-            if (data.id == lastSmeltedItemId) {
-                this.totalTicks = data.ticks;
-            }
-        }
+        this.pureFluidOutput = FluidStack.EMPTY.copy();
+        this.byproductFluidOutput = FluidStack.EMPTY.copy();
+
+        CompoundTag fluidStack1 = (CompoundTag) tag.get("pure_fluid_output");
+        CompoundTag fluidStack2 = (CompoundTag) tag.get("byproduct_fluid_output");
+        if (fluidStack1 != null)
+            this.pureFluidOutput = FluidStack
+                    .parseOptional(registries, fluidStack1);
+        if (fluidStack2 != null)
+            this.byproductFluidOutput = FluidStack
+                    .parseOptional(registries, (CompoundTag) tag.get("byproduct_fluid_output"));
     }
 
     @Override
     protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
         super.saveAdditional(tag, registries);
-        tag.putInt("molten_concocti", this.moltenConcocti);
-        tag.putInt("molten_concoctized_dirt", this.moltenConcoctizedDirt);
-        tag.putInt("ticks_left", this.ticksLeft);
-        // Fetch the appropriate item ID.
-        tag.putInt("last_smelted_item_id", this.lastSmeltedItemId);
+        if (!pureFluidOutput.isEmpty())
+            tag.put("pure_fluid_output", pureFluidOutput.save(registries));
+        if (!byproductFluidOutput.isEmpty())
+            tag.put("byproduct_fluid_output", byproductFluidOutput.save(registries));
     }
 }
