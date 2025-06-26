@@ -4,6 +4,7 @@ import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -28,8 +29,13 @@ public class ConcoctiBlockLootSubProvider extends BlockLootSubProvider {
 
     @Override
     protected void generate() {
-        for (DeferredBlock<? extends Block> block : ConcoctiBlocks.BLOCK_MAP.keySet()) {
-            dropSelf(block.get());
+        for (DeferredBlock<? extends Block> deferredBlock : ConcoctiBlocks.BLOCK_MAP.keySet()) {
+            Block block = deferredBlock.get();
+            if (block instanceof BaseEntityBlock) {
+                add(block, createNameableBlockEntityTable(block));
+            } else {
+                dropSelf(block);
+            }
         }
     }
 }

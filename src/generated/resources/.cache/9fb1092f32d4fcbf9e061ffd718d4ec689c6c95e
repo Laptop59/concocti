@@ -1,4 +1,4 @@
-// 1.21.1	2025-06-24T21:47:12.449135428	Recipes
+// 1.21.1	2025-06-26T15:45:32.728684114	Recipes
 b3d231f12bc4fe3b8fa8f7278aaf5d1320650259 data/concocti/advancement/recipes/building_blocks/diamethyst_block.json
 7b3951ce047e4ebeebff6e81832544b060532b48 data/concocti/advancement/recipes/building_blocks/dirty_concocti_block_from_ingots.json
 32634011bdc931e37146dd67e7db1cbf04653ca7 data/concocti/advancement/recipes/building_blocks/purified_concocti_block_from_ingots.json
@@ -19,10 +19,12 @@ a8a2055e08cac6e99d23f93324b15074bcd55632 data/concocti/recipe/diamethyst_crystal
 b1cb84fae6a1b85beaff7aa5cd3f15d185d62ae1 data/concocti/recipe/dirty_concocti_ingot_from_block.json
 00b11f098fdb7e3be8cd0839eb3124ef97bc2027 data/concocti/recipe/dirty_concocti_ingot_from_nuggets.json
 bf217c31d0377edc628d3e7a49f7f0fdf5aab439 data/concocti/recipe/dirty_concocti_nugget_from_ingot.json
+f268f7e88a98c52370a7f58f6c5b2e0fbbe03fd9 data/concocti/recipe/melting/blue_ice.json
 2285a80c9cede790a79a97d65996610613bf18a3 data/concocti/recipe/melting/dirty_concocti_block.json
 4d9a16a7de2d5f0405c55cd9f31705e6c3dc1a59 data/concocti/recipe/melting/dirty_concocti_ingot.json
 6d62d2a66423c9166102c0cd435faa5a8ffbab2d data/concocti/recipe/melting/dirty_concocti_nugget.json
 f14bd5cbc5c3986637f22dbe9e6255e6a92b75bf data/concocti/recipe/melting/ice.json
+bc5f1edcb56bf7f7aa33810efd3f1effe6861ca1 data/concocti/recipe/melting/packed_ice.json
 97092a8d6fb7bba6908ea1d430b8cdeb85d24a6e data/concocti/recipe/melting/purified_concocti_block.json
 32dee8240bc98e1524a91a59784522c843ab819a data/concocti/recipe/melting/purified_concocti_ingot.json
 b2b785ebca3db539b940bea3f2dc405bbdf824d9 data/concocti/recipe/melting/purified_concocti_nugget.json

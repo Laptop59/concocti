@@ -25,5 +25,5 @@ public class ConcoctiRecipes {
     public static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS =
             DeferredRegister.create(Registries.RECIPE_SERIALIZER, Concocti.MODID);
     public static final Supplier<RecipeSerializer<ConcoctiMelterRecipe>> CONCOCTI_MELTER_RECIPE_SERIALIZER =
-            RECIPE_SERIALIZERS.register("concocti_melter", ConcoctiMelterRecipeSerializer::new);
+            RECIPE_SERIALIZERS.register("concocti_melter", ConcoctiMelterRecipe.Serializer::new);
 }

@@ -14,7 +14,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 /**
  * A class which serves as a base for a Concocti Machine's menu.
@@ -24,8 +23,6 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
 
     protected final Container container;
     protected final ContainerData data;
-
-    protected final int machineSlots;
 
     public AbstractConcoctiMachineMenu(
             int containerId, Inventory playerInventory, int containerSize, int dataSize, Supplier<MenuType<T>> menuSupplier
@@ -43,7 +40,6 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
         this.addSlot(new ConcoctiUpgradeSlot(container, 0, 153, 7));
         this.addSlot(new ConcoctiFrameSlot(container, 1, 153, 7 + 18));
         this.addOtherSlots();
-        machineSlots = container.getContainerSize();
 
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 9; j++) {
@@ -70,7 +66,6 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
         if (slot.hasItem()) {
             ItemStack movedStack = slot.getItem();
             itemStack = movedStack.copy();
-            System.out.println(container.getContainerSize() + ":" + index);
             if (index < container.getContainerSize()) {
                 // Move items in machine to player inventory.
                 if (!this.moveItemStackTo(movedStack, container.getContainerSize(), container.getContainerSize() + 36, false)) {
@@ -89,6 +84,9 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
             } else {
                 ItemStack stack = handleOtherQuickMoves(movedStack);
                 if (stack != null) return stack;
+                if (!this.moveItemStackTo(movedStack, container.getContainerSize(), container.getContainerSize() + 36, false)) {
+                    return ItemStack.EMPTY;
+                }
             }
 
             if (movedStack.isEmpty()) {
@@ -135,7 +133,7 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
 
     /** Gets all the machine-specific slots of this menu. */
     public List<Slot> getMachineSlots() {
-        return this.slots.subList(0, machineSlots);
+        return this.slots.subList(0, container.getContainerSize());
     }
 
     public float getProgress() {
