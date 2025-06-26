@@ -10,6 +10,8 @@
   "block.concocti.concocti_solidifier": "Concocti Solidifier",
   "block.concocti.molten_concocti": "Molten Concocti",
   "block.concocti.molten_concoctized_dirt": "Molten Concoctized Dirt",
+  "block.concocti.basic_concocti_frame": "Basic Concocti Frame",
+  "block.concocti.advanced_concocti_frame": "Advanced Concocti Frame",
 
   "item.concocti.diamethyst_crystal": "Diamethyst Crystal",
   "item.concocti.concocti_seeds": "Concocti Seeds",
@@ -40,6 +42,13 @@
 
   "screen.concocti.energy_bar": "Energy: %s/%s FE",
   "screen.concocti.fluid_bar": "%s: %s/%s mB",
-  "screen.concocti.no_upgrade": "Put a Concocti Upgrade on the top right to increase this block's speed.",
-  "screen.concocti.upgrade_info": "Upgrade units: +%s"
+  "screen.concocti.fluid_amount": "%s mB",
+
+  "screen.concocti.no_upgrade": "Put a Concocti Upgrade here to speed up this block.",
+  "screen.concocti.upgrade_info": "Upgrade units: +%s",
+  "screen.concocti.duration": "Duration: %ss",
+  "screen.concocti.no_frame": "Put a Concocti Frame here to improve this block.",
+  "screen.concocti.frame_info_rate": "Additional Rate: +%s%%",
+  "screen.concocti.frame_info_efficiency": "Efficiency: %s%%",
+  "screen.concocti.single_upgrade_info": "(+%s per unit)"
 }

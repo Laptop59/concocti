@@ -4,7 +4,6 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -16,9 +15,9 @@ import static io.github.laptop59.concocti.common.Concocti.MODID;
  */
 public class EnergyBar<T extends AbstractContainerMenu> {
 
-    private final ResourceLocation energyBarSprite = ResourceLocation.fromNamespaceAndPath(MODID, "container/energy/bar");
-    private final ResourceLocation energyBarOverlaySprite = ResourceLocation.fromNamespaceAndPath(MODID, "container/energy/overlay");
-    private final ResourceLocation energyBarBaseSprite = ResourceLocation.fromNamespaceAndPath(MODID, "container/energy/base");
+    public static final ResourceLocation ENERGY_BAR_SPRITE = ResourceLocation.fromNamespaceAndPath(MODID, "container/energy/bar");
+    public static final ResourceLocation ENERGY_BAR_OVERLAY_SPRITE = ResourceLocation.fromNamespaceAndPath(MODID, "container/energy/overlay");
+    public static final ResourceLocation ENERGY_BAR_BASE_SPRITE = ResourceLocation.fromNamespaceAndPath(MODID, "container/energy/base");
 
     T menu;
     AbstractContainerScreen<T> screen;
@@ -35,10 +34,10 @@ public class EnergyBar<T extends AbstractContainerMenu> {
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, int left, int max, Font font) {
         int height = Mth.ceil(((float) left / max) * 50.0F);
         // Draw the base first.
-        guiGraphics.blitSprite(this.energyBarBaseSprite, 17, 52, 0, 0, screen.getGuiLeft() + guiLeft - 1, screen.getGuiTop() + guiTop - 1, 17, 52);
-        guiGraphics.blitSprite(this.energyBarSprite, 15, 50, 0, 0, screen.getGuiLeft() + guiLeft, screen.getGuiTop() + guiTop + (50 - height), 15, height);
+        guiGraphics.blitSprite(ENERGY_BAR_BASE_SPRITE, 17, 52, 0, 0, screen.getGuiLeft() + guiLeft - 1, screen.getGuiTop() + guiTop - 1, 17, 52);
+        guiGraphics.blitSprite(ENERGY_BAR_SPRITE, 15, 50, 0, 0, screen.getGuiLeft() + guiLeft, screen.getGuiTop() + guiTop + (50 - height), 15, height);
         // Draw the overlay afterward.
-        guiGraphics.blitSprite(this.energyBarOverlaySprite, 15, 50, 0, 0, screen.getGuiLeft() + guiLeft, screen.getGuiTop() + guiTop, 15, 50);
+        guiGraphics.blitSprite(ENERGY_BAR_OVERLAY_SPRITE, 15, 50, 0, 0, screen.getGuiLeft() + guiLeft, screen.getGuiTop() + guiTop, 15, 50);
         // Show a tooltip if required.
         if (screen.isHovering(guiLeft, guiTop, 15, 50, mouseX, mouseY)) {
             guiGraphics.renderTooltip(font, Component.translatable("screen.concocti.energy_bar",

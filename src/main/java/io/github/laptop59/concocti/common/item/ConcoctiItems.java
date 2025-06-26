@@ -1,6 +1,7 @@
 package io.github.laptop59.concocti.common.item;
 
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
+import io.github.laptop59.concocti.common.block.frame.FrameAttributes;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -14,8 +15,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.*;
 import java.util.function.Function;
 
 import static io.github.laptop59.concocti.common.Concocti.MODID;
@@ -26,7 +26,6 @@ public class ConcoctiItems {
     // Create a Deferred Register to hold Items which will all be registered under the "concocti" namespace
     /// ITEMS
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
-
 
     public static final DeferredItem<Item> DIAMETHYST_CRYSTAL = registerItem("diamethyst_crystal", new Item.Properties());
     public static final DeferredItem<BlockItem> DIAMETHYST_CRYSTAL_BLOCK = registerBlockItem(ConcoctiBlocks.DIAMETHYST_BLOCK);
@@ -55,15 +54,15 @@ public class ConcoctiItems {
     public static final DeferredItem<BucketItem> MOLTEN_CONCOCTI_BUCKET = registerBucketItem("molten_concocti_bucket", ConcoctiFluids.MOLTEN_CONCOCTI);
     public static final DeferredItem<BucketItem> MOLTEN_CONCOCTIZED_DIRT_BUCKET = registerBucketItem("molten_concoctized_dirt_bucket", ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT);
 
-    public static final DeferredItem<Item> COMPACT_CONCOCTI_UPGRADE = registerItem("compact_concocti_upgrade", new Item.Properties().stacksTo(8));
-    public static final DeferredItem<Item> COMPACTER_CONCOCTI_UPGRADE = registerItem("compacter_concocti_upgrade", new Item.Properties().stacksTo(8));
-    public static final DeferredItem<Item> COMPACTEST_CONCOCTI_UPGRADE = registerItem("compactest_concocti_upgrade", new Item.Properties().stacksTo(8));
+    public static final DeferredItem<? extends Item> COMPACT_CONCOCTI_UPGRADE = registerItem("compact_concocti_upgrade", ConcoctiUpgradeItem::new, new Item.Properties().stacksTo(8));
+    public static final DeferredItem<? extends Item> COMPACTER_CONCOCTI_UPGRADE = registerItem("compacter_concocti_upgrade", ConcoctiUpgradeItem::new, new Item.Properties().stacksTo(8));
+    public static final DeferredItem<? extends Item> COMPACTEST_CONCOCTI_UPGRADE = registerItem("compactest_concocti_upgrade", ConcoctiUpgradeItem::new, new Item.Properties().stacksTo(8));
+
+    public static final DeferredItem<BlockItem> BASIC_CONCOCTI_FRAME = registerBlockItem(ConcoctiBlocks.BASIC_CONCOCTI_FRAME);
+    public static final DeferredItem<BlockItem> ADVANCED_CONCOCTI_FRAME = registerBlockItem(ConcoctiBlocks.ADVANCED_CONCOCTI_FRAME);
 
     public static class Tags {
         /// ITEM TAGS
-        public static final TagKey<Item> MELTABLE_CONCOCTI_ITEMS = TagKey.create(
-                Registries.ITEM, ResourceLocation.fromNamespaceAndPath(MODID, "meltable_concocti_items")
-        );
         public static final TagKey<Item> CONCOCTI_UPGRADES = TagKey.create(
                 Registries.ITEM, ResourceLocation.fromNamespaceAndPath(MODID, "concocti_upgrades")
         );
@@ -130,26 +129,37 @@ public class ConcoctiItems {
     public static void addItemsToCreativeTab(CreativeModeTab.Output output) {
         acceptStack(output, DIAMETHYST_CRYSTAL);
         acceptStack(output, DIAMETHYST_CRYSTAL_BLOCK);
+
         acceptStack(output, CONCOCTI_SEEDS);
+
         acceptStack(output, DIRTY_CONCOCTI_NUGGET);
         acceptStack(output, DIRTY_CONCOCTI_INGOT);
         acceptStack(output, DIRTY_CONCOCTI_BLOCK);
+
         acceptStack(output, PURIFIED_CONCOCTI_NUGGET);
         acceptStack(output, PURIFIED_CONCOCTI_INGOT);
         acceptStack(output, PURIFIED_CONCOCTI_BLOCK);
+
         acceptStack(output, TOUGH_CONCOCTI_NUGGET);
         acceptStack(output, TOUGH_CONCOCTI_INGOT);
         acceptStack(output, TOUGH_CONCOCTI_BLOCK);
+
         acceptStack(output, COMPRESSED_CONCOCTI_NUGGET);
         acceptStack(output, COMPRESSED_CONCOCTI_INGOT);
         acceptStack(output, COMPRESSED_CONCOCTI_BLOCK);
+
         acceptStack(output, CONCOCTI_MELTER);
         acceptStack(output, CONCOCTI_SOLIDIFIER);
+
         acceptStack(output, MOLTEN_CONCOCTI_BUCKET);
         acceptStack(output, MOLTEN_CONCOCTIZED_DIRT_BUCKET);
+
         acceptStack(output, COMPACT_CONCOCTI_UPGRADE);
         acceptStack(output, COMPACTER_CONCOCTI_UPGRADE);
         acceptStack(output, COMPACTEST_CONCOCTI_UPGRADE);
+
+        acceptStack(output, BASIC_CONCOCTI_FRAME);
+        acceptStack(output, ADVANCED_CONCOCTI_FRAME);
     }
 
     private static void acceptStack(CreativeModeTab.Output output, DeferredItem<? extends Item> item) {

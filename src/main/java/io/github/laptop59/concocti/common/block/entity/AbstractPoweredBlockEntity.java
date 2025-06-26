@@ -22,15 +22,17 @@ public abstract class AbstractPoweredBlockEntity extends BaseContainerBlockEntit
 
     protected final int SIZE;
 
-    public final EnergyStorage energy;
+    public DynamicEnergyStorage energy;
 
     // Our item stack list. This is not final due to #setItems existing.
     protected NonNullList<ItemStack> items;
 
+    public final int baseEnergy, baseEnergyTransfer;
+
     public final IItemHandler itemHandler = new IItemHandler() {
         @Override
         public int getSlots() {
-            return 2;
+            return SIZE;
         }
 
         private boolean indexInvalid(int slot) { return slot >= getSlots(); }
@@ -112,7 +114,16 @@ public abstract class AbstractPoweredBlockEntity extends BaseContainerBlockEntit
         super(type, pos, blockState);
         this.SIZE = slotSize;
         this.items = NonNullList.withSize(SIZE, ItemStack.EMPTY);
-        this.energy = new EnergyStorage(maxEnergy, maxEnergyTransfer);
+        this.baseEnergy = maxEnergy;
+        this.baseEnergyTransfer = maxEnergyTransfer;
+        this.energy = new DynamicEnergyStorage(baseEnergy, maxEnergyTransfer, maxEnergyTransfer, 0);
+    }
+
+    public void setNewEnergyMultiplier(float multiplier) {
+        int newMaxEnergy = (int) (this.baseEnergy * multiplier);
+        int newMaxEnergyTransfer = (int) (this.baseEnergyTransfer * multiplier);
+        this.energy.setMaxEnergy(newMaxEnergy);
+        this.energy.setMaxEnergyTransfer(newMaxEnergyTransfer);
     }
 
     /**
@@ -129,7 +140,7 @@ public abstract class AbstractPoweredBlockEntity extends BaseContainerBlockEntit
         this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
         ContainerHelper.loadAllItems(tag, this.items, registries);
         if (tag.contains("energy")) {
-            energy.deserializeNBT(registries, tag.getCompound("energy"));
+            energy.deserializeNBT(registries, tag.get("energy"));
         }
     }
 
@@ -141,5 +152,22 @@ public abstract class AbstractPoweredBlockEntity extends BaseContainerBlockEntit
         super.saveAdditional(tag, registries);
         tag.put("energy", energy.serializeNBT(registries));
         ContainerHelper.saveAllItems(tag, this.items, registries);
+    }
+
+    /** An {@link net.neoforged.neoforge.energy.EnergyStorage} with a variable capacity. */
+    public static class DynamicEnergyStorage extends EnergyStorage {
+        public DynamicEnergyStorage(int capacity, int maxReceive, int maxExtract, int energy) {
+            super(capacity, maxReceive, maxExtract, energy);
+        }
+
+        public void setMaxEnergy(int capacity) {
+            this.capacity = capacity;
+            if (energy > capacity) energy = capacity;
+        }
+
+        public void setMaxEnergyTransfer(int transfer) {
+            this.maxReceive = transfer;
+            this.maxExtract = transfer;
+        }
     }
 }

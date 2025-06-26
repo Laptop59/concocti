@@ -1,15 +1,23 @@
 package io.github.laptop59.concocti.client.gui.components;
 
-import net.minecraft.Util;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.InventoryMenu;
+import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix4f;
 
 import static io.github.laptop59.concocti.common.Concocti.MODID;
 
@@ -24,8 +32,8 @@ public class FluidBar<T extends AbstractContainerMenu> implements MenuAccess<T> 
     int guiLeft;
     int guiTop;
 
-    private final ResourceLocation fluidBaseSprite = ResourceLocation.fromNamespaceAndPath(MODID, "container/fluids/base");
-    private final ResourceLocation fluidBlackSprite = ResourceLocation.fromNamespaceAndPath(MODID, "container/fluids/black");
+    public static final ResourceLocation FLUID_BASE_SPRITE = ResourceLocation.fromNamespaceAndPath(MODID, "container/fluids/base");
+    public static final ResourceLocation FLUID_BLACK_SPRITE = ResourceLocation.fromNamespaceAndPath(MODID, "container/fluids/black");
 
     public FluidBar(AbstractContainerScreen<T> screen, T menu, ResourceLocation fluid, int guiLeft, int guiTop) {
         this.screen = screen;
@@ -35,34 +43,100 @@ public class FluidBar<T extends AbstractContainerMenu> implements MenuAccess<T> 
         this.guiTop = guiTop;
     }
 
-    public FluidBar(AbstractContainerScreen<T> screen, T menu, String name, int guiLeft, int guiTop) {
-        this(screen, menu, ResourceLocation.fromNamespaceAndPath(MODID, name), guiLeft, guiTop);
+    public FluidBar(AbstractContainerScreen<T> screen, T menu, int guiLeft, int guiTop) {
+        this(screen, menu, ResourceLocation.withDefaultNamespace("empty"), guiLeft, guiTop);
     }
 
-    public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, int left, int max, Font font) {
-        int height = Mth.ceil(((float) left / max) * 40.0F);
-        guiGraphics.blitSprite(fluidBaseSprite, 17, 42, 0, 0, screen.getGuiLeft() + guiLeft - 1, screen.getGuiTop() + guiTop - 1, 17, 42);
+    public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, FluidStack stack, int max, Font font) {
+        setToSolidifierFluid(BuiltInRegistries.FLUID.getId(stack.getFluid()));
+        int height = Mth.ceil(((float) stack.getAmount() / max) * 40.0F);
+        guiGraphics.blitSprite(FLUID_BASE_SPRITE, 17, 42, 0, 0, screen.getGuiLeft() + guiLeft - 1, screen.getGuiTop() + guiTop - 1, 17, 42);
         // Draw the full fluid.
+        // Get the required texture atlas sprite and attributes.
         int incremented;
         if (!fluidIsEmpty()) {
-            int tick = (int) ((Util.getMillis() / 50 / 2) % 38);
-            if (tick > 19) tick = 20 + 18 - tick;
-            for (int i = 0; i < 40; i += incremented) {
-                incremented = Math.min(40 - i, 16);
-                guiGraphics.blit(ResourceLocation.fromNamespaceAndPath(fluid.getNamespace(), "textures/block/" + fluid.getPath() + "_still.png"),
-                        screen.getGuiLeft() + guiLeft, screen.getGuiTop() + guiTop + i, 0, tick * 16, 15, incremented, 16, 16 * 20);
-            }
+            var attributes = IClientFluidTypeExtensions.of(BuiltInRegistries.FLUID.get(fluid));
+            TextureAtlasSprite sprite = screen.getMinecraft().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(attributes.getStillTexture());
+            setFluidColor(attributes.getTintColor());
+            renderTiledTextureAtlas(guiGraphics, screen, sprite, guiLeft,
+                    guiTop + (40 - height), 15, height, 100, true);
+            // Set the shader color back.
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         }
         // Draw the blackened part of the fluid.
         for (int blackenedLeft = 40 - height; blackenedLeft > 0; blackenedLeft -= incremented) {
             incremented = Math.min(blackenedLeft, 15);
-            guiGraphics.blitSprite(fluidBlackSprite, 15, 15, 0, 0,
+            guiGraphics.blitSprite(FLUID_BLACK_SPRITE, 15, 15, 0, 0,
                     screen.getGuiLeft() + guiLeft, screen.getGuiTop() + guiTop + 40 - blackenedLeft - height, 15, incremented);
         }
         if (screen.isHovering(guiLeft, guiTop, 15, 40, mouseX, mouseY)) {
             guiGraphics.renderTooltip(font, Component.translatable("screen.concocti.fluid_bar",
-                    Component.translatable(getFluidTranslation()).getString(), left, max), mouseX, mouseY);
+                    Component.translatable(getFluidTranslation()).getString(), stack.getAmount(), max), mouseX, mouseY);
         }
+    }
+
+    /** Sets the fluid color from a packed int color. */
+    private static void setFluidColor(int color) {
+        float r = (color >> 16 & 255) / 255.0F;
+        float g = (color >> 8 & 255) / 255.0F;
+        float b = (color & 255) / 255.0F;
+        float a = (color >> 24 & 255) / 255.0F;
+        RenderSystem.setShaderColor(r, g, b, a);
+    }
+
+    /** Renders a tiled texture atlas. */
+    public static void renderTiledTextureAtlas(GuiGraphics matrices, AbstractContainerScreen<?> screen,
+               TextureAtlasSprite sprite, int x, int y, int width, int height, int depth, boolean upsideDown) {
+        // start drawing sprites
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShaderTexture(0, sprite.atlasLocation());
+
+        int spriteHeight = sprite.contents().height();
+        int spriteWidth = sprite.contents().width();
+        // tile vertically
+        int startX = x + screen.getGuiLeft();
+        int startY = y + screen.getGuiTop();
+
+        Matrix4f matrix = matrices.pose().last().pose();
+
+        final int xTileCount = width / spriteWidth;
+        final int xRemainder = width - (xTileCount * spriteWidth);
+        final long yTileCount = height / spriteHeight;
+        final long yRemainder = height - (yTileCount * spriteHeight);
+
+        for (int xTile = 0; xTile <= xTileCount; xTile++) {
+            for (int yTile = 0; yTile <= yTileCount; yTile++) {
+                int widthLeft = (xTile == xTileCount) ? xRemainder : spriteWidth;
+                long heightLeft = (yTile == yTileCount) ? yRemainder : spriteHeight;
+                int x2 = startX + (xTile * spriteWidth);
+                int y2 = startY + height - ((yTile + 1) * spriteHeight);
+                if (widthLeft > 0 && heightLeft > 0) {
+                    long maskTop = spriteHeight - heightLeft;
+                    int maskRight = spriteWidth - widthLeft;
+
+                    drawTextureWithMasking(matrix, x2, y2, sprite, maskTop, maskRight, 100);
+                }
+            }
+        }
+    }
+
+    private static void drawTextureWithMasking(Matrix4f matrix, float xCoord, float yCoord, TextureAtlasSprite textureSprite, long maskTop, long maskRight, float zLevel) {
+        float uMin = textureSprite.getU0();
+        float uMax = textureSprite.getU1();
+        float vMin = textureSprite.getV0();
+        float vMax = textureSprite.getV1();
+        uMax = uMax - (maskRight / 16F * (uMax - uMin));
+        vMax = vMax - (maskTop / 16F * (vMax - vMin));
+
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+
+        Tesselator tesselator = Tesselator.getInstance();
+        BufferBuilder bufferBuilder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        bufferBuilder.addVertex(matrix, xCoord, yCoord + 16, zLevel).setUv(uMin, vMax);
+        bufferBuilder.addVertex(matrix, xCoord + 16 - maskRight, yCoord + 16, zLevel).setUv(uMax, vMax);
+        bufferBuilder.addVertex(matrix, xCoord + 16 - maskRight, yCoord + maskTop, zLevel).setUv(uMax, vMin);
+        bufferBuilder.addVertex(matrix, xCoord, yCoord + maskTop, zLevel).setUv(uMin, vMin);
+        BufferUploader.drawWithShader(bufferBuilder.buildOrThrow());
     }
 
     private boolean fluidIsEmpty() {
@@ -75,13 +149,7 @@ public class FluidBar<T extends AbstractContainerMenu> implements MenuAccess<T> 
     }
 
     public void setToSolidifierFluid(int id) {
-        switch (id) {
-            case 1: fluid = ResourceLocation.withDefaultNamespace("water"); break;
-            case 2: fluid = ResourceLocation.withDefaultNamespace("lava"); break;
-            case 3: fluid = ResourceLocation.fromNamespaceAndPath(MODID, "molten_concocti"); break;
-            case 4: fluid = ResourceLocation.fromNamespaceAndPath(MODID, "molten_concoctized_dirt"); break;
-            default: fluid = ResourceLocation.withDefaultNamespace("empty"); break;
-        }
+        fluid = BuiltInRegistries.FLUID.getKey(BuiltInRegistries.FLUID.byId(id));
     }
 
     @Override

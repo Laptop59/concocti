@@ -16,8 +16,6 @@ public class ConcoctiItemModelProvider extends ItemModelProvider {
 
     @Override
     protected void registerModels() {
-        simpleBlockItem(ConcoctiBlocks.DIAMETHYST_BLOCK.get());
-
         for (DeferredItem<? extends Item> item : ConcoctiItems.ITEM_LIST) {
             Item heldItem = item.get();
             // If the item is a block item, we create a block model.

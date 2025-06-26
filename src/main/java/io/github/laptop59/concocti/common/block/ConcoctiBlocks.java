@@ -2,6 +2,8 @@ package io.github.laptop59.concocti.common.block;
 
 import io.github.laptop59.concocti.common.block.entity.ConcoctiMelterBlockEntity;
 import io.github.laptop59.concocti.common.block.entity.ConcoctiSolidifierBlockEntity;
+import io.github.laptop59.concocti.common.block.frame.FrameAttributes;
+import io.github.laptop59.concocti.common.block.frame.FrameBlock;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -21,13 +23,13 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static io.github.laptop59.concocti.common.Concocti.MODID;
 
 public class ConcoctiBlocks {
-
     public static final Map<DeferredBlock<? extends Block>, BlockData> BLOCK_MAP = new HashMap<>();
 
     // Create 2 Deferred Registers to hold Blocks and Block Entities which will all be registered under the "concocti" namespace
@@ -52,13 +54,34 @@ public class ConcoctiBlocks {
             new BlockData(BlockToolRank.DIAMOND, BlockToolType.PICKAXE));
 
     public static final DeferredBlock<Block> COMPRESSED_CONCOCTI_BLOCK = registerBlock("compressed_concocti_block", Block::new,
-            BlockBehaviour.Properties.of().mapColor(DyeColor.MAGENTA).requiresCorrectToolForDrops().explosionResistance(30).strength(15f),
+            BlockBehaviour.Properties.of().mapColor(DyeColor.PURPLE).requiresCorrectToolForDrops().explosionResistance(30).strength(15f),
             new BlockData(BlockToolRank.NETHERITE, BlockToolType.PICKAXE));
 
     public static final DeferredBlock<Block> CONCOCTI_MELTER = registerBlock("concocti_melter", ConcoctiMelterBlock::new,
             BlockBehaviour.Properties.of().mapColor(DyeColor.MAGENTA).requiresCorrectToolForDrops().explosionResistance(4.5f).strength(4f)
                     .lightLevel(s -> s.getValue(BlockStateProperties.LIT) ? 13 : 0),
             new BlockData(BlockToolRank.STONE, BlockToolType.PICKAXE));
+
+    // FRAME BLOCKS
+
+    public static final DeferredBlock<Block> BASIC_CONCOCTI_FRAME = registerBlock("basic_concocti_frame", FrameBlock::new,
+            BlockBehaviour.Properties
+                    .of()
+                    .mapColor(DyeColor.MAGENTA)
+                    .requiresCorrectToolForDrops()
+                    .explosionResistance(20)
+                    .strength(3.5f),
+            new BlockData(BlockToolRank.IRON, BlockToolType.PICKAXE));
+
+    public static final DeferredBlock<Block> ADVANCED_CONCOCTI_FRAME = registerBlock("advanced_concocti_frame", FrameBlock::new,
+            BlockBehaviour.Properties
+                    .of()
+                    .mapColor(DyeColor.MAGENTA)
+                    .requiresCorrectToolForDrops()
+                    .explosionResistance(40)
+                    .strength(9f),
+            new BlockData(BlockToolRank.DIAMOND, BlockToolType.PICKAXE));
+
     public static final Supplier<BlockEntityType<ConcoctiMelterBlockEntity>> CONCOCTI_MELTER_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register(
             "concocti_melter",
             // The block entity type, created using a builder.
