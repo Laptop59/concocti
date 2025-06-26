@@ -2,9 +2,7 @@ package io.github.laptop59.concocti.datagen.client;
 
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import net.minecraft.data.PackOutput;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.neoforge.client.model.generators.BlockStateProvider;
-import net.neoforged.neoforge.client.model.generators.ConfiguredModel;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
 public class ConcoctiBlockStateProvider extends BlockStateProvider {

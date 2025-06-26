@@ -1,7 +1,6 @@
 package io.github.laptop59.concocti.common.item;
 
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
-import io.github.laptop59.concocti.common.block.frame.FrameAttributes;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -15,7 +14,8 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.function.Function;
 
 import static io.github.laptop59.concocti.common.Concocti.MODID;

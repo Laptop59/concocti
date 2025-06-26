@@ -1,7 +1,6 @@
 package io.github.laptop59.concocti.common.menu;
 
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
-import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;

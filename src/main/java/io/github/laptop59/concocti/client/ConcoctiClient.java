@@ -1,6 +1,5 @@
 package io.github.laptop59.concocti.client;
 
-import io.github.laptop59.concocti.common.Concocti;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
