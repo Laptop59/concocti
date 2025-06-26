@@ -12,8 +12,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.StackedContentsCompatible;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeInput;
@@ -42,10 +44,10 @@ import static io.github.laptop59.concocti.common.block.ConcoctiMelterBlock.LIT;
  */
 public abstract class AbstractConcoctiMachineBlockEntity
         <T extends AbstractConcoctiMachineBlockEntity<T, M, V, I, R>,
-                M extends AbstractContainerMenu, V, I extends RecipeInput, R extends ProcessingRecipe<I>>
-        extends AbstractPoweredBlockEntity {
-    private static final int UPGRADE_SLOT = 0;
-    private static final int FRAME_SLOT = 1;
+                M extends AbstractContainerMenu, V, I extends RecipeInput, R extends ProcessingRecipe<R, I>>
+        extends AbstractPoweredBlockEntity implements StackedContentsCompatible {
+    public static final int UPGRADE_SLOT = 0;
+    public static final int FRAME_SLOT = 1;
 
     ResourceLocation lastRecipeId = null;
 
@@ -194,7 +196,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
      * A basic implementation of a Concocti Machine's server tick.
      */
     public static <T extends AbstractConcoctiMachineBlockEntity<T, M, V, I, R>,
-            M extends AbstractContainerMenu, V, I extends RecipeInput, R extends ProcessingRecipe<I>>
+            M extends AbstractContainerMenu, V, I extends RecipeInput, R extends ProcessingRecipe<R, I>>
         void serverTick(Level level, BlockPos pos, BlockState state, AbstractConcoctiMachineBlockEntity<T, M, V, I, R> entity) {
         int currentUpgradeUnits = ConcoctiUpgradeSlot.getUpgradeUnits(entity.getItem(UPGRADE_SLOT));
         if (currentUpgradeUnits != entity.lastUpgradeUnits) {
@@ -236,7 +238,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
     protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
         super.loadAdditional(tag, registries);
         this.ticksLeft = tag.getInt("ticks_left");
-        if (tag.contains("last_smelted_item_id", Tag.STRING_SIZE)) {
+        if (tag.contains("last_recipe_id", Tag.STRING_SIZE)) {
             this.lastRecipeId = ResourceLocation.tryParse(tag.getString("last_recipe_id"));
         } else this.lastRecipeId = null;
         // Fill in the total ticks.
@@ -255,5 +257,12 @@ public abstract class AbstractConcoctiMachineBlockEntity
         // Fetch the appropriate item ID.
         if (this.lastRecipeId != null) tag.putString("last_recipe_id", this.lastRecipeId.toString());
         tag.putInt("total_ticks", this.totalTicks);
+    }
+
+    @Override
+    public void fillStackedContents(@NotNull StackedContents helper) {
+        for (ItemStack itemstack : this.items) {
+            helper.accountStack(itemstack);
+        }
     }
 }

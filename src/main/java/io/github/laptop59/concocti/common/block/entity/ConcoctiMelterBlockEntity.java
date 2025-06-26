@@ -28,7 +28,7 @@ import java.util.function.Supplier;
 public class ConcoctiMelterBlockEntity extends AbstractConcoctiMachineBlockEntity
     <ConcoctiMelterBlockEntity, ConcoctiMelterMenu, ItemStack, SingleRecipeInput, ConcoctiMelterRecipe> {
     private static final int INPUT_SLOT = 2;
-    public static final int TANK_CAPACITY = 8000;
+    public static final int TANK_CAPACITY = 64000;
 
     private FluidStack pureFluidOutput = FluidStack.EMPTY.copy();
     private FluidStack byproductFluidOutput = FluidStack.EMPTY.copy();
@@ -107,26 +107,28 @@ public class ConcoctiMelterBlockEntity extends AbstractConcoctiMachineBlockEntit
         return filled;
     }
 
-    private void recipeResultFill(@NotNull FluidStack resource) {
+    private void recipeResultFillSingle(boolean isPureOutput, @NotNull FluidStack resource) {
         int filled;
-        if (pureFluidOutput.isEmpty()) {
-            pureFluidOutput = resource;
-            return;
-        } else if (pureFluidOutput.getFluid().isSame(resource.getFluid())) {
-            filled = Math.min(resource.getAmount(), TANK_CAPACITY - pureFluidOutput.getAmount());
-            pureFluidOutput.setAmount(pureFluidOutput.getAmount() + filled);
+        FluidStack output = isPureOutput ? pureFluidOutput : byproductFluidOutput;
+        if (output.isEmpty() || output.getFluid().isSame(resource.getFluid())) {
+            // Set the fluid to be the resource's fluid.
+            int amount = output.isEmpty() ? 0 : output.getAmount();
+            FluidStack copy = resource.copy();
+            if (isPureOutput)
+                pureFluidOutput = copy;
+            else
+                byproductFluidOutput = copy;
+            filled = Math.min(resource.getAmount(), TANK_CAPACITY - amount);
+            copy.setAmount(amount + filled);
             resource.setAmount(resource.getAmount() - filled);
         }
+    }
+
+    private void recipeResultFill(@NotNull FluidStack resource) {
+        recipeResultFillSingle(true, resource);
         if (resource.isEmpty()) return;
         // No need to check for overflowing.
-        if (byproductFluidOutput.isEmpty()) {
-            byproductFluidOutput = resource;
-            return;
-        } else if (byproductFluidOutput.getFluid().isSame(resource.getFluid())) {
-            filled = Math.min(resource.getAmount(), TANK_CAPACITY - byproductFluidOutput.getAmount());
-            byproductFluidOutput.setAmount(byproductFluidOutput.getAmount() + filled);
-            resource.setAmount(resource.getAmount() - filled);
-        }
+        recipeResultFillSingle(false, resource);
     }
 
     @Override

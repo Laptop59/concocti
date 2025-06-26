@@ -1,9 +1,9 @@
-// 1.21.1	2025-06-26T01:07:17.685196904	Loot Tables
+// 1.21.1	2025-06-26T16:25:16.117202221	Loot Tables
 c660776b4318f7556941e775afdebfb14bf9b1b8 data/concocti/loot_table/blocks/advanced_concocti_frame.json
 ca1d48468d93f063e8803200b4b3e47092cc41cb data/concocti/loot_table/blocks/basic_concocti_frame.json
 d269190ffb34e3f147e0d817e49f31b96d72c27a data/concocti/loot_table/blocks/compressed_concocti_block.json
-c47bb99443b43dbfd315df5b46f1a33b04bf3eae data/concocti/loot_table/blocks/concocti_melter.json
-49cf55a0516d627a483879017c996c9c335edf04 data/concocti/loot_table/blocks/concocti_solidifier.json
+48e985aab8e958bb918393cb6c60e37f9d19dc4b data/concocti/loot_table/blocks/concocti_melter.json
+4b950831aee9817cb8cd392c9092dc1fb3b49fa1 data/concocti/loot_table/blocks/concocti_solidifier.json
 64d2e4778abb5d9433827e1131f07a5230465776 data/concocti/loot_table/blocks/diamethyst_block.json
 d7f3b39962eb7131dfd7e64fc2402cbf1a4c31d5 data/concocti/loot_table/blocks/dirty_concocti_block.json
 9dccf16722d8053daa09c57b9593a2cb264cc761 data/concocti/loot_table/blocks/purified_concocti_block.json

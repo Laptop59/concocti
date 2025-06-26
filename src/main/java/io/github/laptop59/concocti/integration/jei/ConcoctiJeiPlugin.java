@@ -19,6 +19,8 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @JeiPlugin
 public class ConcoctiJeiPlugin implements IModPlugin {
 
@@ -47,11 +49,12 @@ public class ConcoctiJeiPlugin implements IModPlugin {
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
         RecipeManager recipeManager = Minecraft.getInstance().level.getRecipeManager();
-        registration.addRecipes(CONCOCTI_MELTER_TYPE,
-                recipeManager
-                        .getAllRecipesFor(ConcoctiRecipes.CONCOCTI_MELTER_RECIPE_TYPE.get())
-                        .stream().map(RecipeHolder::value)
-                        .toList()
-        );
+        List<ConcoctiMelterRecipe> recipes = recipeManager
+                .getAllRecipesFor(ConcoctiRecipes.CONCOCTI_MELTER_RECIPE_TYPE.get())
+                .stream()
+                .map(RecipeHolder::value)
+                .sorted()
+                .toList();
+        registration.addRecipes(CONCOCTI_MELTER_TYPE, recipes);
     }
 }

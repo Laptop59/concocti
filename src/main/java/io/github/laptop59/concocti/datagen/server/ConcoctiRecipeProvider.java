@@ -2,7 +2,7 @@ package io.github.laptop59.concocti.datagen.server;
 
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
-import io.github.laptop59.concocti.common.recipe.ConcoctiMelterRecipeBuilder;
+import io.github.laptop59.concocti.common.recipe.ConcoctiMelterRecipe;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeCategory;
@@ -57,6 +57,8 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
         );
 
         concoctiMelterRecipe(output, Items.ICE, 40, new FluidStack(Fluids.WATER, 1000));
+        concoctiMelterRecipe(output, Items.PACKED_ICE, 80, new FluidStack(Fluids.WATER, 9000));
+        concoctiMelterRecipe(output, Items.BLUE_ICE, 640, new FluidStack(Fluids.WATER, 81000));
     }
 
     /**
@@ -88,7 +90,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
      */
     private static void concoctiMelterRecipe(RecipeOutput output, ItemLike input, int ticks,
                                              FluidStack pureResult, FluidStack byproductResult) {
-        new ConcoctiMelterRecipeBuilder(
+        new ConcoctiMelterRecipe.Builder(
                 Ingredient.of(input.asItem()),
                 pureResult,
                 byproductResult,
@@ -100,7 +102,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
      * Generates a Concocti Melter Recipe that melts an item into fluids. Only has one fluid product.
      */
     private static void concoctiMelterRecipe(RecipeOutput output, ItemLike input, int ticks, FluidStack pureResult) {
-        new ConcoctiMelterRecipeBuilder(
+        new ConcoctiMelterRecipe.Builder(
                 Ingredient.of(input.asItem()),
                 pureResult,
                 FluidStack.EMPTY,

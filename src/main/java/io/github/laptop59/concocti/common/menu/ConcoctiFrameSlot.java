@@ -57,7 +57,7 @@ public class ConcoctiFrameSlot extends Slot {
     }
 
     /**
-     * Returns {@code true} if the given {@link net.minecraft.world.item.ItemStack} can be used as an upgrade.
+     * Returns {@code true} if the given {@link net.minecraft.world.item.ItemStack} can be used as a frame.
      */
     public static boolean mayPlaceItem(ItemStack itemStack) {
         return getFrameAttributes(itemStack.getItem()).isPresent();

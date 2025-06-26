@@ -30,7 +30,7 @@ public class ConcoctiMelterMenu extends AbstractConcoctiMachineMenu<ConcoctiMelt
     @Override
     public @Nullable ItemStack handleOtherQuickMoves(ItemStack movedStack) {
         // index 2 - dirty concocti slot
-        if (!this.moveItemStackTo(movedStack, 2, 3, true)) {
+        if (!this.getSlot(2).hasItem() && !this.moveItemStackTo(movedStack, 2, 3, true)) {
             return ItemStack.EMPTY;
         }
         return null;
