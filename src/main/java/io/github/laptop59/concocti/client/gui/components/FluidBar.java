@@ -145,7 +145,9 @@ public class FluidBar<T extends AbstractContainerMenu> implements MenuAccess<T> 
 
     private String getFluidTranslation() {
         if (fluidIsEmpty()) return "mco.configure.world.slot.empty"; // Found an empty translation???
-        return "block." + fluid.getNamespace() + "." + fluid.getPath();
+        String trimmed = fluid.getPath();
+        if (trimmed.startsWith("flowing_")) trimmed = trimmed.substring(8);
+        return "block." + fluid.getNamespace() + "." + trimmed;
     }
 
     public void setToSolidifierFluid(int id) {

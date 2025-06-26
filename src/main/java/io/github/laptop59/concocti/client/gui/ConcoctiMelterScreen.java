@@ -34,17 +34,7 @@ public class ConcoctiMelterScreen extends AbstractConcoctiMachineScreen<Concocti
     }
 
     @Override
-    public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-        this.renderTooltip(guiGraphics, mouseX, mouseY);
-    }
-
-    @Override
-    protected void renderBg(@NotNull GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
-        int left = this.leftPos;
-        int top = this.topPos;
-        guiGraphics.blit(this.texture, left, top, 0, 0, this.imageWidth, this.imageHeight);
-
+    protected void renderBgSpecific(@NotNull GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
         // Render the melt progress and energy bar.
         arrowProgress.render(guiGraphics, menu.getProgress());
         energyBar.render(guiGraphics, mouseX, mouseY, menu.getNumberEnergyLeft(false), menu.getNumberEnergyLeft(true), font);
@@ -52,8 +42,5 @@ public class ConcoctiMelterScreen extends AbstractConcoctiMachineScreen<Concocti
         // Render the fluids.
         pureFluid.render(guiGraphics, mouseX, mouseY, menu.getPureFluidStack(), menu.getMaxFluidLeft(), font);
         byproductFluid.render(guiGraphics, mouseX, mouseY, menu.getByproductFluidStack(), menu.getMaxFluidLeft(), font);
-
-        // Render the base machine information (like frame and upgrades tooltips).
-        super.renderBg(guiGraphics, partialTick, mouseX, mouseY);
     }
 }
