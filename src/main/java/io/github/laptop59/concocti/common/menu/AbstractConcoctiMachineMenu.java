@@ -1,6 +1,7 @@
 package io.github.laptop59.concocti.common.menu;
 
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
+import net.minecraft.core.NonNullList;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -11,7 +12,9 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * A class which serves as a base for a Concocti Machine's menu.
@@ -21,6 +24,8 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
 
     protected final Container container;
     protected final ContainerData data;
+
+    protected final int machineSlots;
 
     public AbstractConcoctiMachineMenu(
             int containerId, Inventory playerInventory, int containerSize, int dataSize, Supplier<MenuType<T>> menuSupplier
@@ -38,6 +43,7 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
         this.addSlot(new ConcoctiUpgradeSlot(container, 0, 153, 7));
         this.addSlot(new ConcoctiFrameSlot(container, 1, 153, 7 + 18));
         this.addOtherSlots();
+        machineSlots = container.getContainerSize();
 
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 9; j++) {
@@ -115,6 +121,21 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
     public void removed(@NotNull Player player) {
         super.removed(player);
         this.container.stopOpen(player);
+    }
+
+    /** Gets all slots of this menu without the base slots. */
+    public NonNullList<Slot> getSpecificSlots() {
+        return NonNullList.copyOf(this.slots.stream().skip(2).toList());
+    }
+
+    /** Gets both the upgrade and frame slots of this menu. */
+    public NonNullList<Slot> getBaseSlots() {
+        return NonNullList.copyOf(this.slots.stream().limit(2).toList());
+    }
+
+    /** Gets all the machine-specific slots of this menu. */
+    public List<Slot> getMachineSlots() {
+        return this.slots.subList(0, machineSlots);
     }
 
     public float getProgress() {

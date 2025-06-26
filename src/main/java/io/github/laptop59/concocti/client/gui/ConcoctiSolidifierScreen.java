@@ -29,17 +29,7 @@ public class ConcoctiSolidifierScreen extends AbstractContainerScreen<ConcoctiSo
     }
 
     @Override
-    public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-        this.renderTooltip(guiGraphics, mouseX, mouseY);
-    }
-
-    @Override
     protected void renderBg(@NotNull GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
-        int left = this.leftPos;
-        int top = this.topPos;
-        guiGraphics.blit(this.texture, left, top, 0, 0, this.imageWidth, this.imageHeight);
-
         energyBar.render(guiGraphics, mouseX, mouseY, menu.getNumberEnergyLeft(false), menu.getNumberEnergyLeft(true), font);
         arrowProgress.render(guiGraphics, menu.getBurnProgress());
 
