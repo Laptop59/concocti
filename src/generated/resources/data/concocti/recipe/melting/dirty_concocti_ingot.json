@@ -1,0 +1,15 @@
+{
+  "type": "concocti:concocti_melter",
+  "byproduct_result": {
+    "amount": 27,
+    "id": "concocti:molten_concoctized_dirt"
+  },
+  "ingredient": {
+    "item": "concocti:dirty_concocti_ingot"
+  },
+  "pure_result": {
+    "amount": 108,
+    "id": "concocti:molten_concocti"
+  },
+  "ticks": 80
+}

@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "concocti:block/basic_concocti_frame"
+    }
+  }
+}

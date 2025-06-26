@@ -1,0 +1,12 @@
+{
+  "type": "concocti:concocti_melter",
+  "byproduct_result": {},
+  "ingredient": {
+    "item": "concocti:purified_concocti_block"
+  },
+  "pure_result": {
+    "amount": 1215,
+    "id": "concocti:molten_concocti"
+  },
+  "ticks": 320
+}
