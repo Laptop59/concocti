@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "concocti:copper_mold_base"
+    },
+    {
+      "tag": "c:ingots"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "concocti:copper_ingot_mold"
+  }
+}

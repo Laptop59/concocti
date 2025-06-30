@@ -1,6 +1,10 @@
 package io.github.laptop59.concocti.common.menu;
 
+import io.github.laptop59.concocti.client.gui.components.MachineSettings;
+import io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock;
+import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
+import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
@@ -9,6 +13,9 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,6 +59,26 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
         }
 
         this.addDataSlots(data);
+    }
+
+    /** Gets the block entity associated with this menu. */
+    public AbstractConcoctiMachineBlockEntity<?, ?, ?, ?, ?> getBlockEntity() {
+        return (AbstractConcoctiMachineBlockEntity<?, ?, ?, ?, ?>) container;
+    }
+
+    /** Gets the machine settings associated with this menu. */
+    public MachineSettings getMachineSettings() {
+        AbstractConcoctiMachineBlockEntity<?, ?, ?, ?, ?> abstractConcoctiMachineBlockEntity
+                = getBlockEntity();
+        return abstractConcoctiMachineBlockEntity.machineSettings;
+    }
+
+    /** Gets the facing direction of this machine. */
+    public Direction getFacingDirection() {
+        AbstractConcoctiMachineBlockEntity<?, ?, ?, ?, ?> abstractConcoctiMachineBlockEntity
+                = getBlockEntity();
+        BlockState blockState = abstractConcoctiMachineBlockEntity.getBlockState();
+        return blockState.getValue(AbstractConcoctiMachineBlock.FACING);
     }
 
     /**
@@ -147,4 +174,8 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
 
     public ConcoctiUpgradeSlot getUpgradeSlot() { return (ConcoctiUpgradeSlot) this.getSlot(0); }
     public ConcoctiFrameSlot getFrameSlot() { return (ConcoctiFrameSlot) this.getSlot(1); }
+
+    public Container getContainer() {
+        return container;
+    }
 }

@@ -11,36 +11,34 @@ import static io.github.laptop59.concocti.common.Concocti.MODID;
 
 /**
  * A class to show the progress of a block's action via an arrow.
- * @param <T>
  */
-public class ArrowProgress<T extends AbstractContainerMenu> implements MenuAccess<T> {
+public class ArrowProgress extends Renderable {
     public static final ResourceLocation BASE_SPRITE = ResourceLocation.fromNamespaceAndPath(MODID, "container/arrow_progress/base");
     public static final ResourceLocation PROGRESS_SPRITE = ResourceLocation.fromNamespaceAndPath(MODID, "container/arrow_progress/progress");
 
-    T menu;
-    AbstractContainerScreen<T> screen;
-    int guiLeft;
-    int guiTop;
+    float progress;
 
-    public ArrowProgress(AbstractContainerScreen<T> screen, T menu, int guiLeft, int guiTop) {
-        this.screen = screen;
-        this.menu = menu;
-        this.guiLeft = guiLeft;
-        this.guiTop = guiTop;
+    public ArrowProgress(int guiLeft, int guiTop) {
+        super(guiLeft, guiTop);
     }
 
-    public void render(GuiGraphics guiGraphics, float progress) {
-        ArrowProgress.render(guiGraphics, progress, screen.getGuiLeft() + guiLeft, screen.getGuiTop() + guiTop - 1);
-    }
-
-    public static void render(GuiGraphics guiGraphics, float progress, int left, int top) {
-        guiGraphics.blitSprite(BASE_SPRITE, 22, 15, 0, 0, left, top + 1, 22, 15);
+    protected void render(GuiGraphics guiGraphics, RenderInfo renderInfo) {
+        guiGraphics.blitSprite(BASE_SPRITE, 22, 15, 0, 0, renderInfo.left(), renderInfo.top() + 1, 22, 15);
         guiGraphics.blitSprite(PROGRESS_SPRITE, 22, 16, 0, 0,
-                left, top, (int) Math.min(22.0, Math.ceil(progress * 22)), 16);
+                renderInfo.left(), renderInfo.top(), (int) Math.min(22.0, Math.ceil(progress * 22)), 16);
     }
 
     @Override
-    public @NotNull T getMenu() {
-        return menu;
+    public int getWidth() {
+        return 22;
+    }
+
+    @Override
+    public int getHeight() {
+        return 16;
+    }
+
+    public void update(float progress) {
+        this.progress = progress;
     }
 }

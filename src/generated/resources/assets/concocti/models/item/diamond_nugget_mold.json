@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "concocti:item/diamond_nugget_mold"
+  }
+}

@@ -94,7 +94,7 @@ public class ConcoctiMelterRecipe implements ProcessingRecipe<ConcoctiMelterReci
     }
 
     // Check whether the given input matches this recipe. The first parameter matches the generic.
-    // We check our blockstate and our item stack, and only return true if both match.
+    // We check our block state and our item stack, and only return true if both match.
     @Override
     public boolean matches(SingleRecipeInput input, @NotNull Level level) {
         return this.inputItem.test(input.item());

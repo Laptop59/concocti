@@ -2,8 +2,11 @@ package io.github.laptop59.concocti.datagen;
 
 import io.github.laptop59.concocti.datagen.client.ConcoctiBlockStateProvider;
 import io.github.laptop59.concocti.datagen.client.ConcoctiItemModelProvider;
+import io.github.laptop59.concocti.datagen.client.ConcoctiItemTextureProvider;
+import io.github.laptop59.concocti.datagen.client.language.ConcoctiEnglishLanguageProvider;
 import io.github.laptop59.concocti.datagen.server.ConcoctiBlockLootSubProvider;
 import io.github.laptop59.concocti.datagen.server.ConcoctiBlockTagsProvider;
+import io.github.laptop59.concocti.datagen.server.ConcoctiItemTagsProvider;
 import io.github.laptop59.concocti.datagen.server.ConcoctiRecipeProvider;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.DataGenerator;
@@ -34,11 +37,18 @@ public class ConcoctiDatagenHandler {
         CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
 
         // Register the client providers.
+        generator.addProvider(event.includeClient(), new ConcoctiItemTextureProvider(output, MODID, existingFileHelper));
         generator.addProvider(event.includeClient(), new ConcoctiBlockStateProvider(output, MODID, existingFileHelper));
         generator.addProvider(event.includeClient(), new ConcoctiItemModelProvider(output, MODID, existingFileHelper));
 
+        generator.addProvider(event.includeClient(), new ConcoctiEnglishLanguageProvider(output, MODID));
+
         // Register the server providers.
-        generator.addProvider(event.includeServer(), new ConcoctiBlockTagsProvider(output, lookupProvider, MODID, existingFileHelper));
+        ConcoctiBlockTagsProvider blockTagsProvider = new ConcoctiBlockTagsProvider(output, lookupProvider, MODID, existingFileHelper);
+        generator.addProvider(event.includeServer(), blockTagsProvider);
+        generator.addProvider(event.includeServer(), new ConcoctiItemTagsProvider(output, lookupProvider,
+                blockTagsProvider.contentsGetter(), MODID, existingFileHelper
+        ));
         generator.addProvider(event.includeServer(), new ConcoctiRecipeProvider(output, lookupProvider));
 
         // Add sub-providers for loot table generation.

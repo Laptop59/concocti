@@ -1,5 +1,7 @@
 package io.github.laptop59.concocti.common.block.entity;
 
+import io.github.laptop59.concocti.client.gui.components.MachineSettings;
+import io.github.laptop59.concocti.client.gui.components.MachineSettingsComponent;
 import io.github.laptop59.concocti.common.block.frame.FrameAttributes;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.menu.ConcoctiFrameSlot;
@@ -23,8 +25,10 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -56,6 +60,8 @@ public abstract class AbstractConcoctiMachineBlockEntity
     int lastUpgradeUnits = -1;
     float rateConsumption;
 
+    public final MachineSettings machineSettings;
+
     @Override
     protected final boolean isItemValid(int slot, @NotNull ItemStack stack) {
         if (slot == 0) return stack.is(ConcoctiItems.Tags.CONCOCTI_UPGRADES);
@@ -72,9 +78,10 @@ public abstract class AbstractConcoctiMachineBlockEntity
 
     public AbstractConcoctiMachineBlockEntity(BlockPos pos, BlockState blockState, int maxEnergy,
                                               int maxEnergyTransfer, int slotSize, Supplier<BlockEntityType<T>> typeSupplier,
-                                              float rateConsumption) {
+                                              float rateConsumption, MachineSettings machineSettings) {
         super(typeSupplier.get(), pos, blockState, maxEnergy, maxEnergyTransfer, slotSize);
         this.rateConsumption = rateConsumption;
+        this.machineSettings = machineSettings;
         if (slotSize < 2) throw new IllegalArgumentException("Expected at least two slots for upgrades and frame.");
     }
 
@@ -193,6 +200,27 @@ public abstract class AbstractConcoctiMachineBlockEntity
     abstract protected void onRecipeCompleted(R recipe);
 
     /**
+     * Gets all the separate handlers of fluid stacks of this machine, which are indexed consistently.
+     */
+    public List<IFluidHandler> getIndexedFluidHandlers() {
+        return List.of();
+    }
+
+    /**
+     * Gets only the input handlers of fluid stacks of this machine.
+     */
+    public List<IFluidHandler> getInputFluidHandlers() {
+        return List.of();
+    }
+
+    /**
+     * Gets only the output handlers of fluid stacks of this machine.
+     */
+    public List<IFluidHandler> getOutputFluidHandlers() {
+        return List.of();
+    }
+
+    /**
      * A basic implementation of a Concocti Machine's server tick.
      */
     public static <T extends AbstractConcoctiMachineBlockEntity<T, M, V, I, R>,
@@ -265,4 +293,6 @@ public abstract class AbstractConcoctiMachineBlockEntity
             helper.accountStack(itemstack);
         }
     }
+
+    public abstract IFluidHandler getFluidTank();
 }

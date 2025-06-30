@@ -2,7 +2,7 @@ package io.github.laptop59.concocti.client.gui.components;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import net.minecraft.client.gui.Font;
+import io.github.laptop59.concocti.network.FluidBarInteractionPayloadC2S;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
@@ -14,8 +14,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 
@@ -25,32 +28,40 @@ import static io.github.laptop59.concocti.common.Concocti.MODID;
  * A class used to render a fluid bar.
  * @param <T> The type of menu whose screen the bar should render for.
  */
-public class FluidBar<T extends AbstractContainerMenu> implements MenuAccess<T> {
+public class FluidBar<T extends AbstractContainerMenu> extends Renderable implements MenuAccess<T>, ClickableComponent {
     T menu;
     AbstractContainerScreen<T> screen;
     ResourceLocation fluid;
-    int guiLeft;
-    int guiTop;
+
+    FluidStack stack;
+    int max;
+    int id;
 
     public static final ResourceLocation FLUID_BASE_SPRITE = ResourceLocation.fromNamespaceAndPath(MODID, "container/fluids/base");
     public static final ResourceLocation FLUID_BLACK_SPRITE = ResourceLocation.fromNamespaceAndPath(MODID, "container/fluids/black");
 
-    public FluidBar(AbstractContainerScreen<T> screen, T menu, ResourceLocation fluid, int guiLeft, int guiTop) {
+    public FluidBar(int guiLeft, int guiTop, AbstractContainerScreen<T> screen, T menu, ResourceLocation fluid, int id) {
+        super(guiLeft, guiTop);
         this.screen = screen;
         this.menu = menu;
         this.fluid = fluid;
-        this.guiLeft = guiLeft;
-        this.guiTop = guiTop;
+        this.id = id;
     }
 
-    public FluidBar(AbstractContainerScreen<T> screen, T menu, int guiLeft, int guiTop) {
-        this(screen, menu, ResourceLocation.withDefaultNamespace("empty"), guiLeft, guiTop);
+    public FluidBar(int guiLeft, int guiTop, AbstractContainerScreen<T> screen, T menu, int id) {
+        this(guiLeft, guiTop, screen, menu, ResourceLocation.withDefaultNamespace("empty"), id);
     }
 
-    public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, FluidStack stack, int max, Font font) {
+    public void update(FluidStack stack, int max) {
+        this.stack = stack;
+        this.max = max;
+    }
+
+    @Override
+    protected void render(GuiGraphics guiGraphics, RenderInfo renderInfo) {
         setToSolidifierFluid(BuiltInRegistries.FLUID.getId(stack.getFluid()));
         int height = Mth.ceil(((float) stack.getAmount() / max) * 40.0F);
-        guiGraphics.blitSprite(FLUID_BASE_SPRITE, 17, 42, 0, 0, screen.getGuiLeft() + guiLeft - 1, screen.getGuiTop() + guiTop - 1, 17, 42);
+        guiGraphics.blitSprite(FLUID_BASE_SPRITE, 17, 42, 0, 0, renderInfo.left() - 1, renderInfo.top() - 1, 17, 42);
         // Draw the full fluid.
         // Get the required texture atlas sprite and attributes.
         int incremented;
@@ -58,8 +69,8 @@ public class FluidBar<T extends AbstractContainerMenu> implements MenuAccess<T> 
             var attributes = IClientFluidTypeExtensions.of(BuiltInRegistries.FLUID.get(fluid));
             TextureAtlasSprite sprite = screen.getMinecraft().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(attributes.getStillTexture());
             setFluidColor(attributes.getTintColor());
-            renderTiledTextureAtlas(guiGraphics, screen, sprite, guiLeft,
-                    guiTop + (40 - height), 15, height, 100, true);
+            renderTiledTextureAtlas(guiGraphics, screen, sprite, renderInfo.left(),
+                    renderInfo.top() + (40 - height), 15, height, 100, true);
             // Set the shader color back.
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         }
@@ -67,12 +78,22 @@ public class FluidBar<T extends AbstractContainerMenu> implements MenuAccess<T> 
         for (int blackenedLeft = 40 - height; blackenedLeft > 0; blackenedLeft -= incremented) {
             incremented = Math.min(blackenedLeft, 15);
             guiGraphics.blitSprite(FLUID_BLACK_SPRITE, 15, 15, 0, 0,
-                    screen.getGuiLeft() + guiLeft, screen.getGuiTop() + guiTop + 40 - blackenedLeft - height, 15, incremented);
+                    renderInfo.left(), renderInfo.top() + 40 - blackenedLeft - height, 15, incremented);
         }
-        if (screen.isHovering(guiLeft, guiTop, 15, 40, mouseX, mouseY)) {
-            guiGraphics.renderTooltip(font, Component.translatable("screen.concocti.fluid_bar",
-                    Component.translatable(getFluidTranslation()).getString(), stack.getAmount(), max), mouseX, mouseY);
+        if (renderInfo.isHovering(15, 40)) {
+            renderInfo.renderTooltip(guiGraphics, Component.translatable("screen.concocti.fluid_bar",
+                    Component.translatable(getFluidTranslation()).getString(), stack.getAmount(), max));
         }
+    }
+
+    @Override
+    public int getWidth() {
+        return 15;
+    }
+
+    @Override
+    public int getHeight() {
+        return 40;
     }
 
     /** Sets the fluid color from a packed int color. */
@@ -94,8 +115,6 @@ public class FluidBar<T extends AbstractContainerMenu> implements MenuAccess<T> 
         int spriteHeight = sprite.contents().height();
         int spriteWidth = sprite.contents().width();
         // tile vertically
-        int startX = x + screen.getGuiLeft();
-        int startY = y + screen.getGuiTop();
 
         Matrix4f matrix = matrices.pose().last().pose();
 
@@ -108,8 +127,8 @@ public class FluidBar<T extends AbstractContainerMenu> implements MenuAccess<T> 
             for (int yTile = 0; yTile <= yTileCount; yTile++) {
                 int widthLeft = (xTile == xTileCount) ? xRemainder : spriteWidth;
                 long heightLeft = (yTile == yTileCount) ? yRemainder : spriteHeight;
-                int x2 = startX + (xTile * spriteWidth);
-                int y2 = startY + height - ((yTile + 1) * spriteHeight);
+                int x2 = x + (xTile * spriteWidth);
+                int y2 = y + height - ((yTile + 1) * spriteHeight);
                 if (widthLeft > 0 && heightLeft > 0) {
                     long maskTop = spriteHeight - heightLeft;
                     int maskRight = spriteWidth - widthLeft;
@@ -157,5 +176,14 @@ public class FluidBar<T extends AbstractContainerMenu> implements MenuAccess<T> 
     @Override
     public @NotNull T getMenu() {
         return menu;
+    }
+
+    @Override
+    public boolean onMouseClick(double mouseX, double mouseY, int button, AbstractContainerScreen<?> screen, AbstractContainerMenu menu) {
+        if (screen != null) {
+            // Send a payload.
+            PacketDistributor.sendToServer(new FluidBarInteractionPayloadC2S(menu.containerId, id, button));
+        }
+        return false;
     }
 }

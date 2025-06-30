@@ -1,6 +1,6 @@
-// 1.21.1	2025-06-26T16:25:16.116722745	Tags for minecraft:block mod id concocti
-727ad103fc9e95e527ea6e8db768cc9f2931333e data/minecraft/tags/block/mineable/pickaxe.json
-47e5e297797ae8ab4fa5731c91bf135c5bbf3138 data/minecraft/tags/block/needs_diamond_tool.json
-447f0b36c48decae92e20a35ff1666774d8a89bb data/minecraft/tags/block/needs_iron_tool.json
-e08f38d960895573c6c5e449e5aa6a63155690f5 data/minecraft/tags/block/needs_stone_tool.json
+// 1.21.1	2025-06-29T16:33:27.81657111	Tags for minecraft:block mod id concocti
+5e29c653f94666dcec0c8983345cc4db91b1def8 data/minecraft/tags/block/mineable/pickaxe.json
+c8ce2d6ac10510eb031272aea1a095daae04c0ab data/minecraft/tags/block/needs_diamond_tool.json
+69a1ca51b11a9c88ed3ff4ca4e0ada896b0237a5 data/minecraft/tags/block/needs_iron_tool.json
+41ab23d90cd474168522c5135f60dd0e9b59bba2 data/minecraft/tags/block/needs_stone_tool.json
 d037a373c7f253e6566c68f322fa74fee5aab585 data/neoforge/tags/block/needs_netherite_tool.json

@@ -17,8 +17,6 @@ public record ConcoctizedEntitiesPayload(Set<String> entities) implements Custom
     public static final CustomPacketPayload.Type<ConcoctizedEntitiesPayload> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(MODID, "concoctized_entities"));
 
     // Each pair of elements defines the stream codec of the element to encode/decode and the getter for the element to encode
-    // 'name' will be encoded and decoded as a string
-    // 'age' will be encoded and decoded as an integer
     // The final parameter takes in the previous parameters in the order they are provided to construct the payload object
     public static final StreamCodec<ByteBuf, ConcoctizedEntitiesPayload> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.collection(

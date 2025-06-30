@@ -2,19 +2,27 @@ package io.github.laptop59.concocti.datagen.server;
 
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
+import io.github.laptop59.concocti.common.item.MoldItem;
 import io.github.laptop59.concocti.common.recipe.ConcoctiMelterRecipe;
+import io.github.laptop59.concocti.common.recipe.ConcoctiSolidifierRecipe;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
-import net.minecraft.data.recipes.RecipeCategory;
-import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.data.recipes.RecipeProvider;
+import net.minecraft.data.recipes.*;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static io.github.laptop59.concocti.common.Concocti.MODID;
@@ -24,6 +32,8 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
         super(output, registries);
     }
 
+    record ConcoctiMoldingSolidifierRecipe(ItemStack result, Ingredient input, FluidStack fluidStack, int ticks) {}
+
     @Override
     protected void buildRecipes(@NotNull RecipeOutput output) {
         // Crafting Recipes
@@ -31,6 +41,9 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
         threeStageStorageRecipes(output, ConcoctiItems.DIRTY_CONCOCTI_NUGGET, ConcoctiItems.DIRTY_CONCOCTI_INGOT, ConcoctiItems.DIRTY_CONCOCTI_BLOCK);
         threeStageStorageRecipes(output, ConcoctiItems.PURIFIED_CONCOCTI_NUGGET, ConcoctiItems.PURIFIED_CONCOCTI_INGOT, ConcoctiItems.PURIFIED_CONCOCTI_BLOCK);
         threeStageStorageRecipes(output, ConcoctiItems.TOUGH_CONCOCTI_NUGGET, ConcoctiItems.TOUGH_CONCOCTI_INGOT, ConcoctiItems.TOUGH_CONCOCTI_BLOCK);
+
+        moldBaseRecipes(output, Items.IRON_NUGGET, Items.COPPER_INGOT, MoldItem.Material.COPPER);
+        moldBaseRecipes(output, ConcoctiItems.PURIFIED_CONCOCTI_NUGGET, Items.DIAMOND, MoldItem.Material.DIAMOND);
 
         // Concocti Melter Recipes
         concoctiMelterRecipe(output, ConcoctiItems.DIRTY_CONCOCTI_NUGGET, 10,
@@ -45,7 +58,6 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, 12 * 81),
                 new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT, 3 * 81)
         );
-
         concoctiMelterRecipe(output, ConcoctiItems.PURIFIED_CONCOCTI_NUGGET, 5,
                 new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, 15)
         );
@@ -55,10 +67,41 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
         concoctiMelterRecipe(output, ConcoctiItems.PURIFIED_CONCOCTI_BLOCK, 5 * 64,
                 new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, 15 * 81)
         );
-
         concoctiMelterRecipe(output, Items.ICE, 40, new FluidStack(Fluids.WATER, 1000));
         concoctiMelterRecipe(output, Items.PACKED_ICE, 80, new FluidStack(Fluids.WATER, 9000));
         concoctiMelterRecipe(output, Items.BLUE_ICE, 640, new FluidStack(Fluids.WATER, 81000));
+
+        // Concocti Solidifier Recipes
+        concoctiSolidifierRecipe(output, null, Items.CAULDRON, new FluidStack(Fluids.WATER, 1000),
+                40, new ItemStack(Items.ICE));
+        concoctiSolidifierRecipe(output, null, Items.CAULDRON,
+                new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, 12 * 9 * 9), 5 * 8 * 8,
+                new ItemStack(ConcoctiItems.PURIFIED_CONCOCTI_BLOCK.get()));
+        concoctiSolidifierRecipe(output, MoldItem.Type.NUGGET, List.of(
+                new ConcoctiMoldingSolidifierRecipe(
+                        new ItemStack(ConcoctiItems.PURIFIED_CONCOCTI_NUGGET.get(), 1),
+                        null,
+                        new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, 12),
+                        5
+                )
+        ));
+
+        // Convenient method for registering multiple recipes with same mold type.
+        concoctiSolidifierRecipe(output, MoldItem.Type.INGOT, List.of(
+                new ConcoctiMoldingSolidifierRecipe(
+                        new ItemStack(ConcoctiItems.PURIFIED_CONCOCTI_INGOT.get(), 1),
+                        null,
+                        new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, 12 * 9),
+                        5 * 8
+                )
+        ));
+    }
+
+    private static void concoctiSolidifierRecipe(RecipeOutput output, MoldItem.Type type, List<ConcoctiMoldingSolidifierRecipe> recipeList) {
+        Ingredient molds = Ingredient.of(ConcoctiItems.Tags.MOLDS.get(type));
+        for (ConcoctiMoldingSolidifierRecipe recipe : recipeList) {
+            concoctiSolidifierRecipe(output, recipe.input, molds, recipe.fluidStack, recipe.ticks, recipe.result);
+        }
     }
 
     /**
@@ -73,6 +116,39 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 output, RecipeCategory.MISC, ingot, RecipeCategory.BUILDING_BLOCKS, block,
                 withModId(getItemName(block) + "_from_ingots"), null, withModId(getItemName(ingot) + "_from_block"), null
         );
+    }
+
+    /**
+     * Generates a recipe to create mold recipes from a nugget and ingot.
+     */
+    private static void moldBaseRecipes(RecipeOutput output, ItemLike nugget, ItemLike ingot, MoldItem.Material moldMaterial) {
+        ItemLike moldBase = ConcoctiItems.MOLD_BASES.get(moldMaterial);
+        ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, moldBase)
+                .define('.', nugget)
+                .define('-', ingot)
+                .pattern(".")
+                .pattern("-")
+                .unlockedBy(getHasName(nugget), has(nugget))
+                .unlockedBy(getHasName(ingot), has(ingot))
+                .save(output, BuiltInRegistries.ITEM.getKey(moldBase.asItem()));
+
+        for (MoldItem.Type type : MoldItem.Type.values()) {
+            ResourceLocation loc = switch (type) {
+                case INGOT -> ResourceLocation.fromNamespaceAndPath("c", "ingots");
+                case NUGGET -> ResourceLocation.fromNamespaceAndPath("c", "nuggets");
+
+                default -> throw new IllegalStateException("Expected a common tag for mold type '" + type.name() + "'.");
+            };
+
+            ItemLike resultItem = ConcoctiItems.MOLDS.get(moldMaterial).get(type);
+
+            ShapelessRecipeBuilder.shapeless(RecipeCategory.TOOLS, resultItem)
+                    .requires(moldBase)
+                    .requires(TagKey.create(Registries.ITEM, loc))
+                    .unlockedBy(getHasName(nugget), has(nugget))
+                    .unlockedBy(getHasName(ingot), has(ingot))
+                    .save(output, BuiltInRegistries.ITEM.getKey(resultItem.asItem()));
+        }
     }
 
     /**
@@ -106,6 +182,28 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 Ingredient.of(input.asItem()),
                 pureResult,
                 FluidStack.EMPTY,
+                ticks
+        ).save(output);
+    }
+
+    /**
+     * Generates a Concocti Solidifier Recipe that melts an item into fluids.
+     */
+    private static void concoctiSolidifierRecipe(RecipeOutput output, @Nullable ItemLike baseItem, ItemLike mold,
+                                                 FluidStack inputFluid, int ticks, ItemStack outputItem) {
+        concoctiSolidifierRecipe(output, baseItem == null ? null : Ingredient.of(baseItem), Ingredient.of(mold), inputFluid, ticks, outputItem);
+    }
+
+    /**
+     * Generates a Concocti Solidifier Recipe that melts an item into fluids.
+     */
+    private static void concoctiSolidifierRecipe(RecipeOutput output, @Nullable Ingredient baseItem, Ingredient mold,
+                                                 FluidStack inputFluid, int ticks, ItemStack outputItem) {
+        new ConcoctiSolidifierRecipe.Builder(
+                baseItem == null ? Ingredient.EMPTY : baseItem,
+                mold,
+                SizedFluidIngredient.of(inputFluid),
+                outputItem,
                 ticks
         ).save(output);
     }

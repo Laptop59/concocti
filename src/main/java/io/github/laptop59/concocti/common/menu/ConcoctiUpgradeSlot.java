@@ -14,7 +14,7 @@ import java.util.function.Supplier;
  * A type of slot which only allows Concocti upgrades, or only items
  * specified in the {@code #concocti:concocti_upgrade} item tag.
  */
-public class ConcoctiUpgradeSlot extends Slot {
+public class ConcoctiUpgradeSlot extends Slot implements IconSlot {
     public ConcoctiUpgradeSlot(Container container, int slot, int x, int y) {
         super(container, slot, x, y);
     }
@@ -49,5 +49,10 @@ public class ConcoctiUpgradeSlot extends Slot {
      */
     public static boolean mayPlaceItem(ItemStack itemStack) {
         return itemStack.is(ConcoctiItems.Tags.CONCOCTI_UPGRADES);
+    }
+
+    @Override
+    public Icon getIcon() {
+        return Icon.CONCOCTI_UPGRADE;
     }
 }

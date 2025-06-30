@@ -9,8 +9,7 @@ import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.menu.ConcoctiMenus;
 import io.github.laptop59.concocti.common.recipe.ConcoctiRecipes;
-import io.github.laptop59.concocti.network.ConcoctizedEntitiesPayload;
-import io.github.laptop59.concocti.network.ConcoctizedEntitiesPayloadHandler;
+import io.github.laptop59.concocti.network.*;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffect;
@@ -63,12 +62,32 @@ public class Concocti {
     private static void registerPayloads(final RegisterPayloadHandlersEvent event) {
         // Sets the current network version
         final PayloadRegistrar registrar = event.registrar("1");
-        // When a piglin is zombified, update all players' concoctized entities.
         registrar.playToClient(
                 ConcoctizedEntitiesPayload.TYPE,
                 ConcoctizedEntitiesPayload.STREAM_CODEC,
                 new DirectionalPayloadHandler<>(
                         ConcoctizedEntitiesPayloadHandler::handleData, ConcoctizedEntitiesPayloadHandler::handleData
+                )
+        );
+        registrar.playToClient(
+                FluidBarSoundPayloadS2C.TYPE,
+                FluidBarSoundPayloadS2C.STREAM_CODEC,
+                new DirectionalPayloadHandler<>(
+                        FluidBarSoundPayloadS2CHandler::handleData, FluidBarSoundPayloadS2CHandler::handleData
+                )
+        );
+        registrar.playToServer(
+                FluidBarInteractionPayloadC2S.TYPE,
+                FluidBarInteractionPayloadC2S.STREAM_CODEC,
+                new DirectionalPayloadHandler<>(
+                        FluidBarInteractionPayloadC2SHandler::handleData, FluidBarInteractionPayloadC2SHandler::handleData
+                )
+        );
+        registrar.playToServer(
+                ConcoctiMachineSettingsSlotChangeC2S.TYPE,
+                ConcoctiMachineSettingsSlotChangeC2S.STREAM_CODEC,
+                new DirectionalPayloadHandler<>(
+                        ConcoctiMachineSettingsSlotChangeC2SHandler::handleData, ConcoctiMachineSettingsSlotChangeC2SHandler::handleData
                 )
         );
     }

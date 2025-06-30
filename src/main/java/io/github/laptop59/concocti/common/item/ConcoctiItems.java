@@ -14,8 +14,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.*;
 import java.util.function.Function;
 
 import static io.github.laptop59.concocti.common.Concocti.MODID;
@@ -61,17 +60,78 @@ public class ConcoctiItems {
     public static final DeferredItem<BlockItem> BASIC_CONCOCTI_FRAME = registerBlockItem(ConcoctiBlocks.BASIC_CONCOCTI_FRAME);
     public static final DeferredItem<BlockItem> ADVANCED_CONCOCTI_FRAME = registerBlockItem(ConcoctiBlocks.ADVANCED_CONCOCTI_FRAME);
 
+    public static final Set<DeferredItem<? extends Item>> DISABLED_DURABILITY_TOOLTIP_ITEMS = new HashSet<>();
+
     public static class Tags {
         /// ITEM TAGS
         public static final TagKey<Item> CONCOCTI_UPGRADES = TagKey.create(
                 Registries.ITEM, ResourceLocation.fromNamespaceAndPath(MODID, "concocti_upgrades")
         );
-        public static final TagKey<Item> CONCOCTI_MOLDS = TagKey.create(
-                Registries.ITEM, ResourceLocation.fromNamespaceAndPath(MODID, "concocti_molds")
-        );
+        public static final Map<MoldItem.Type, TagKey<Item>> MOLDS = new TreeMap<>();
+    }
+
+    public static final Map<MoldItem.Material, Map<MoldItem.Type, DeferredItem<? extends Item>>> MOLDS = registerAllMolds();
+    public static final Map<MoldItem.Material, DeferredItem<? extends Item>> MOLD_BASES = registerAllMoldBases();
+
+    static {
+        for (MoldItem.Type type : MoldItem.Type.values())
+            Tags.MOLDS.put(type, TagKey.create(
+                    Registries.ITEM, ResourceLocation.fromNamespaceAndPath(MODID, "molds/" + type.id)
+            ));
     }
 
     /// REGISTERING METHODS
+
+    /** Registers all mold bases of all materials. */
+    private static Map<MoldItem.Material, DeferredItem<? extends Item>> registerAllMoldBases() {
+        Map<MoldItem.Material, DeferredItem<? extends Item>> molds = new EnumMap<>(MoldItem.Material.class);
+        for (MoldItem.Material material : MoldItem.Material.values()) {
+            DeferredItem<Item> item = ITEMS.registerItem(MoldItem.getBaseIdentifier(material),
+                    properties -> new MoldBaseItem(properties, material), new Item.Properties());
+            molds.put(material, item);
+            addToItemList(item);
+        }
+        return molds;
+    }
+
+    /**
+     * Registers all molds of all materials.
+     * @return A two-dimensional map of {@link DeferredItem}s.
+     */
+    public static Map<MoldItem.Material, Map<MoldItem.Type, DeferredItem<? extends Item>>> registerAllMolds() {
+        Map<MoldItem.Material, Map<MoldItem.Type, DeferredItem<? extends Item>>> molds = new EnumMap<>(MoldItem.Material.class);
+        for (MoldItem.Material material : MoldItem.Material.values()) {
+            molds.put(material, registerMolds(material));
+        }
+        return molds;
+    }
+
+    /**
+     * Registers all molds of a particular material.
+     * @return A map of already registered {@link DeferredItem}s.
+     */
+    public static Map<MoldItem.Type, DeferredItem<? extends Item>> registerMolds(MoldItem.Material material) {
+        Map<MoldItem.Type, DeferredItem<? extends Item>> molds = new EnumMap<>(MoldItem.Type.class);
+        for (MoldItem.Type type : MoldItem.Type.values()) {
+            molds.put(type, registerMold(material, type));
+        }
+        return molds;
+    }
+
+    /**
+     * Registers a mold of a particular material and type.
+     * @return A map of the registered {@link DeferredItem}.
+     */
+    public static DeferredItem<? extends Item> registerMold(MoldItem.Material material, MoldItem.Type type) {
+        DeferredItem<Item> item = ITEMS.registerItem(
+                MoldItem.getIdentifier(material, type),
+                (properties -> new MoldItem(properties, material, type)),
+                new Item.Properties().durability(material.durability)
+        );
+        DISABLED_DURABILITY_TOOLTIP_ITEMS.add(item);
+        addToItemList(item);
+        return item;
+    }
 
     /**
      * Registers a block item.
@@ -160,6 +220,13 @@ public class ConcoctiItems {
 
         acceptStack(output, BASIC_CONCOCTI_FRAME);
         acceptStack(output, ADVANCED_CONCOCTI_FRAME);
+
+        for (Map.Entry<MoldItem.Material, Map<MoldItem.Type, DeferredItem<? extends Item>>> entry : MOLDS.entrySet()) {
+            acceptStack(output, MOLD_BASES.get(entry.getKey()));
+            for (Map.Entry<MoldItem.Type, DeferredItem<? extends Item>> entry2 : entry.getValue().entrySet()) {
+                acceptStack(output, entry2.getValue());
+            }
+        }
     }
 
     private static void acceptStack(CreativeModeTab.Output output, DeferredItem<? extends Item> item) {

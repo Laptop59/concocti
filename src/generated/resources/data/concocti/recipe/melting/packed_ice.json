@@ -1,0 +1,12 @@
+{
+  "type": "concocti:concocti_melter",
+  "byproduct_result": {},
+  "ingredient": {
+    "item": "minecraft:packed_ice"
+  },
+  "pure_result": {
+    "amount": 9000,
+    "id": "minecraft:water"
+  },
+  "ticks": 80
+}

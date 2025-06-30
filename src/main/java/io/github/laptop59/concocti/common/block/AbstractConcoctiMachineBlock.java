@@ -13,7 +13,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,7 +24,12 @@ import java.util.function.Predicate;
 import static io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity.FRAME_SLOT;
 import static io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity.UPGRADE_SLOT;
 
+/**
+ * A class to represent the block of a Concocti Machine.
+ */
 public abstract class AbstractConcoctiMachineBlock extends BaseEntityBlock implements EntityBlock {
+    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+
     protected AbstractConcoctiMachineBlock(Properties properties) {
         super(properties);
     }
