@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "concocti:diamond_mold_base"
+    },
+    {
+      "tag": "c:nuggets"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "concocti:diamond_nugget_mold"
+  }
+}

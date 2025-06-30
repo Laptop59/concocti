@@ -1,4 +1,4 @@
-// 1.21.1	2025-06-26T01:07:17.685003666	Item Models: concocti
+// 1.21.1	2025-06-28T16:55:20.200082969	Item Models: concocti
 9860ec1d2840f2feb3028da96207cecc0c5e3f62 assets/concocti/models/item/advanced_concocti_frame.json
 dd158e01c0d63b3f0b51a1b83e0a0dd4bb49c1c5 assets/concocti/models/item/basic_concocti_frame.json
 cf580921ecb218d04b6901c60c3a8ac60a25b83e assets/concocti/models/item/compact_concocti_upgrade.json
@@ -10,8 +10,14 @@ e3a05b422cc5c9cf8347d5af9e2bab2042c5394c assets/concocti/models/item/compressed_
 0c8bca9d0cf449a7a6350656ebedbefc2159cdd0 assets/concocti/models/item/concocti_melter.json
 46ff62fb9fa8827749b9dcfc741f7cfcea8ee6e5 assets/concocti/models/item/concocti_seeds.json
 6a2f3ba2feebb09dd16b70acc8af511d2fb8c468 assets/concocti/models/item/concocti_solidifier.json
+893508df3e1e40cc64032532aaa3ab5c155b75a0 assets/concocti/models/item/copper_ingot_mold.json
+866b66ae7d82ce57193f1945fe745ca310ccd1dd assets/concocti/models/item/copper_mold_base.json
+6ea5d4c4eaad36bf969d69d1042aa1a27b4b800f assets/concocti/models/item/copper_nugget_mold.json
 f04129e8b07c8b3755a8ef90fee85af4788e5f60 assets/concocti/models/item/diamethyst_block.json
 61213bb50af89a6e974ab86c9a8910c4de6905d2 assets/concocti/models/item/diamethyst_crystal.json
+f068e18368658bd566869fa6a91ec35b66495935 assets/concocti/models/item/diamond_ingot_mold.json
+bf11fcfb9f46b77caa4d829062f2f9a505fad117 assets/concocti/models/item/diamond_mold_base.json
+d18876b1976588df784c8b39649aaf48628d9cb0 assets/concocti/models/item/diamond_nugget_mold.json
 8eb08c6f8b9d99d8b77f33c3714b3bffd0363719 assets/concocti/models/item/dirty_concocti_block.json
 f32d909fbd06640ef1c62da37a06ad96ab5f0c02 assets/concocti/models/item/dirty_concocti_ingot.json
 cebf8890ba0be8dd688e1cf401b3ba0270469616 assets/concocti/models/item/dirty_concocti_nugget.json

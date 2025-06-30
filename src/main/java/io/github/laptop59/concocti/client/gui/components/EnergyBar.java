@@ -1,6 +1,5 @@
 package io.github.laptop59.concocti.client.gui.components;
 
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
@@ -13,7 +12,7 @@ import static io.github.laptop59.concocti.common.Concocti.MODID;
 /**
  * A class to show the energy bar in a GUI.
  */
-public class EnergyBar<T extends AbstractContainerMenu> {
+public class EnergyBar<T extends AbstractContainerMenu> extends Renderable {
 
     public static final ResourceLocation ENERGY_BAR_SPRITE = ResourceLocation.fromNamespaceAndPath(MODID, "container/energy/bar");
     public static final ResourceLocation ENERGY_BAR_OVERLAY_SPRITE = ResourceLocation.fromNamespaceAndPath(MODID, "container/energy/overlay");
@@ -21,17 +20,20 @@ public class EnergyBar<T extends AbstractContainerMenu> {
 
     T menu;
     AbstractContainerScreen<T> screen;
-    int guiLeft;
-    int guiTop;
+    int left, max;
 
-    public EnergyBar(AbstractContainerScreen<T> screen, T menu, int guiLeft, int guiTop) {
+    public EnergyBar(int guiLeft, int guiTop, AbstractContainerScreen<T> screen, T menu) {
+        super(guiLeft, guiTop);
         this.screen = screen;
         this.menu = menu;
-        this.guiLeft = guiLeft;
-        this.guiTop = guiTop;
     }
 
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, int left, int max, Font font) {
+    public void update(int left, int max) {
+        this.left = left;
+        this.max = max;
+    }
+
+    protected void render(GuiGraphics guiGraphics, RenderInfo renderInfo) {
         int height = Mth.ceil(((float) left / max) * 50.0F);
         // Draw the base first.
         guiGraphics.blitSprite(ENERGY_BAR_BASE_SPRITE, 17, 52, 0, 0, screen.getGuiLeft() + guiLeft - 1, screen.getGuiTop() + guiTop - 1, 17, 52);
@@ -39,9 +41,19 @@ public class EnergyBar<T extends AbstractContainerMenu> {
         // Draw the overlay afterward.
         guiGraphics.blitSprite(ENERGY_BAR_OVERLAY_SPRITE, 15, 50, 0, 0, screen.getGuiLeft() + guiLeft, screen.getGuiTop() + guiTop, 15, 50);
         // Show a tooltip if required.
-        if (screen.isHovering(guiLeft, guiTop, 15, 50, mouseX, mouseY)) {
-            guiGraphics.renderTooltip(font, Component.translatable("screen.concocti.energy_bar",
-                    left, max), mouseX, mouseY);
+        if (renderInfo.isHovering(15, 50)) {
+            renderInfo.renderTooltip(guiGraphics, Component.translatable("screen.concocti.energy_bar",
+                    left, max));
         }
+    }
+
+    @Override
+    public int getWidth() {
+        return 15;
+    }
+
+    @Override
+    public int getHeight() {
+        return 50;
     }
 }

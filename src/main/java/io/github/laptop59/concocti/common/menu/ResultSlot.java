@@ -5,12 +5,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * A basic slot only for outputs, i.e., items cannot be put inside the slot.
  */
 public class ResultSlot extends Slot {
-    private final Player player;
+    private final @Nullable Player player;
     private int removeCount;
 
     public ResultSlot(Player player, Container container, int slot, int xPosition, int yPosition) {
@@ -47,8 +48,8 @@ public class ResultSlot extends Slot {
      * @param stack the output - ie, iron ingots, and pickaxes, not ore and wood.
      */
     @Override
-    protected void checkTakeAchievements(ItemStack stack) {
-        stack.onCraftedBy(this.player.level(), this.player, this.removeCount);
+    protected void checkTakeAchievements(@NotNull ItemStack stack) {
+        if (player != null) stack.onCraftedBy(this.player.level(), this.player, this.removeCount);
 
         this.removeCount = 0;
     }

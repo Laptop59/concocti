@@ -1,0 +1,16 @@
+{
+  "type": "concocti:concocti_solidifier",
+  "base_item": [],
+  "input_fluid": {
+    "amount": 12,
+    "fluid": "concocti:molten_concocti"
+  },
+  "mold": {
+    "tag": "concocti:molds/nugget"
+  },
+  "output_item": {
+    "count": 1,
+    "id": "concocti:purified_concocti_nugget"
+  },
+  "ticks": 5
+}

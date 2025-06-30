@@ -1,5 +1,6 @@
 package io.github.laptop59.concocti.common.menu;
 
+import io.github.laptop59.concocti.client.gui.components.MachineSettings;
 import io.github.laptop59.concocti.common.block.entity.ConcoctiMelterBlockEntity;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.Container;
@@ -8,6 +9,7 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import org.jetbrains.annotations.Nullable;
 
 public class ConcoctiMelterMenu extends AbstractConcoctiMachineMenu<ConcoctiMelterMenu> {

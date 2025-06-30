@@ -22,11 +22,6 @@ import static io.github.laptop59.concocti.common.Concocti.MODID;
 public class ConcoctiFluids {
     public static final DeferredRegister<Fluid> FLUIDS = DeferredRegister.create(BuiltInRegistries.FLUID, MODID);
     public static final DeferredRegister<FluidType> FLUID_TYPES = DeferredRegister.create(NeoForgeRegistries.FLUID_TYPES, MODID);
-/*
-    public static class Types {
-        public static final DeferredHolder<FluidType, VirtualFluidType> MOLTEN_CONCOCTI = registerFluidType("molten_concocti");
-        public static final DeferredHolder<FluidType, VirtualFluidType> MOLTEN_CONCOCTIZED_DIRT = registerFluidType("molten_concoctized_dirt");
-    }*/
 
     public static final DeferredHolder<Fluid, FlowingFluid> MOLTEN_CONCOCTI = FLUIDS.register("molten_concocti", (loc) -> new MoltenConcoctiFluid.Source());
     public static final DeferredHolder<Fluid, FlowingFluid> FLOWING_MOLTEN_CONCOCTI = FLUIDS.register("flowing_molten_concocti", (loc) -> new MoltenConcoctiFluid.Flowing());
@@ -66,9 +61,5 @@ public class ConcoctiFluids {
 
     public static final DeferredBlock<LiquidBlock> MOLTEN_CONCOCTIZED_DIRT_BLOCK = ConcoctiBlocks.registerFluidBlock("molten_concoctized_dirt_block", MOLTEN_CONCOCTIZED_DIRT,
             BlockBehaviour.Properties.ofFullCopy(Blocks.LAVA).mapColor(DyeColor.PURPLE)
-    );
-
-    public static final TagKey<Fluid> SUPPORTED_CONCOCTI_SOLIDIFIER_FLUIDS = TagKey.create(
-            Registries.FLUID, ResourceLocation.fromNamespaceAndPath(MODID, "supported_concocti_solidifier_fluids")
     );
 }

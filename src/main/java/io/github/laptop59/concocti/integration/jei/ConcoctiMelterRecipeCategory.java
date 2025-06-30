@@ -1,6 +1,9 @@
 package io.github.laptop59.concocti.integration.jei;
 
 import io.github.laptop59.concocti.client.gui.components.ArrowProgress;
+import io.github.laptop59.concocti.client.gui.components.RenderInfo;
+import io.github.laptop59.concocti.client.gui.components.Renderable;
+import io.github.laptop59.concocti.client.gui.components.RootComponent;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.recipe.ConcoctiMelterRecipe;
 import mezz.jei.api.constants.VanillaTypes;
@@ -26,13 +29,12 @@ import java.util.List;
 
 import static io.github.laptop59.concocti.common.Concocti.MODID;
 
-public class ConcoctiMelterRecipeCategory implements IRecipeCategory<ConcoctiMelterRecipe> {
+public class ConcoctiMelterRecipeCategory extends AbstractConcoctiRecipeCategory<ConcoctiMelterRecipe> {
 
     private final ResourceLocation texture = ResourceLocation.fromNamespaceAndPath(MODID, "textures/gui/jei/concocti_melter.png");
-    private final IDrawable icon;
 
     public ConcoctiMelterRecipeCategory(IGuiHelper guiHelper) {
-        this.icon = guiHelper.createDrawableIngredient(VanillaTypes.ITEM_STACK, new ItemStack(ConcoctiBlocks.CONCOCTI_MELTER.get()));
+        super(guiHelper, new ItemStack(ConcoctiBlocks.CONCOCTI_MELTER.get()));
     }
 
     @Override
@@ -46,47 +48,8 @@ public class ConcoctiMelterRecipeCategory implements IRecipeCategory<ConcoctiMel
     }
 
     @Override
-    public @Nullable IDrawable getIcon() {
-        return icon;
-    }
-
-    @Override
-    public int getWidth() {
-        return 176 - 8;
-    }
-
-    @Override
-    public int getHeight() {
-        return 36 - 8;
-    }
-
-    @Override
-    public void draw(@NotNull ConcoctiMelterRecipe recipe, @NotNull IRecipeSlotsView recipeSlotsView,
-                     GuiGraphics guiGraphics, double mouseX, double mouseY) {
-        int left = -4;
-        int top = -4;
-        // Draw the background texture.
-        guiGraphics.blit(this.texture, left, top, 0, 0, 176, 36, 176, 36);
-        // Draw the arrow progress.
-        long absoluteTicks = System.currentTimeMillis() / 50;
-        long passedTicks = absoluteTicks % recipe.getTicks();
-        double progress = (double) passedTicks / recipe.getTicks();
-        ArrowProgress.render(guiGraphics, (float) (progress * 23) / 22, left + 75, top + 10);
-    }
-
-    /** Returns whether the cursor is touching the animating arrow. */
-    private boolean isCursorTouchingArrow(double mouseX, double mouseY) {
-        double dx = mouseX - (75 - 4);
-        double dy = mouseY - (10 - 4);
-        return dx >= 0 && dx <= 22 && dy >= 0 && dy <= 16;
-    }
-
-    @Override
-    public void getTooltip(@NotNull ITooltipBuilder tooltip, @NotNull ConcoctiMelterRecipe recipe,
-                           @NotNull IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
-        // Show the duration, if needed.
-        if (isCursorTouchingArrow(mouseX, mouseY))
-            tooltip.add(Component.translatable("screen.concocti.duration", (double) recipe.getTicks() / 20));
+    protected ResourceLocation getTexture() {
+        return texture;
     }
 
     @Override

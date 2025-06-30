@@ -12,9 +12,12 @@ import java.util.function.Supplier;
 public class ConcoctiRecipes {
     /* Recipes & their types are defined in this class. */
 
-    // CONCOCTI MELTER
     public static final DeferredRegister<RecipeType<?>> RECIPE_TYPES =
             DeferredRegister.create(Registries.RECIPE_TYPE, Concocti.MODID);
+    public static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS =
+            DeferredRegister.create(Registries.RECIPE_SERIALIZER, Concocti.MODID);
+
+    // CONCOCTI MELTER
 
     public static final Supplier<RecipeType<ConcoctiMelterRecipe>> CONCOCTI_MELTER_RECIPE_TYPE =
             RECIPE_TYPES.register(
@@ -22,8 +25,17 @@ public class ConcoctiRecipes {
                     // We need the qualifying generic here due to generics being generics.
                     () -> RecipeType.simple(ResourceLocation.fromNamespaceAndPath(Concocti.MODID, "concocti_melter"))
             );
-    public static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS =
-            DeferredRegister.create(Registries.RECIPE_SERIALIZER, Concocti.MODID);
     public static final Supplier<RecipeSerializer<ConcoctiMelterRecipe>> CONCOCTI_MELTER_RECIPE_SERIALIZER =
             RECIPE_SERIALIZERS.register("concocti_melter", ConcoctiMelterRecipe.Serializer::new);
+
+
+    // CONCOCTI SOLIDIFIER
+
+    public static final Supplier<RecipeType<ConcoctiSolidifierRecipe>> CONCOCTI_SOLIDIFIER_RECIPE_TYPE =
+            RECIPE_TYPES.register(
+                    "concocti_solidifier",
+                    () -> RecipeType.simple(ResourceLocation.fromNamespaceAndPath(Concocti.MODID, "concocti_solidifier"))
+            );
+    public static final Supplier<RecipeSerializer<ConcoctiSolidifierRecipe>> CONCOCTI_SOLIDIFIER_RECIPE_SERIALIZER =
+            RECIPE_SERIALIZERS.register("concocti_solidifier", ConcoctiSolidifierRecipe.Serializer::new);
 }

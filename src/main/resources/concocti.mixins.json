@@ -5,6 +5,7 @@
   "mixins": [
     "LivingEntityMixin",
     "PlayerMixin",
+    "DisableDurabilityTooltipMixin",
     "server.ServerGamePacketListenerImplMixin"
   ],
   "client": [

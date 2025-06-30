@@ -17,7 +17,7 @@ import java.util.Optional;
  * A type of slot which only allows Concocti upgrades, or only items
  * specified in the {@code #concocti:concocti_upgrade} item tag.
  */
-public class ConcoctiFrameSlot extends Slot {
+public class ConcoctiFrameSlot extends Slot implements IconSlot {
     public ConcoctiFrameSlot(Container container, int slot, int x, int y) {
         super(container, slot, x, y);
     }
@@ -40,7 +40,7 @@ public class ConcoctiFrameSlot extends Slot {
     }
 
     /**
-     * Adds a item that can be placed in a machine's frame slot into a list of such items.
+     * Adds an item that can be placed in a machine's frame slot into a list of such items.
      * @param frame Item to add.
      * @param attributes Attributes on how this item performs as a frame.
      */
@@ -61,5 +61,10 @@ public class ConcoctiFrameSlot extends Slot {
      */
     public static boolean mayPlaceItem(ItemStack itemStack) {
         return getFrameAttributes(itemStack.getItem()).isPresent();
+    }
+
+    @Override
+    public Icon getIcon() {
+        return Icon.FRAME;
     }
 }

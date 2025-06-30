@@ -1,5 +1,6 @@
 package io.github.laptop59.concocti.common.block.entity;
 
+import io.github.laptop59.concocti.client.gui.components.MachineSettings;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.menu.ConcoctiMelterMenu;
 import io.github.laptop59.concocti.common.recipe.ConcoctiMelterRecipe;
@@ -20,9 +21,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 public class ConcoctiMelterBlockEntity extends AbstractConcoctiMachineBlockEntity
@@ -30,8 +33,18 @@ public class ConcoctiMelterBlockEntity extends AbstractConcoctiMachineBlockEntit
     private static final int INPUT_SLOT = 2;
     public static final int TANK_CAPACITY = 64000;
 
-    private FluidStack pureFluidOutput = FluidStack.EMPTY.copy();
-    private FluidStack byproductFluidOutput = FluidStack.EMPTY.copy();
+    private final FluidTank pureFluidOutput = new FluidTank(TANK_CAPACITY);
+    private final FluidTank byproductFluidOutput = new FluidTank(TANK_CAPACITY);
+
+    @Override
+    public List<IFluidHandler> getIndexedFluidHandlers() {
+        return List.of(pureFluidOutput, byproductFluidOutput);
+    }
+
+    @Override
+    public List<IFluidHandler> getOutputFluidHandlers() {
+        return List.of(pureFluidOutput, byproductFluidOutput);
+    }
 
     public final IFluidHandler fluids = new IFluidHandler() {
         @Override
@@ -42,8 +55,8 @@ public class ConcoctiMelterBlockEntity extends AbstractConcoctiMachineBlockEntit
         @Override
         public @NotNull FluidStack getFluidInTank(int tank) {
             return switch (tank) {
-                case 0 -> pureFluidOutput;
-                case 1 -> byproductFluidOutput;
+                case 0 -> pureFluidOutput.getFluidInTank(0);
+                case 1 -> byproductFluidOutput.getFluidInTank(0);
                 case 2 -> throw new IllegalArgumentException("Expected tank to be 0 or 1, got " + tank + " instead");
                 default -> FluidStack.EMPTY;
             };
@@ -65,32 +78,21 @@ public class ConcoctiMelterBlockEntity extends AbstractConcoctiMachineBlockEntit
         @Override
         public @NotNull FluidStack drain(@NotNull FluidStack resource, @NotNull FluidAction action) {
             int amount;
-            if (resource.is(pureFluidOutput.getFluidType()) && !pureFluidOutput.isEmpty()) {
-                amount = Math.min(resource.getAmount(), pureFluidOutput.getAmount());
-                if (action != FluidAction.SIMULATE) {
-                    pureFluidOutput.setAmount(pureFluidOutput.getAmount() - amount);
-                }
-            } else if (resource.is(byproductFluidOutput.getFluidType()) && !byproductFluidOutput.isEmpty()) {
-                amount = Math.min(resource.getAmount(), byproductFluidOutput.getAmount());
-                if (action != FluidAction.SIMULATE) {
-                    byproductFluidOutput.setAmount(byproductFluidOutput.getAmount() - amount);
-                }
+            if (!pureFluidOutput.isEmpty() && resource.is(pureFluidOutput.getFluid().getFluid())) {
+                return pureFluidOutput.drain(resource, action);
+            } else if (!byproductFluidOutput.isEmpty() && resource.is(byproductFluidOutput.getFluid().getFluid())) {
+                return byproductFluidOutput.drain(resource, action);
             } else {
                 return FluidStack.EMPTY;
             }
-            return new FluidStack(resource.getFluid(), amount);
         }
 
         @Override
         public @NotNull FluidStack drain(int maxDrain, @NotNull FluidAction action) {
-            if (pureFluidOutput.getAmount() > 0) {
-                int amount = Math.min(maxDrain, pureFluidOutput.getAmount());
-                if (action != FluidAction.SIMULATE) pureFluidOutput.setAmount(pureFluidOutput.getAmount() - amount);
-                return new FluidStack(pureFluidOutput.getFluid(), amount);
-            } else if (byproductFluidOutput.getAmount() > 0) {
-                int amount = Math.min(maxDrain, byproductFluidOutput.getAmount());
-                if (action != FluidAction.SIMULATE) byproductFluidOutput.setAmount(byproductFluidOutput.getAmount() - amount);
-                return new FluidStack(byproductFluidOutput.getFluid(), amount);
+            if (!pureFluidOutput.isEmpty()) {
+                return pureFluidOutput.drain(maxDrain, action);
+            } else if (!byproductFluidOutput.isEmpty()) {
+                return byproductFluidOutput.drain(maxDrain, action);
             }
             return new FluidStack(Fluids.EMPTY, 0);
         }
@@ -98,26 +100,26 @@ public class ConcoctiMelterBlockEntity extends AbstractConcoctiMachineBlockEntit
 
     private int recipeFill(@NotNull FluidStack resource) {
         int filled = 0;
-        if (pureFluidOutput.isEmpty() || (resource.is(pureFluidOutput.getFluidType()))) {
-            filled += Math.min(TANK_CAPACITY - pureFluidOutput.getAmount(), resource.getAmount());
+        if (pureFluidOutput.isEmpty() || resource.is(pureFluidOutput.getFluid().getFluid())) {
+            filled += pureFluidOutput.fill(resource, IFluidHandler.FluidAction.SIMULATE);
         }
-        if (byproductFluidOutput.isEmpty() || (resource.is(byproductFluidOutput.getFluidType()))) {
-            filled += Math.min(TANK_CAPACITY - byproductFluidOutput.getAmount(), resource.getAmount());
+        if (byproductFluidOutput.isEmpty() || (resource.is(byproductFluidOutput.getFluid().getFluid()))) {
+            filled += byproductFluidOutput.fill(resource, IFluidHandler.FluidAction.SIMULATE);
         }
         return filled;
     }
 
     private void recipeResultFillSingle(boolean isPureOutput, @NotNull FluidStack resource) {
         int filled;
-        FluidStack output = isPureOutput ? pureFluidOutput : byproductFluidOutput;
-        if (output.isEmpty() || output.getFluid().isSame(resource.getFluid())) {
+        FluidTank output = isPureOutput ? pureFluidOutput : byproductFluidOutput;
+        if (output.isEmpty() || output.getFluid().getFluid().isSame(resource.getFluid())) {
             // Set the fluid to be the resource's fluid.
-            int amount = output.isEmpty() ? 0 : output.getAmount();
+            int amount = output.isEmpty() ? 0 : output.getFluidAmount();
             FluidStack copy = resource.copy();
             if (isPureOutput)
-                pureFluidOutput = copy;
+                pureFluidOutput.setFluid(copy);
             else
-                byproductFluidOutput = copy;
+                byproductFluidOutput.setFluid(copy);
             filled = Math.min(resource.getAmount(), TANK_CAPACITY - amount);
             copy.setAmount(amount + filled);
             resource.setAmount(resource.getAmount() - filled);
@@ -144,10 +146,10 @@ public class ConcoctiMelterBlockEntity extends AbstractConcoctiMachineBlockEntit
                 case 1 -> totalTicks;
                 case 2 -> energy.getEnergyStored();
                 case 3 -> energy.getMaxEnergyStored();
-                case 4 -> BuiltInRegistries.FLUID.getId(pureFluidOutput.getFluid());
-                case 5 -> pureFluidOutput.getAmount();
-                case 6 -> BuiltInRegistries.FLUID.getId(byproductFluidOutput.getFluid());
-                case 7 -> byproductFluidOutput.getAmount();
+                case 4 -> BuiltInRegistries.FLUID.getId(pureFluidOutput.getFluid().getFluid());
+                case 5 -> pureFluidOutput.getFluid().getAmount();
+                case 6 -> BuiltInRegistries.FLUID.getId(byproductFluidOutput.getFluid().getFluid());
+                case 7 -> byproductFluidOutput.getFluid().getAmount();
                 default -> 0;
             };
         }
@@ -157,8 +159,8 @@ public class ConcoctiMelterBlockEntity extends AbstractConcoctiMachineBlockEntit
             switch (index) {
                 case 0 -> ticksLeft = value;
                 case 1 -> totalTicks = value;
-                case 5 -> pureFluidOutput.setAmount(value);
-                case 7 -> byproductFluidOutput.setAmount(value);
+                case 5 -> pureFluidOutput.getFluid().setAmount(value);
+                case 7 -> byproductFluidOutput.getFluid().setAmount(value);
             }
         }
 
@@ -169,9 +171,18 @@ public class ConcoctiMelterBlockEntity extends AbstractConcoctiMachineBlockEntit
     };
 
     public ConcoctiMelterBlockEntity(BlockPos pos, BlockState blockState) {
-        super(pos, blockState, 50000, 10000, 3, ConcoctiBlocks.CONCOCTI_MELTER_BLOCK_ENTITY, 25.0f);
-        pureFluidOutput.limitSize(TANK_CAPACITY);
-        byproductFluidOutput.limitSize(TANK_CAPACITY);
+        super(
+                pos, blockState, 10000, 10000, 3,
+                ConcoctiBlocks.CONCOCTI_MELTER_BLOCK_ENTITY, 25.0f,
+                new MachineSettings(List.of(
+                        MachineSettings.SlotType.ITEM_INPUT,
+                        MachineSettings.SlotType.PURIFIED_FLUID_OUTPUT,
+                        MachineSettings.SlotType.BYPRODUCT_FLUID_OUTPUT,
+                        MachineSettings.SlotType.BOTH_FLUIDS_OUTPUT
+                ))
+        );
+        pureFluidOutput.getFluid().limitSize(TANK_CAPACITY);
+        byproductFluidOutput.getFluid().limitSize(TANK_CAPACITY);
     }
 
     @Override
@@ -248,25 +259,32 @@ public class ConcoctiMelterBlockEntity extends AbstractConcoctiMachineBlockEntit
     @Override
     protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
         super.loadAdditional(tag, registries);
-        this.pureFluidOutput = FluidStack.EMPTY.copy();
-        this.byproductFluidOutput = FluidStack.EMPTY.copy();
+        FluidStack pure = FluidStack.EMPTY.copy();
+        FluidStack byproduct = FluidStack.EMPTY.copy();
 
         CompoundTag fluidStack1 = (CompoundTag) tag.get("pure_fluid_output");
         CompoundTag fluidStack2 = (CompoundTag) tag.get("byproduct_fluid_output");
         if (fluidStack1 != null)
-            this.pureFluidOutput = FluidStack
+            pure = FluidStack
                     .parseOptional(registries, fluidStack1);
         if (fluidStack2 != null)
-            this.byproductFluidOutput = FluidStack
+            byproduct = FluidStack
                     .parseOptional(registries, (CompoundTag) tag.get("byproduct_fluid_output"));
+        pureFluidOutput.setFluid(pure);
+        byproductFluidOutput.setFluid(byproduct);
     }
 
     @Override
     protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
         super.saveAdditional(tag, registries);
         if (!pureFluidOutput.isEmpty())
-            tag.put("pure_fluid_output", pureFluidOutput.save(registries));
+            tag.put("pure_fluid_output", pureFluidOutput.getFluid().save(registries));
         if (!byproductFluidOutput.isEmpty())
-            tag.put("byproduct_fluid_output", byproductFluidOutput.save(registries));
+            tag.put("byproduct_fluid_output", byproductFluidOutput.getFluid().save(registries));
+    }
+
+    @Override
+    public IFluidHandler getFluidTank() {
+        return fluids;
     }
 }

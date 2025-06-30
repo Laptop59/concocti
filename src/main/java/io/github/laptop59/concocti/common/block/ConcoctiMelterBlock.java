@@ -41,7 +41,6 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 
 public class ConcoctiMelterBlock extends AbstractConcoctiMachineBlock {
-    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
     public static final MapCodec<ConcoctiMelterBlock> CODEC = simpleCodec(ConcoctiMelterBlock::new);
@@ -113,33 +112,6 @@ public class ConcoctiMelterBlock extends AbstractConcoctiMachineBlock {
     @Override
     protected @NotNull ItemInteractionResult useItemOnMachine(@NotNull ItemStack stack, @NotNull BlockState state, Level level, @NotNull BlockPos pos,
             @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hitResult) {
-        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof ConcoctiMelterBlockEntity e) {
-            if (stack.is(Items.BUCKET)) {
-                FluidStack fluidStack = e.fluids.getFluidInTank(e.fluids.getFluidInTank(0).getAmount() < 1000 ? 1 : 0)
-                        .copy();
-                fluidStack.setAmount(1000);
-                Item item = fluidStack.getFluid().getBucket();
-                FluidStack fluid = e.fluids.drain(fluidStack, IFluidHandler.FluidAction.SIMULATE);
-                if (!fluid.isEmpty() && fluid.getAmount() == 1000) {
-                    e.fluids.drain(fluid, IFluidHandler.FluidAction.EXECUTE);
-                    stack.shrink(1);
-                    player.addItem(new ItemStack(item));
-                    player.playSound(SoundEvents.BUCKET_EMPTY);
-                    return ItemInteractionResult.SUCCESS;
-                }
-            }
-            IFluidHandlerItem c = stack.getCapability(Capabilities.FluidHandler.ITEM);
-            if (c != null) {
-                FluidStack drained = e.fluids.drain(ConcoctiMelterBlockEntity.TANK_CAPACITY, IFluidHandler.FluidAction.SIMULATE);
-                if (!drained.isEmpty()) {
-                    int filled = c.fill(drained, IFluidHandler.FluidAction.SIMULATE);
-                    if (filled > 0) {
-                        c.fill(e.fluids.drain(drained, IFluidHandler.FluidAction.EXECUTE), IFluidHandler.FluidAction.EXECUTE);
-                        return ItemInteractionResult.SUCCESS;
-                    }
-                }
-            }
-        }
         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
