@@ -2,30 +2,66 @@ package io.github.laptop59.concocti.common.abstraction;
 
 import net.minecraft.world.inventory.ContainerData;
 
+import java.util.List;
 import java.util.function.Consumer;
 
+/**
+ * This class acts as an abstraction over normal {@link ContainerData}s.
+ * An instance of this class allows you to only care about the object's {@link Property} rather than arbitrary indexes.
+ * <p></p>
+ * To extend this class and create your own {@code Complexion}, you can either look at {@link TestComplexion} or follow
+ * these steps:
+ * <p>
+ * 1. Create your own class that extends {@code Complexion}.
+ * <p>
+ * 2. Inside your class put multiple of the following, each being a distinct property as shown below:
+ * <p>
+ *      {@code public static final Property<T> yourPropertyName = ComplexionCodec.CODEC_NAME.unique()}
+ * <p>
+ *    This requires a particular codec and object type. Example:
+ * <p>
+ *     {@code T} = {@code Integer}, {@code CODEC_NAME} = {@code INTEGER}.
+ * <p>
+ * 3. Create your constructors where you will construct your own complexion using its vararg constructor.
+ * <p>
+ * 4. Make sure to override the default constructor.
+ * <p>
+ * 5. Your {@code Complexion} can now act as a ContainerData
+ *    and abstract over its integers!
+ */
 public class Complexion implements ContainerData {
     protected final int sizeIntegers;
     protected final int[] data;
-    protected final Property<?>[] codecs;
+    protected final Property<?>[] properties;
     protected int pointer;
 
     /** Creates a new {@code Complexion} instance with the specified codecs and values. */
-    protected Complexion(ValuedComplexionCodec<?>... valuedComplexionCodecs) {
+    public Complexion(ValuedComplexionCodec<?>... valuedComplexionCodecs) {
         int totalSize = 0;
         for (ValuedComplexionCodec<?> valuedComplexionCodec : valuedComplexionCodecs) {
             int size = valuedComplexionCodec.complexionCodec().codec().size();
             totalSize += size;
         }
         data = new int[totalSize];
-        codecs = new Property[valuedComplexionCodecs.length];
+        properties = new Property[valuedComplexionCodecs.length];
         int i = 0;
         for (ValuedComplexionCodec<?> valuedComplexionCodec : valuedComplexionCodecs) {
-            codecs[i] = valuedComplexionCodec.complexionCodec();
+            properties[i] = valuedComplexionCodec.complexionCodec();
             encodeValuedCodec(valuedComplexionCodec);
             i++;
         }
         this.sizeIntegers = totalSize;
+    }
+
+    public Complexion(int[] data, List<Property<?>> properties) {
+        this.data = data;
+        this.properties = new Property[properties.size()];
+        int i = 0;
+        for (Property<?> property : properties) {
+            this.properties[i] = property;
+            i++;
+        }
+        this.sizeIntegers = data.length;
     }
 
     protected Complexion() {
@@ -46,7 +82,7 @@ public class Complexion implements ContainerData {
 
     protected int pointerAt(Property<?> complexionCodec) {
         int pointer = 0;
-        for (Property<?> c : codecs) {
+        for (Property<?> c : properties) {
             if (c == complexionCodec) return pointer;
             pointer += c.codec().size();
         }
@@ -63,6 +99,9 @@ public class Complexion implements ContainerData {
      * @return The value stored in the property in the complexion.
      * */
     public <T> T get(Property<T> complexionCodec) {
+        Linker<T> linker = complexionCodec.linker();
+        if (linker != null)
+            return linker.getLinkedObject();
         // First, get the pointer right before the codec and set it.
         pointer = pointerAt(complexionCodec);
         // Then decode.
@@ -79,6 +118,7 @@ public class Complexion implements ContainerData {
      * @param value The new value.
      * */
     public <T> void set(Property<T> complexionCodec, T value) {
+        Linker<T> linker = complexionCodec.linker();
         // First, get the pointer right before the codec and set it.
         pointer = pointerAt(complexionCodec);
         // Then encode.
@@ -144,7 +184,29 @@ public class Complexion implements ContainerData {
 
     @Override
     public int get(int index) {
+        // Get the property associated with this integer.
+        int pointer = 0;
+        for (Property<?> property : properties) {
+            if (pointer >= index) {
+                if (serializeIfLinked(property)) {
+                    return data[index];
+                }
+            }
+            pointer += property.codec().size();
+        }
         return data[index];
+    }
+
+    /** Serializes an object if linked and returns whether it was serialized or not. */
+    protected <T> boolean serializeIfLinked(Property<T> property) {
+        // Check if this property is linked.
+        Linker<T> linker = property.linker();
+        if (linker != null) {
+            this.pointer = pointerAt(property);
+            property.codec().serialize(linker.getLinkedObject(), this);
+            return true;
+        }
+        return false;
     }
 
     @Override

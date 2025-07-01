@@ -1,6 +1,10 @@
 package io.github.laptop59.concocti.common.block.entity;
 
 import io.github.laptop59.concocti.client.gui.components.MachineSettings;
+import io.github.laptop59.concocti.common.abstraction.Complexion;
+import io.github.laptop59.concocti.common.abstraction.ComplexionCodec;
+import io.github.laptop59.concocti.common.abstraction.Properties;
+import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.menu.ConcoctiMelterMenu;
 import io.github.laptop59.concocti.common.recipe.ConcoctiMelterRecipe;
@@ -35,6 +39,12 @@ public class ConcoctiMelterBlockEntity extends AbstractConcoctiMachineBlockEntit
 
     private final FluidTank pureFluidOutput = new FluidTank(TANK_CAPACITY);
     private final FluidTank byproductFluidOutput = new FluidTank(TANK_CAPACITY);
+
+    // Properties
+    public final Property<Integer> ENERGY_STORED = Properties.ENERGY_STORED.newWithLinker(() -> energy.getEnergyStored());
+    public final Property<Integer> MAX_ENERGY_STORED = Properties.MAX_ENERGY_STORED.newWithLinker(() -> energy.getMaxEnergyStored());
+    public final Property<FluidStack> PURE_FLUID_OUTPUT = Properties.PURE_FLUID_OUTPUT.newWithLinker(pureFluidOutput::getFluid);
+    public final Property<FluidStack> BYPRODUCT_FLUID_OUTPUT = Properties.BYPRODUCT_FLUID_OUTPUT.newWithLinker(byproductFluidOutput::getFluid);
 
     @Override
     public List<IFluidHandler> getIndexedFluidHandlers() {
@@ -77,7 +87,6 @@ public class ConcoctiMelterBlockEntity extends AbstractConcoctiMachineBlockEntit
 
         @Override
         public @NotNull FluidStack drain(@NotNull FluidStack resource, @NotNull FluidAction action) {
-            int amount;
             if (!pureFluidOutput.isEmpty() && resource.is(pureFluidOutput.getFluid().getFluid())) {
                 return pureFluidOutput.drain(resource, action);
             } else if (!byproductFluidOutput.isEmpty() && resource.is(byproductFluidOutput.getFluid().getFluid())) {
@@ -138,37 +147,14 @@ public class ConcoctiMelterBlockEntity extends AbstractConcoctiMachineBlockEntit
         return slot == INPUT_SLOT;
     }
 
-    protected final ContainerData dataAccess = new ContainerData() {
-        @Override
-        public int get(int index) {
-            return switch (index) {
-                case 0 -> ticksLeft;
-                case 1 -> totalTicks;
-                case 2 -> energy.getEnergyStored();
-                case 3 -> energy.getMaxEnergyStored();
-                case 4 -> BuiltInRegistries.FLUID.getId(pureFluidOutput.getFluid().getFluid());
-                case 5 -> pureFluidOutput.getFluid().getAmount();
-                case 6 -> BuiltInRegistries.FLUID.getId(byproductFluidOutput.getFluid().getFluid());
-                case 7 -> byproductFluidOutput.getFluid().getAmount();
-                default -> 0;
-            };
-        }
-
-        @Override
-        public void set(int index, int value) {
-            switch (index) {
-                case 0 -> ticksLeft = value;
-                case 1 -> totalTicks = value;
-                case 5 -> pureFluidOutput.getFluid().setAmount(value);
-                case 7 -> byproductFluidOutput.getFluid().setAmount(value);
-            }
-        }
-
-        @Override
-        public int getCount() {
-            return 8;
-        }
-    };
+    protected final Complexion dataAccess = new Complexion(
+            TICKS_LEFT.of(0),
+            TOTAL_TICKS.of(0),
+            ENERGY_STORED.of(0),
+            MAX_ENERGY_STORED.of(0),
+            PURE_FLUID_OUTPUT.of(FluidStack.EMPTY),
+            BYPRODUCT_FLUID_OUTPUT.of(FluidStack.EMPTY)
+    );
 
     public ConcoctiMelterBlockEntity(BlockPos pos, BlockState blockState) {
         super(

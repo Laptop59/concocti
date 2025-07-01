@@ -1,15 +1,26 @@
 package io.github.laptop59.concocti.common.abstraction;
 
 import io.github.laptop59.concocti.client.gui.components.MachineSettings;
+import io.github.laptop59.concocti.client.gui.components.MachineSettingsSlots;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.EnumMap;
-import java.util.List;
-
-/** A blueprint for the conversion of a Java object to and fro integers. */
+/**
+ * A blueprint for the conversion of a Java object to and fro integers.
+ * <p></p>
+ * A codec encodes and decodes integers in a certain order to convert to and fro their objects.
+ * For example, the codec {@link ComplexionCodec#BOOLEAN} encodes a boolean into an integer and decodes
+ * from an integer into a boolean.
+ * <p></p>
+ * To create a unique property from this codec, use the method {@link ComplexionCodec#unique()} and
+ * store it statically in your class.
+ *
+ * @see Complexion
+ * @see ValuedComplexionCodec
+ * @see Property
+ * */
 public record ComplexionCodec<T>(
         int size,
         ComplexionSerializer<T> serializer,
@@ -129,20 +140,10 @@ public record ComplexionCodec<T>(
             "SLOT_TYPE"
     );
 
-    // This can be any arbitrary ordered list, but we do need a constant standard.
-    private static final List<Direction> slotsOrder = List.of(
-            Direction.NORTH,
-            Direction.SOUTH,
-            Direction.UP,
-            Direction.DOWN,
-            Direction.WEST,
-            Direction.EAST
-    );
-
-    public static final ComplexionCodec<EnumMap<Direction, MachineSettings.SlotType>> MACHINE_SETTINGS_SLOTS = new ComplexionCodec<>(
+    public static final ComplexionCodec<MachineSettingsSlots> MACHINE_SETTINGS_SLOTS = new ComplexionCodec<>(
         6, // each slot occupies 1 integer.
             (object, instance) -> {
-                for (Direction direction : slotsOrder) {
+                for (Direction direction : MachineSettingsSlots.SLOTS_ORDER) {
                     SLOT_TYPE.serialize(
                             object.get(direction),
                             instance
@@ -150,8 +151,8 @@ public record ComplexionCodec<T>(
                 }
             },
             instance -> {
-                EnumMap<Direction, MachineSettings.SlotType> map = new EnumMap<>(Direction.class);
-                for (Direction direction : slotsOrder) {
+                MachineSettingsSlots map = new MachineSettingsSlots();
+                for (Direction direction : MachineSettingsSlots.SLOTS_ORDER) {
                     map.put(direction, SLOT_TYPE.deserialize(instance));
                 }
                 return map;
@@ -174,9 +175,15 @@ public record ComplexionCodec<T>(
         serializer.serialize(object, instance);
     }
 
-    /** Creates a unique complexion codec whose identity cannot be recreated. */
+    /** Creates a unique complexion codec, now called a {@code Property}, whose identity cannot be recreated. */
     public Property<T> unique() {
         return new Property<>(this);
+    }
+
+    /** Creates a unique complexion codec, now called a {@code Property}, whose identity cannot be recreated. This
+     * also loosely links to an object. */
+    public <O> Property<T> link(Linker<T> linker) {
+        return new Property<>(this, linker);
     }
 
     @Override
