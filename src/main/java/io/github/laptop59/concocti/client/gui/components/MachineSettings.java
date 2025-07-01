@@ -8,12 +8,12 @@ import java.util.List;
 
 public class MachineSettings {
     final List<SlotType> availableTypes;
-    public final EnumMap<Direction, SlotType> slots;
+    public final MachineSettingsSlots slots;
 
     /**
      * Creates a new {@code MachineSettings} object based only on the available slot types.
      * <p></p>
-     * Note: {@code availableTypes} should exclude {@link SlotType}{@code .NONE}!
+     * Note: {@code availableTypes} should exclude {@link SlotType#NONE}!
      * @param availableTypes The slot types to include, excluding {@code NONE} which is already included.
      */
     public MachineSettings(List<SlotType> availableTypes) {
@@ -23,8 +23,8 @@ public class MachineSettings {
         slots = emptySlots();
     }
 
-    public static EnumMap<Direction, SlotType> emptySlots() {
-        EnumMap<Direction, SlotType> slots = new EnumMap<>(Direction.class);
+    public static MachineSettingsSlots emptySlots() {
+        MachineSettingsSlots slots = new MachineSettingsSlots();
         for (Direction direction : Direction.values())
             slots.put(direction, SlotType.NONE);
         return slots;

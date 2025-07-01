@@ -2,6 +2,9 @@ package io.github.laptop59.concocti.common.block.entity;
 
 import io.github.laptop59.concocti.client.gui.components.MachineSettings;
 import io.github.laptop59.concocti.client.gui.components.MachineSettingsComponent;
+import io.github.laptop59.concocti.common.abstraction.ComplexionCodec;
+import io.github.laptop59.concocti.common.abstraction.Properties;
+import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.frame.FrameAttributes;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.menu.ConcoctiFrameSlot;
@@ -61,6 +64,10 @@ public abstract class AbstractConcoctiMachineBlockEntity
     float rateConsumption;
 
     public final MachineSettings machineSettings;
+
+    // Properties
+    public final Property<Integer> TICKS_LEFT = Properties.TICKS_LEFT.newWithLinker(() -> ticksLeft);
+    public final Property<Integer> TOTAL_TICKS = Properties.TOTAL_TICKS.newWithLinker(() -> totalTicks);
 
     @Override
     protected final boolean isItemValid(int slot, @NotNull ItemStack stack) {

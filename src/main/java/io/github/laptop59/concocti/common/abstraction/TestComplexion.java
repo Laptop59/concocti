@@ -1,6 +1,7 @@
 package io.github.laptop59.concocti.common.abstraction;
 
 import io.github.laptop59.concocti.client.gui.components.MachineSettings;
+import io.github.laptop59.concocti.client.gui.components.MachineSettingsSlots;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -17,7 +18,7 @@ public class TestComplexion extends Complexion {
     public final static Property<Float> F = ComplexionCodec.FLOAT.unique();
     public final static Property<Double> G = ComplexionCodec.DOUBLE.unique();
     public final static Property<Character> H = ComplexionCodec.CHARACTER.unique();
-    public final static Property<EnumMap<Direction, MachineSettings.SlotType>> I = ComplexionCodec.MACHINE_SETTINGS_SLOTS.unique();
+    public final static Property<MachineSettingsSlots> I = ComplexionCodec.MACHINE_SETTINGS_SLOTS.unique();
 
     /* Not required, just for testing purposes. */
     public final static Property<?>[] PROPERTIES = {A, B, C, D, E, F, G, H, I};
@@ -36,7 +37,7 @@ public class TestComplexion extends Complexion {
         );
     }
 
-    public TestComplexion(int a, int b, byte c, short d, long e, float f, double g, char h, EnumMap<Direction, MachineSettings.SlotType> i) {
+    public TestComplexion(int a, int b, byte c, short d, long e, float f, double g, char h, MachineSettingsSlots i) {
         super(
                 A.of(a),
                 B.of(b),
@@ -65,6 +66,10 @@ public class TestComplexion extends Complexion {
         testComplexion.edit(I, map -> {
             map.put(Direction.UP, MachineSettings.SlotType.BASE_ITEM_INPUT);
             map.put(Direction.EAST, MachineSettings.SlotType.PURIFIED_FLUID_OUTPUT);
+        });
+        testComplexion.edit(I, map -> {
+            map.put(Direction.DOWN, MachineSettings.SlotType.FLUID_INPUT);
+            return map;
         });
         System.out.println("After: " + testComplexion.get(I));
     }

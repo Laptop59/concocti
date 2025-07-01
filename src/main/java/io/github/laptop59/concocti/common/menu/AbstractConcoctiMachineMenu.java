@@ -1,6 +1,8 @@
 package io.github.laptop59.concocti.common.menu;
 
 import io.github.laptop59.concocti.client.gui.components.MachineSettings;
+import io.github.laptop59.concocti.common.abstraction.ComplexionViewer;
+import io.github.laptop59.concocti.common.abstraction.Properties;
 import io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
@@ -30,6 +32,7 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
 
     protected final Container container;
     protected final ContainerData data;
+    public ComplexionViewer viewer;
 
     public AbstractConcoctiMachineMenu(
             int containerId, Inventory playerInventory, int containerSize, int dataSize, Supplier<MenuType<T>> menuSupplier
@@ -164,8 +167,8 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
     }
 
     public float getProgress() {
-        int left = this.data.get(0);
-        int total = this.data.get(1);
+        int left = viewer.get(Properties.TICKS_LEFT);
+        int total = viewer.get(Properties.TOTAL_TICKS);
         return left != 0 && total != 0 ? Mth.clamp((float) (total - left) / total, 0.0F, 1.0F) : 0.0F;
     }
 
