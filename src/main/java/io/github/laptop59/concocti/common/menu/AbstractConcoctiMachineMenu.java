@@ -1,8 +1,11 @@
 package io.github.laptop59.concocti.common.menu;
 
 import io.github.laptop59.concocti.client.gui.components.MachineSettings;
+import io.github.laptop59.concocti.client.gui.components.MachineSettingsSlots;
+import io.github.laptop59.concocti.common.abstraction.Complexion;
 import io.github.laptop59.concocti.common.abstraction.ComplexionViewer;
 import io.github.laptop59.concocti.common.abstraction.Properties;
+import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
@@ -16,8 +19,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,19 +36,44 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
     protected final ContainerData data;
     public ComplexionViewer viewer;
 
+    // client constructor
     public AbstractConcoctiMachineMenu(
-            int containerId, Inventory playerInventory, int containerSize, int dataSize, Supplier<MenuType<T>> menuSupplier
+            int containerId, Inventory playerInventory, int containerSize, Supplier<MenuType<T>> menuSupplier
     ) {
-        this(containerId, playerInventory, new SimpleContainer(containerSize), new SimpleContainerData(dataSize), menuSupplier);
+        this(containerId, playerInventory, new SimpleContainer(containerSize), menuSupplier, false);
+        initializeViewer((SimpleContainerData) this.data);
     }
 
+    // server constructor
     public AbstractConcoctiMachineMenu(
             int containerId, Inventory playerInventory, Container container, ContainerData data,
-                                       Supplier<MenuType<T>> menuSupplier) {
+            Supplier<MenuType<T>> menuSupplier) {
+        this(containerId, playerInventory, container, data, menuSupplier, false);
+        initializeViewer((Complexion) data);
+    }
+
+
+    private AbstractConcoctiMachineMenu(
+            int containerId, Inventory playerInventory, Container container,
+            Supplier<MenuType<T>> menuSupplier, boolean ignoredViewer) {
+        super(menuSupplier.get(), containerId);
+        this.container = container;
+        this.data = new SimpleContainerData(getPropertiesSize());
+        // Place the machine, player inventory and hotbar slots.
+        addSlots(playerInventory);
+    }
+
+    private AbstractConcoctiMachineMenu(
+            int containerId, Inventory playerInventory, Container container, ContainerData data,
+                                       Supplier<MenuType<T>> menuSupplier, boolean ignoredViewer) {
         super(menuSupplier.get(), containerId);
         this.container = container;
         this.data = data;
         // Place the machine, player inventory and hotbar slots.
+        addSlots(playerInventory);
+    }
+
+    protected void addSlots(Inventory playerInventory) {
         this.addSlot(new ConcoctiUpgradeSlot(container, 0, 153, 7));
         this.addSlot(new ConcoctiFrameSlot(container, 1, 153, 7 + 18));
         this.addOtherSlots();
@@ -64,24 +91,45 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
         this.addDataSlots(data);
     }
 
-    /** Gets the block entity associated with this menu. */
-    public AbstractConcoctiMachineBlockEntity<?, ?, ?, ?, ?> getBlockEntity() {
-        return (AbstractConcoctiMachineBlockEntity<?, ?, ?, ?, ?>) container;
+    /** Gets all properties synced by a {@link ContainerData} for this menu. */
+    @Contract(pure = true)
+    public abstract List<Property<?>> getProperties();
+
+    protected int getPropertiesSize() {
+        int size = 0;
+        for (Property<?> property : getProperties())
+            size += property.codec().size();
+        return size;
     }
 
-    /** Gets the machine settings associated with this menu. */
-    public MachineSettings getMachineSettings() {
-        AbstractConcoctiMachineBlockEntity<?, ?, ?, ?, ?> abstractConcoctiMachineBlockEntity
-                = getBlockEntity();
-        return abstractConcoctiMachineBlockEntity.machineSettings;
+    protected void initializeViewer(SimpleContainerData containerData) {
+        AbstractConcoctiMachineMenu<T> menu = this;
+        viewer = new ComplexionViewer(containerData) {
+            @Override
+            public List<Property<?>> getProperties() {
+                return menu.getProperties();
+            }
+        };
+    }
+
+    protected void initializeViewer(Complexion containerData) {
+        AbstractConcoctiMachineMenu<T> menu = this;
+        viewer = new ComplexionViewer(containerData) {
+            @Override
+            public List<Property<?>> getProperties() {
+                return menu.getProperties();
+            }
+        };
+    }
+
+    /** Gets the machine settings slots associated with this menu. */
+    public MachineSettingsSlots getMachineSettingsSlots() {
+        return viewer.get(Properties.MACHINE_SETTINGS_SLOTS);
     }
 
     /** Gets the facing direction of this machine. */
     public Direction getFacingDirection() {
-        AbstractConcoctiMachineBlockEntity<?, ?, ?, ?, ?> abstractConcoctiMachineBlockEntity
-                = getBlockEntity();
-        BlockState blockState = abstractConcoctiMachineBlockEntity.getBlockState();
-        return blockState.getValue(AbstractConcoctiMachineBlock.FACING);
+        return viewer.get(Properties.FACING_DIRECTION);
     }
 
     /**
@@ -173,7 +221,11 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
     }
 
     /** Returns the amount of energy/maximum energy left in this block. */
-    public abstract int getNumberEnergyLeft(boolean max);
+    public int getNumberEnergyLeft(boolean max) {
+        Property<Integer> property =
+                max ? Properties.MAX_ENERGY_STORED : Properties.ENERGY_STORED;
+        return viewer.get(property);
+    }
 
     public ConcoctiUpgradeSlot getUpgradeSlot() { return (ConcoctiUpgradeSlot) this.getSlot(0); }
     public ConcoctiFrameSlot getFrameSlot() { return (ConcoctiFrameSlot) this.getSlot(1); }

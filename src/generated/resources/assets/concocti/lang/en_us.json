@@ -38,6 +38,7 @@
   "item.concocti.tough_concocti_nugget": "Tough Concocti Nugget",
   "itemGroup.concocti": "Concocti",
   "screen.concocti.close_machine_settings": "Close Machine Settings",
+  "screen.concocti.durability_info": "Durability: %s/%s",
   "screen.concocti.duration": "Duration: %ss",
   "screen.concocti.energy_bar": "Energy: %s/%s FE",
   "screen.concocti.fluid_amount": "%s mB",

@@ -1,40 +1,47 @@
 package io.github.laptop59.concocti.common.menu;
 
-import io.github.laptop59.concocti.client.gui.components.MachineSettings;
+import io.github.laptop59.concocti.common.abstraction.Properties;
+import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.entity.ConcoctiSolidifierBlockEntity;
-import io.github.laptop59.concocti.common.item.ConcoctiItems;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.fluids.FluidStack;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 public class ConcoctiSolidifierMenu extends AbstractConcoctiMachineMenu<ConcoctiSolidifierMenu> {
 
+    @Contract(pure = true)
+    @Override
+    public List<Property<?>> getProperties() {
+        return List.of(
+                Properties.TICKS_LEFT,
+                Properties.TOTAL_TICKS,
+                Properties.ENERGY_STORED,
+                Properties.MAX_ENERGY_STORED,
+                Properties.FACING_DIRECTION,
+                Properties.MACHINE_SETTINGS_SLOTS,
+                Properties.FLUID_INPUT
+        );
+    }
+
+    // Client
     public ConcoctiSolidifierMenu(
             int containerId, Inventory playerInventory
     ) {
-        this(containerId, playerInventory, new SimpleContainer(5), new SimpleContainerData(6));
+        super(containerId, playerInventory, 5, ConcoctiMenus.CONCOCTI_SOLIDIFIER_MENU);
     }
 
+    // Server
     public ConcoctiSolidifierMenu(int containerId, Inventory playerInventory, Container container, ContainerData data) {
         super(containerId, playerInventory, container, data, ConcoctiMenus.CONCOCTI_SOLIDIFIER_MENU);
-        // Container data:
-        // 0 - ticks left to melt item.
-        // 1 - total ticks needed to melt item.
-        // 2 - energy stored in the melter.
-        // 3 - maximum energy storable in the melter.
-        // 4 - fluid id
-        // 5 - fluid amount
     }
 
     @Override
@@ -60,14 +67,10 @@ public class ConcoctiSolidifierMenu extends AbstractConcoctiMachineMenu<Concocti
     }
 
     public FluidStack getInputFluidStack() {
-        return new FluidStack(BuiltInRegistries.FLUID.byId(this.data.get(4)), this.data.get(5));
+        return viewer.get(Properties.FLUID_INPUT);
     }
 
     public int getMaxFluidLeft() {
         return ConcoctiSolidifierBlockEntity.TANK_CAPACITY;
-    }
-
-    public int getNumberEnergyLeft(boolean max) {
-        return this.data.get(max ? 3 : 2);
     }
 }

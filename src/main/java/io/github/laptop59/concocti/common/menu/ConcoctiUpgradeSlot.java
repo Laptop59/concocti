@@ -36,10 +36,6 @@ public class ConcoctiUpgradeSlot extends Slot implements IconSlot {
         upgradeUnits.put(item.get(), units);
     }
 
-    public int getUpgradeUnits() {
-        return ConcoctiUpgradeSlot.getUpgradeUnits(this.getItem());
-    }
-
     public static int getUpgradeUnits(ItemStack stack) {
         return Math.clamp((long) upgradeUnits.getOrDefault(stack.getItem(), 0) * stack.getCount(), 0, 100);
     }

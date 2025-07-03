@@ -7,9 +7,6 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
-import java.util.UUID;
-
 import static io.github.laptop59.concocti.common.Concocti.MODID;
 
 /** A payload called when a player attempts to fill/drain a fluid tank of a block. */

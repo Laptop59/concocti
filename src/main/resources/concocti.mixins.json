@@ -3,9 +3,9 @@
   "package": "io.github.laptop59.concocti.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "DisableDurabilityTooltipMixin",
     "LivingEntityMixin",
     "PlayerMixin",
-    "DisableDurabilityTooltipMixin",
     "server.ServerGamePacketListenerImplMixin"
   ],
   "client": [

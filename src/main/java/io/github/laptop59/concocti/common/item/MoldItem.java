@@ -1,6 +1,5 @@
 package io.github.laptop59.concocti.common.item;
 
-import io.github.laptop59.concocti.common.menu.ConcoctiUpgradeSlot;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;

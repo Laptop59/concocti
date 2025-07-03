@@ -8,7 +8,7 @@ import java.util.List;
 
 public class MachineSettings {
     final List<SlotType> availableTypes;
-    public final MachineSettingsSlots slots;
+    public MachineSettingsSlots slots;
 
     /**
      * Creates a new {@code MachineSettings} object based only on the available slot types.
@@ -24,10 +24,7 @@ public class MachineSettings {
     }
 
     public static MachineSettingsSlots emptySlots() {
-        MachineSettingsSlots slots = new MachineSettingsSlots();
-        for (Direction direction : Direction.values())
-            slots.put(direction, SlotType.NONE);
-        return slots;
+        return new MachineSettingsSlots();
     }
 
     /**
@@ -62,9 +59,9 @@ public class MachineSettings {
      * @param direction The direction of the block face.
      */
     public void cycleSlotNext(Direction direction) {
-        int ordinal = getSlot(direction).ordinal() + 1;
-        if (SlotType.values().length <= ordinal) ordinal = 0;
-        setSlot(direction, SlotType.values()[ordinal]);
+        int ordinal = availableTypes.indexOf(getSlot(direction)) + 1;
+        if (availableTypes.size() <= ordinal) ordinal = 0;
+        setSlot(direction, availableTypes.get(ordinal));
     }
 
     /**
@@ -72,9 +69,9 @@ public class MachineSettings {
      * @param direction The direction of the block face.
      */
     public void cycleSlotPrevious(Direction direction) {
-        int ordinal = getSlot(direction).ordinal() - 1;
-        if (ordinal < 0) ordinal = SlotType.values().length - 1;
-        setSlot(direction, SlotType.values()[ordinal]);
+        int ordinal = availableTypes.indexOf(getSlot(direction)) - 1;
+        if (ordinal < 0) ordinal = availableTypes.size() - 1;
+        setSlot(direction, availableTypes.get(ordinal));
     }
 
     /**
@@ -89,42 +86,4 @@ public class MachineSettings {
             cycleSlotPrevious(direction);
     }
 
-    public enum SlotType {
-        NONE(0, 0xFFE7E7E7),
-        ITEM_INPUT(100, 0xFFFFC9C9),
-        ITEM_OUTPUT(101, 0xFFFFA1A1),
-        FLUID_INPUT(201, 0xFFC9C9FF),
-        FLUID_OUTPUT(202, 0xFFFFA1FF),
-        PURIFIED_FLUID_OUTPUT(301, 0xFFF6D5FF),
-        BYPRODUCT_FLUID_OUTPUT(302, 0xFFE9D5FF),
-        BOTH_FLUIDS_OUTPUT(303, 0xFFFFD5F4),
-        BASE_ITEM_INPUT(401, 0xFFFFC9C9),
-        MOLD_ITEM_INPUT(402, 0xFFFFEDB5);
-
-        final int id;
-        final int color;
-
-        SlotType(int id, int color) {
-            this.id = id;
-            this.color = color;
-        }
-
-        /** Gets the internal integral ID of this slot type. */
-        public int getId() {
-            return id;
-        }
-
-        /**
-         * Returns a {@code SlotType} by its internal integral ID.
-         * @param id The internal integral ID to search for.
-         * @return The requested {@code SlotType}.
-         * @throws IllegalArgumentException If invalid ID was given.
-         */
-        public static SlotType byId(int id) {
-            for (SlotType type : SlotType.values())
-                if (type.id == id)
-                    return type;
-            throw new IllegalArgumentException("Invalid SlotType ID was given: " + id);
-        }
-    }
 }

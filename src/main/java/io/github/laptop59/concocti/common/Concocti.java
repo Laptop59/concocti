@@ -4,18 +4,25 @@ import com.mojang.logging.LogUtils;
 import io.github.laptop59.concocti.client.gui.ConcoctiMelterScreen;
 import io.github.laptop59.concocti.client.gui.ConcoctiSolidifierScreen;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
+import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
+import io.github.laptop59.concocti.common.block.entity.AbstractPoweredBlockEntity;
+import io.github.laptop59.concocti.common.block.entity.FluidHandlerBlockEntity;
+import io.github.laptop59.concocti.common.block.entity.ItemHandlerBlockEntity;
 import io.github.laptop59.concocti.common.effect.ConcoctizedMobEffect;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.menu.ConcoctiMenus;
 import io.github.laptop59.concocti.common.recipe.ConcoctiRecipes;
 import io.github.laptop59.concocti.network.*;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -136,13 +143,21 @@ public class Concocti {
 
     @SubscribeEvent
     private static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ConcoctiBlocks.CONCOCTI_MELTER_BLOCK_ENTITY.get(), (o, direction) -> o.energy);
-        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, ConcoctiBlocks.CONCOCTI_MELTER_BLOCK_ENTITY.get(), (o, direction) -> o.fluids);
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ConcoctiBlocks.CONCOCTI_MELTER_BLOCK_ENTITY.get(), (o, direction) -> o.itemHandler);
-
-        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ConcoctiBlocks.CONCOCTI_SOLIDIFIER_BLOCK_ENTITY.get(), (o, direction) -> o.energy);
-        // event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, ConcoctiBlocks.CONCOCTI_MELTER_BLOCK_ENTITY.get(), (o, direction) -> o.fluids);
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ConcoctiBlocks.CONCOCTI_SOLIDIFIER_BLOCK_ENTITY.get(), (o, direction) -> o.itemHandler);
+        ConcoctiBlocks.BLOCK_ENTITY_TYPES.getEntries().forEach(blockEntityTypeDeferredHolder -> {
+            BlockEntityType<?> type = blockEntityTypeDeferredHolder.get();
+            event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, type,
+                    (o, direction) -> ((AbstractPoweredBlockEntity) o).energy);
+            event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, type, (o, direction) -> {
+                if (o instanceof FluidHandlerBlockEntity fluidHandlerBlockEntity)
+                    return fluidHandlerBlockEntity.getSidedFluidHandler(direction);
+                return null; // Nothing happens if null is returned, at least that's what I think.
+            });
+            event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, type, (o, direction) -> {
+                if (o instanceof ItemHandlerBlockEntity itemHandlerBlockEntity)
+                    return itemHandlerBlockEntity.getSidedItemHandler(direction);
+                return null; // Nothing happens if null is returned, at least that's what I think.
+            });
+        });
     }
 
 }

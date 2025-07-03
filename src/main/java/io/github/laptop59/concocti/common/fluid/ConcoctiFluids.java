@@ -2,9 +2,6 @@ package io.github.laptop59.concocti.common.fluid;
 
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;

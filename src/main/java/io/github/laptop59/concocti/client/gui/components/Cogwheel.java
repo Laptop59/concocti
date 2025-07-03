@@ -1,6 +1,5 @@
 package io.github.laptop59.concocti.client.gui.components;
 
-import io.github.laptop59.concocti.client.gui.AbstractConcoctiMachineScreen;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;

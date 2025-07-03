@@ -5,16 +5,12 @@ import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.menu.ConcoctiFrameSlot;
 import io.github.laptop59.concocti.common.menu.ConcoctiUpgradeSlot;
 import io.github.laptop59.concocti.common.menu.IconSlot;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.gui.screens.inventory.tooltip.ClientBundleTooltip;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
@@ -148,15 +144,15 @@ public abstract class AbstractConcoctiMachineScreen<M extends AbstractConcoctiMa
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         RenderInfo renderInfo = new RenderInfo((int) mouseX, (int) mouseY, leftPos, topPos, font);
-        if (!isMinecraftAbstractContainerUsableHere(renderInfo)) {
-            return true;
-        }
         for (Renderable renderable : getChildren()) {
             // Only check for clickable components.
             if (renderable instanceof ClickableComponent clickable) {
                 if (renderable.getActualRenderInfo(renderInfo).isHovering(renderable.getWidth(), renderable.getHeight()) &&
                     clickable.onMouseClick(mouseX - leftPos, mouseY - topPos, button, this, menu)) return true;
             }
+        }
+        if (!isMinecraftAbstractContainerUsableHere(renderInfo)) {
+            return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);
     }

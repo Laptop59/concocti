@@ -1,8 +1,9 @@
 package io.github.laptop59.concocti.common.block.entity;
 
 import io.github.laptop59.concocti.client.gui.components.MachineSettings;
-import io.github.laptop59.concocti.client.gui.components.MachineSettingsComponent;
-import io.github.laptop59.concocti.common.abstraction.ComplexionCodec;
+import io.github.laptop59.concocti.client.gui.components.MachineSettingsSlots;
+import io.github.laptop59.concocti.client.gui.components.SlotFlag;
+import io.github.laptop59.concocti.client.gui.components.SlotType;
 import io.github.laptop59.concocti.common.abstraction.Properties;
 import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.frame.FrameAttributes;
@@ -11,16 +12,17 @@ import io.github.laptop59.concocti.common.menu.ConcoctiFrameSlot;
 import io.github.laptop59.concocti.common.menu.ConcoctiUpgradeSlot;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
-import net.minecraft.world.inventory.StackedContentsCompatible;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeInput;
@@ -28,20 +30,25 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.items.IItemHandler;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import static io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock.FACING;
 import static io.github.laptop59.concocti.common.block.ConcoctiMelterBlock.LIT;
 
 /**
  * A class that serves as a base for Concocti Machines. <p>
- * Any {@link ContainerData} will have to be stored by the extending classes. Indices:<p>
- * {@code 0} - should give {@code ticksLeft}.<p>
- * {@code 1} - should give {@code totalTicks}.
+ * Any {@link ContainerData} will have to be stored by the extending classes.
  * @param <T> The type of block entity (should be itself.)
  * @param <M> The type of menu of this block entity.
  * @param <V> The recipe input data (items, fluids, ...) this block entity will accept for checking any recipes. <p>
@@ -52,7 +59,8 @@ import static io.github.laptop59.concocti.common.block.ConcoctiMelterBlock.LIT;
 public abstract class AbstractConcoctiMachineBlockEntity
         <T extends AbstractConcoctiMachineBlockEntity<T, M, V, I, R>,
                 M extends AbstractContainerMenu, V, I extends RecipeInput, R extends ProcessingRecipe<R, I>>
-        extends AbstractPoweredBlockEntity implements StackedContentsCompatible {
+        extends AbstractPoweredBlockEntity
+        implements ItemHandlerBlockEntity, FluidHandlerBlockEntity {
     public static final int UPGRADE_SLOT = 0;
     public static final int FRAME_SLOT = 1;
 
@@ -63,11 +71,137 @@ public abstract class AbstractConcoctiMachineBlockEntity
     int lastUpgradeUnits = -1;
     float rateConsumption;
 
-    public final MachineSettings machineSettings;
+    public final MachineSettings machineSettings = new MachineSettings(getAllowedSlotTypes());
 
     // Properties
-    public final Property<Integer> TICKS_LEFT = Properties.TICKS_LEFT.newWithLinker(() -> ticksLeft);
-    public final Property<Integer> TOTAL_TICKS = Properties.TOTAL_TICKS.newWithLinker(() -> totalTicks);
+    public final Property<Integer> TICKS_LEFT =
+            Properties.TICKS_LEFT.newWithLinker(() -> ticksLeft);
+    public final Property<Integer> TOTAL_TICKS =
+            Properties.TOTAL_TICKS.newWithLinker(() -> totalTicks);
+    public final Property<Integer> ENERGY_STORED =
+            Properties.ENERGY_STORED.newWithLinker(() -> energy.getEnergyStored());
+    public final Property<Integer> MAX_ENERGY_STORED =
+            Properties.MAX_ENERGY_STORED.newWithLinker(() -> energy.getMaxEnergyStored());
+
+    public final Property<Direction> FACING_DIRECTION =
+            Properties.FACING_DIRECTION.newWithLinker(() -> getBlockState().getValue(FACING));
+    public final Property<MachineSettingsSlots> MACHINE_SETTINGS_SLOTS =
+            Properties.MACHINE_SETTINGS_SLOTS.newWithLinker(() -> machineSettings.slots);
+
+    public @Nullable IItemHandler getSidedItemHandler(Direction direction) {
+        SlotType slotType = machineSettings.getSlot(direction);
+        if (!slotType.isSet(SlotFlag.ITEM)) return null;
+        List<Integer> slots = getItemSlots(slotType);
+        if (slots.isEmpty()) return null;
+        return new IItemHandler() {
+            @Override
+            public int getSlots() {
+                return SIZE;
+            }
+
+            @Override
+            public @NotNull ItemStack getStackInSlot(int slot) {
+                if (slots.contains(slot)) return itemHandler.getStackInSlot(slot);
+                return ItemStack.EMPTY.copy();
+            }
+
+            @Override
+            public @NotNull ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+                if (slots.contains(slot) && slotType.isSet(SlotFlag.INPUT)) return itemHandler.insertItem(slot, stack, simulate);
+                return stack;
+            }
+
+            @Override
+            public @NotNull ItemStack extractItem(int slot, int amount, boolean simulate) {
+                if (slots.contains(slot) && slotType.isSet(SlotFlag.OUTPUT)) return itemHandler.extractItem(slot, amount, simulate);
+                return ItemStack.EMPTY.copy();
+            }
+
+            @Override
+            public int getSlotLimit(int slot) {
+                return itemHandler.getSlotLimit(slot);
+            }
+
+            @Override
+            public boolean isItemValid(int slot, @NotNull ItemStack stack) {
+                return itemHandler.isItemValid(slot, stack);
+            }
+        };
+    }
+
+    public @Nullable IFluidHandler getSidedFluidHandler(Direction direction) {
+        SlotType slotType = machineSettings.getSlot(direction);
+        if (!slotType.isSet(SlotFlag.FLUID)) return null;
+        List<IFluidTank> tanks = getFluidTanks(slotType);
+        if (tanks.isEmpty()) return null;
+        return new IFluidHandler() {
+            @Override
+            public int getTanks() {
+                return tanks.size();
+            }
+
+            @Override
+            public @NotNull FluidStack getFluidInTank(int tank) {
+                return tanks.get(tank).getFluid();
+            }
+
+            @Override
+            public int getTankCapacity(int tank) {
+                return tanks.get(tank).getCapacity();
+            }
+
+            @Override
+            public boolean isFluidValid(int tank, @NotNull FluidStack stack) {
+                return tanks.get(tank).isFluidValid(stack);
+            }
+
+            @Override
+            public int fill(@NotNull FluidStack resource, @NotNull FluidAction action) {
+                FluidStack filler = resource.copy();
+                if (!slotType.isSet(SlotFlag.INPUT)) return 0;
+                for (IFluidTank tank : tanks) {
+                    filler.setAmount(filler.getAmount() - tank.fill(resource, action));
+                    if (filler.getAmount() == 0) return resource.getAmount();
+                }
+                return resource.getAmount() - filler.getAmount();
+            }
+
+            @Override
+            public @NotNull FluidStack drain(@NotNull FluidStack resource, @NotNull FluidAction action) {
+                FluidStack totalUndrained = resource.copy();
+                if (!slotType.isSet(SlotFlag.OUTPUT)) return resource.copy();
+                for (IFluidTank tank : tanks) {
+                    FluidStack drained = tank.drain(totalUndrained, FluidAction.SIMULATE);
+                    if (!drained.isEmpty())
+                        drained = tank.drain(resource, action);
+                    if (!FluidStack.isSameFluid(drained, totalUndrained)) continue; // This should never happen.
+                    totalUndrained.setAmount(totalUndrained.getAmount() - drained.getAmount());
+                    if (totalUndrained.isEmpty()) break;
+                }
+                FluidStack totalDrained = resource.copy();
+                totalDrained.setAmount(resource.getAmount() - totalUndrained.getAmount());
+                return totalDrained;
+            }
+
+            @Override
+            public @NotNull FluidStack drain(int maxDrain, @NotNull FluidAction action) {
+                FluidStack totalDrained = FluidStack.EMPTY.copy();
+                for (IFluidTank tank : tanks) {
+                    FluidStack drained = tank.drain(maxDrain, FluidAction.SIMULATE);
+                    boolean drainSuccess = false;
+                    if (FluidStack.isSameFluidSameComponents(totalDrained, drained)) {
+                        totalDrained.setAmount(totalDrained.getAmount() + drained.getAmount());
+                        drainSuccess = true;
+                    } else if (totalDrained.isEmpty()) {
+                        totalDrained = drained.copy();
+                        drainSuccess = true;
+                    }
+                    if (drainSuccess && action.execute()) tank.drain(maxDrain, action);
+                }
+                return totalDrained;
+            }
+        };
+    }
 
     @Override
     protected final boolean isItemValid(int slot, @NotNull ItemStack stack) {
@@ -85,12 +219,16 @@ public abstract class AbstractConcoctiMachineBlockEntity
 
     public AbstractConcoctiMachineBlockEntity(BlockPos pos, BlockState blockState, int maxEnergy,
                                               int maxEnergyTransfer, int slotSize, Supplier<BlockEntityType<T>> typeSupplier,
-                                              float rateConsumption, MachineSettings machineSettings) {
+                                              float rateConsumption) {
         super(typeSupplier.get(), pos, blockState, maxEnergy, maxEnergyTransfer, slotSize);
+
         this.rateConsumption = rateConsumption;
-        this.machineSettings = machineSettings;
+
         if (slotSize < 2) throw new IllegalArgumentException("Expected at least two slots for upgrades and frame.");
     }
+
+    @Contract(pure = true)
+    abstract protected @NotNull List<SlotType> getAllowedSlotTypes();
 
     @Override
     public final int getContainerSize() {
@@ -99,13 +237,11 @@ public abstract class AbstractConcoctiMachineBlockEntity
 
     @Override
     protected @NotNull NonNullList<ItemStack> getItems() {
-        return items;
+        return itemHandler.getDirectList();
     }
 
     @Override
-    protected void setItems(@NotNull NonNullList<ItemStack> items) {
-        this.items = items;
-    }
+    protected void setItems(@NotNull NonNullList<ItemStack> items) { /* Don't do anything. */ }
 
     /** Creates a menu for this block entity. */
     @Override
@@ -278,6 +414,9 @@ public abstract class AbstractConcoctiMachineBlockEntity
         } else this.lastRecipeId = null;
         // Fill in the total ticks.
         this.totalTicks = tag.getInt("total_ticks");
+        this.machineSettings.slots = MachineSettingsSlots.CODEC
+                .parse(NbtOps.INSTANCE, tag.get("machine_settings_slots"))
+                .getOrThrow();
     }
 
     /**
@@ -292,14 +431,22 @@ public abstract class AbstractConcoctiMachineBlockEntity
         // Fetch the appropriate item ID.
         if (this.lastRecipeId != null) tag.putString("last_recipe_id", this.lastRecipeId.toString());
         tag.putInt("total_ticks", this.totalTicks);
+        tag.put("machine_settings_slots",
+                MachineSettingsSlots.CODEC.encodeStart(NbtOps.INSTANCE, machineSettings.slots).getOrThrow()
+        );
     }
 
     @Override
-    public void fillStackedContents(@NotNull StackedContents helper) {
-        for (ItemStack itemstack : this.items) {
-            helper.accountStack(itemstack);
-        }
+    public boolean canPlaceItem(int index, ItemStack stack) {
+        return isItemValid(index, stack);
     }
 
-    public abstract IFluidHandler getFluidTank();
+    @Override
+    public boolean canTakeItem(@NotNull Container target, int index, @NotNull ItemStack stack) {
+        return isItemValid(index, stack);
+    }
+
+    abstract public List<Integer> getItemSlots(SlotType type);
+
+    abstract public List<IFluidTank> getFluidTanks(SlotType type);
 }

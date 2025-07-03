@@ -1,11 +1,7 @@
 package io.github.laptop59.concocti.client.gui.components;
 
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import org.jetbrains.annotations.NotNull;
 
 import static io.github.laptop59.concocti.common.Concocti.MODID;
 

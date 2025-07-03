@@ -7,6 +7,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -14,8 +15,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -80,6 +79,12 @@ public class FluidBar<T extends AbstractContainerMenu> extends Renderable implem
             guiGraphics.blitSprite(FLUID_BLACK_SPRITE, 15, 15, 0, 0,
                     renderInfo.left(), renderInfo.top() + 40 - blackenedLeft - height, 15, incremented);
         }
+
+        // Draw the fluid bar highlight if needed.
+        if (renderInfo.isHovering(getWidth(), getHeight()))
+            guiGraphics.fillGradient(RenderType.guiOverlay(), renderInfo.left(), renderInfo.top(),
+                renderInfo.left() + 16, renderInfo.top() + 40, -2130706433, -2130706433, 0);
+
         if (renderInfo.isHovering(15, 40)) {
             renderInfo.renderTooltip(guiGraphics, Component.translatable("screen.concocti.fluid_bar",
                     Component.translatable(getFluidTranslation()).getString(), stack.getAmount(), max));

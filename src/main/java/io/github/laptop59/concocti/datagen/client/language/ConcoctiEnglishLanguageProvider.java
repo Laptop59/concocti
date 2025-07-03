@@ -1,6 +1,6 @@
 package io.github.laptop59.concocti.datagen.client.language;
 
-import io.github.laptop59.concocti.client.gui.components.MachineSettings;
+import io.github.laptop59.concocti.client.gui.components.SlotType;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
@@ -71,9 +71,9 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add("effect.concocti.concoctized", "Concoctized");
         add("subtitles.concocti.block.concocti_melter.fire_crackle", "Concocti Melter crackles");
 
-        addTag("c.ingots.concocti", "Concocti Ingots");
-        addTag("c.nuggets.concocti", "Concocti Nuggets");
-        addTag("c.storage_blocks.concocti", "Concocti Storage Blocks");
+        addCommonTag("ingots.concocti", "Concocti Ingots");
+        addCommonTag("nuggets.concocti", "Concocti Nuggets");
+        addCommonTag("storage_blocks.concocti", "Concocti Storage Blocks");
 
         // GUI elements go here.
         add("screen.concocti.energy_bar", "Energy: %s/%s FE");
@@ -89,6 +89,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add("screen.concocti.open_machine_settings", "Open Machine Settings");
         add("screen.concocti.close_machine_settings", "Close Machine Settings");
         add("screen.concocti.machine_settings", "Settings");
+        add("screen.concocti.durability_info", "Durability: %s/%s");
 
         add("screen.concocti.slot_compound", "%s (%s)");
         add("screen.concocti.slot_up", "Up");
@@ -112,7 +113,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         }
 
         // Translation key for slot types.
-        for (MachineSettings.SlotType slotType : MachineSettings.SlotType.values()) {
+        for (SlotType slotType : SlotType.values()) {
             String key = "screen.concocti.slot_type." + slotType.name().toLowerCase(Locale.ROOT);
             add(key, capitalize(slotType.name()));
         }
@@ -132,6 +133,10 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         String name = BuiltInRegistries.FLUID.getKey(fluid.get()).getPath();
         this.add("block.concocti." + name, translation);
         this.add("fluid_type.concocti." + name, translation);
+    }
+
+    private void addCommonTag(String tag, String translation) {
+        this.addTag("c." + tag, translation);
     }
 
     // ADDING TAGS
