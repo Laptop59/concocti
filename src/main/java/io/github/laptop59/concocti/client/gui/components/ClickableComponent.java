@@ -1,6 +1,8 @@
 package io.github.laptop59.concocti.client.gui.components;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,4 +19,8 @@ public interface ClickableComponent {
      */
     boolean onMouseClick(double mouseX, double mouseY, int button, @Nullable AbstractContainerScreen<?> screen,
                          @Nullable AbstractContainerMenu menu);
+
+    default void playClickSound() {
+        Minecraft.getInstance().player.playSound(SoundEvents.UI_BUTTON_CLICK.value());
+    }
 }

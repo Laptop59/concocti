@@ -26,7 +26,6 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -55,6 +54,10 @@ public class ConcoctiSolidifierBlockEntity extends AbstractConcoctiMachineBlockE
             MAX_ENERGY_STORED.of(0),
             FACING_DIRECTION.of(Direction.DOWN),
             MACHINE_SETTINGS_SLOTS.of(new MachineSettingsSlots()),
+
+            EJECT_ON.of(false),
+            PULL_ON.of(false),
+
             FLUID_INPUT.of(FluidStack.EMPTY)
     );
 
@@ -139,11 +142,6 @@ public class ConcoctiSolidifierBlockEntity extends AbstractConcoctiMachineBlockE
     }
 
     @Override
-    public List<IFluidHandler> getInputFluidHandlers() {
-        return List.of(tank);
-    }
-
-    @Override
     protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
         super.loadAdditional(tag, registries);
         this.tank.setFluid(FluidStack.EMPTY.copy());
@@ -158,10 +156,6 @@ public class ConcoctiSolidifierBlockEntity extends AbstractConcoctiMachineBlockE
         super.saveAdditional(tag, registries);
         if (!tank.isEmpty())
             tag.put("fluid_input", tank.getFluid().save(registries));
-    }
-
-    public IFluidHandler getFluidHandler() {
-        return tank;
     }
 
     @Override
@@ -190,6 +184,14 @@ public class ConcoctiSolidifierBlockEntity extends AbstractConcoctiMachineBlockE
         return List.of();
     }
 
+    @Override
+    public List<IFluidTank> getFluidTanks() {
+        return List.of(
+                tank
+        );
+    }
+
+    @Override
     public List<IFluidTank> getFluidTanks(SlotType type) {
         switch (type) {
             case FLUID_INPUT -> {

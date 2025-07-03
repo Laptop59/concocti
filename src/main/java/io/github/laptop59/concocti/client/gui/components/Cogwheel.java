@@ -50,6 +50,7 @@ public class Cogwheel extends Renderable implements ClickableComponent {
     @Override
     public boolean onMouseClick(double mouseX, double mouseY, int button, @Nullable AbstractContainerScreen<?> screen, @Nullable AbstractContainerMenu menu) {
         whenClicked.run();
+        playClickSound();
         return true;
     }
 }
