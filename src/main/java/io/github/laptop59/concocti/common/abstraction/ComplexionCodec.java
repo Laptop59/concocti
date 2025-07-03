@@ -1,7 +1,7 @@
 package io.github.laptop59.concocti.common.abstraction;
 
-import io.github.laptop59.concocti.client.gui.components.MachineSettings;
 import io.github.laptop59.concocti.client.gui.components.MachineSettingsSlots;
+import io.github.laptop59.concocti.client.gui.components.SlotType;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -131,12 +131,12 @@ public record ComplexionCodec<T>(
             "FLUID_STACK"
     );
 
-    public static final ComplexionCodec<MachineSettings.SlotType> SLOT_TYPE = new ComplexionCodec<>(
+    public static final ComplexionCodec<SlotType> SLOT_TYPE = new ComplexionCodec<>(
             1,
             (object, instance) -> {
                 instance.encode(object.getId());
             },
-            instance -> MachineSettings.SlotType.byId(instance.decode()),
+            instance -> SlotType.byId(instance.decode()),
             "SLOT_TYPE"
     );
 
@@ -158,6 +158,15 @@ public record ComplexionCodec<T>(
                 return map;
             },
             "MACHINE_SETTINGS_SLOTS"
+    );
+
+    public static final ComplexionCodec<Direction> DIRECTION = new ComplexionCodec<>(
+            1,
+            (object, instance) -> {
+                instance.encode(object.ordinal());
+            },
+            instance -> Direction.values()[instance.decode()],
+            "DIRECTION"
     );
 
     /** Creates a read-only codec that allows the conversion that a complexion codec would do. */
@@ -188,6 +197,6 @@ public record ComplexionCodec<T>(
 
     @Override
     public @NotNull String toString() {
-        return "Codec[" + type + "]";
+        return "ComplexionCodec[" + type + ",size=" + size + "]";
     }
 }

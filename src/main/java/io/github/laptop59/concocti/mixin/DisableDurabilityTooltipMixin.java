@@ -1,12 +1,8 @@
 package io.github.laptop59.concocti.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
-import io.github.laptop59.concocti.client.ConcoctiClient;
-import io.github.laptop59.concocti.common.Concocti;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;

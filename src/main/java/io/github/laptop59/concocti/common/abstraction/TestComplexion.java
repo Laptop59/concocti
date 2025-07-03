@@ -2,11 +2,8 @@ package io.github.laptop59.concocti.common.abstraction;
 
 import io.github.laptop59.concocti.client.gui.components.MachineSettings;
 import io.github.laptop59.concocti.client.gui.components.MachineSettingsSlots;
+import io.github.laptop59.concocti.client.gui.components.SlotType;
 import net.minecraft.core.Direction;
-import net.minecraft.world.level.material.Fluids;
-import net.neoforged.neoforge.fluids.FluidStack;
-
-import java.util.EnumMap;
 
 /** This class describes how a custom Complexion is created. */
 public class TestComplexion extends Complexion {
@@ -64,11 +61,11 @@ public class TestComplexion extends Complexion {
         System.out.println("Machine Settings Slots editing TEST: " + testComplexion.get(I));
         System.out.println("Before: " + testComplexion.get(I));
         testComplexion.edit(I, map -> {
-            map.put(Direction.UP, MachineSettings.SlotType.BASE_ITEM_INPUT);
-            map.put(Direction.EAST, MachineSettings.SlotType.PURIFIED_FLUID_OUTPUT);
+            map.put(Direction.UP, SlotType.BASE_ITEM_INPUT);
+            map.put(Direction.EAST, SlotType.PURE_FLUID_OUTPUT);
         });
         testComplexion.edit(I, map -> {
-            map.put(Direction.DOWN, MachineSettings.SlotType.FLUID_INPUT);
+            map.put(Direction.DOWN, SlotType.FLUID_INPUT);
             return map;
         });
         System.out.println("After: " + testComplexion.get(I));

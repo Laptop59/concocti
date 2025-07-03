@@ -3,8 +3,6 @@ package io.github.laptop59.concocti.integration.jei;
 import io.github.laptop59.concocti.client.gui.components.ArrowProgress;
 import io.github.laptop59.concocti.client.gui.components.RenderInfo;
 import io.github.laptop59.concocti.client.gui.components.Renderable;
-import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
-import io.github.laptop59.concocti.common.recipe.ConcoctiMelterRecipe;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
@@ -13,7 +11,6 @@ import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.neoforge.NeoForgeTypes;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
@@ -30,10 +27,6 @@ import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 import net.neoforged.neoforge.registries.DeferredItem;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
-
-import static io.github.laptop59.concocti.common.Concocti.MODID;
 
 /**
  * A base class to implement common parts of all Concocti recipes.

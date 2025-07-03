@@ -1,6 +1,10 @@
 package io.github.laptop59.concocti.common.block.entity;
 
-import io.github.laptop59.concocti.client.gui.components.MachineSettings;
+import io.github.laptop59.concocti.client.gui.components.MachineSettingsSlots;
+import io.github.laptop59.concocti.client.gui.components.SlotType;
+import io.github.laptop59.concocti.common.abstraction.Complexion;
+import io.github.laptop59.concocti.common.abstraction.Properties;
+import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.menu.ConcoctiSolidifierMenu;
 import io.github.laptop59.concocti.common.recipe.ConcoctiRecipes;
@@ -8,7 +12,6 @@ import io.github.laptop59.concocti.common.recipe.ConcoctiSolidifierRecipe;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -18,8 +21,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -28,7 +33,8 @@ import java.util.function.Supplier;
 
 public class ConcoctiSolidifierBlockEntity extends AbstractConcoctiMachineBlockEntity
         <ConcoctiSolidifierBlockEntity, ConcoctiSolidifierMenu, ConcoctiSolidifierBlockEntity.InputValue,
-                ConcoctiSolidifierRecipe.Input, ConcoctiSolidifierRecipe> {
+                ConcoctiSolidifierRecipe.Input, ConcoctiSolidifierRecipe>
+    implements FluidHandlerBlockEntity {
 
     public record InputValue(ItemStack mold, FluidStack fluid, ItemStack baseItem) {}
 
@@ -40,62 +46,23 @@ public class ConcoctiSolidifierBlockEntity extends AbstractConcoctiMachineBlockE
 
     public final FluidTank tank = new FluidTank(TANK_CAPACITY);
 
-    protected final ContainerData dataAccess = new ContainerData() {
+    public final Property<FluidStack> FLUID_INPUT = Properties.FLUID_INPUT.newWithLinker(tank::getFluid);
 
-        @Override
-        public int get(int index) {
-            return switch (index) {
-                case 0 -> ticksLeft;
-                case 1 -> totalTicks;
-                case 2 -> energy.getEnergyStored();
-                case 3 -> energy.getMaxEnergyStored();
-                case 4 -> BuiltInRegistries.FLUID.getId(tank.getFluid().getFluid());
-                case 5 -> tank.getFluid().getAmount();
-                default -> 0;
-            };
-        }
-
-        @Override
-        public void set(int index, int value) {
-            switch (index) {
-                case 0: ticksLeft = value;
-                case 1: totalTicks = value;
-                case 2, 3, 4, 5: break;
-            }
-        }
-
-        @Override
-        public int getCount() {
-            return 6;
-        }
-    };
+    protected final ContainerData dataAccess = new Complexion(
+            TICKS_LEFT.of(0),
+            TOTAL_TICKS.of(0),
+            ENERGY_STORED.of(0),
+            MAX_ENERGY_STORED.of(0),
+            FACING_DIRECTION.of(Direction.DOWN),
+            MACHINE_SETTINGS_SLOTS.of(new MachineSettingsSlots()),
+            FLUID_INPUT.of(FluidStack.EMPTY)
+    );
 
     public ConcoctiSolidifierBlockEntity(BlockPos pos, BlockState blockState) {
         super(
                 pos, blockState, 10000, 10000, 5,
-                ConcoctiBlocks.CONCOCTI_SOLIDIFIER_BLOCK_ENTITY, 20.0f,
-                new MachineSettings(List.of(
-                        MachineSettings.SlotType.FLUID_INPUT,
-                        MachineSettings.SlotType.MOLD_ITEM_INPUT,
-                        MachineSettings.SlotType.BASE_ITEM_INPUT,
-                        MachineSettings.SlotType.ITEM_OUTPUT
-                ))
+                ConcoctiBlocks.CONCOCTI_SOLIDIFIER_BLOCK_ENTITY, 20.0f
         );
-    }
-
-    @Override
-    public int @NotNull [] getSlotsForFace(@NotNull Direction side) {
-        return new int[]{0, 1, MOLD_SLOT, BASE_ITEM_SLOT, OUTPUT_SLOT};
-    }
-
-    @Override
-    public boolean canPlaceItemThroughFace(int index, @NotNull ItemStack itemStack, @Nullable Direction direction) {
-        return index == MOLD_SLOT;
-    }
-
-    @Override
-    public boolean canTakeItemThroughFace(int index, @NotNull ItemStack stack, @NotNull Direction direction) {
-        return index == MOLD_SLOT;
     }
 
     @Override
@@ -105,7 +72,7 @@ public class ConcoctiSolidifierBlockEntity extends AbstractConcoctiMachineBlockE
 
     @Override
     protected boolean isItemValidInMachine(int slot, @NotNull ItemStack stack) {
-        return true;
+        return slot == MOLD_SLOT || slot == BASE_ITEM_SLOT;
     }
 
     @Override
@@ -193,8 +160,42 @@ public class ConcoctiSolidifierBlockEntity extends AbstractConcoctiMachineBlockE
             tag.put("fluid_input", tank.getFluid().save(registries));
     }
 
-    @Override
-    public IFluidHandler getFluidTank() {
+    public IFluidHandler getFluidHandler() {
         return tank;
+    }
+
+    @Override
+    @Contract(pure = true)
+    protected @NotNull List<SlotType> getAllowedSlotTypes() {
+        return List.of(
+                SlotType.FLUID_INPUT,
+                SlotType.MOLD_ITEM_INPUT,
+                SlotType.BASE_ITEM_INPUT,
+                SlotType.ITEM_OUTPUT
+        );
+    }
+
+    public List<Integer> getItemSlots(SlotType type) {
+        switch (type) {
+            case ITEM_OUTPUT -> {
+                return List.of(OUTPUT_SLOT);
+            }
+            case MOLD_ITEM_INPUT -> {
+                return List.of(MOLD_SLOT);
+            }
+            case BASE_ITEM_INPUT -> {
+                return List.of(BASE_ITEM_SLOT);
+            }
+        };
+        return List.of();
+    }
+
+    public List<IFluidTank> getFluidTanks(SlotType type) {
+        switch (type) {
+            case FLUID_INPUT -> {
+                return List.of(tank);
+            }
+        };
+        return List.of();
     }
 }

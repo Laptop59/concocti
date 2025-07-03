@@ -1,7 +1,7 @@
 {
   "values": [
-    "concocti:basic_concocti_frame",
+    "concocti:purified_concocti_block",
     "concocti:diamethyst_block",
-    "concocti:purified_concocti_block"
+    "concocti:basic_concocti_frame"
   ]
 }

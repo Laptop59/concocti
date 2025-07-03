@@ -172,14 +172,15 @@ public class Complexion implements ContainerData {
      * */
     public void encode(int... values) {
         for (int value : values)
-            data[pointer++] = value;
+            if (data.length > pointer) data[pointer++] = value;
     }
 
     /** Reads internal data inside the complexion with a pointer that moves to the right. Only use this for {@code ComplexionCodec}s!
      * @return The read integer and shifts the pointer after.
      * */
     public int decode() {
-        return data[pointer++];
+        if (data.length > pointer) return data[pointer++];
+        return 0;
     }
 
     @Override

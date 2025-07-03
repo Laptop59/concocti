@@ -1,8 +1,8 @@
 package io.github.laptop59.concocti.common.block.entity;
 
-import io.github.laptop59.concocti.client.gui.components.MachineSettings;
+import io.github.laptop59.concocti.client.gui.components.MachineSettingsSlots;
+import io.github.laptop59.concocti.client.gui.components.SlotType;
 import io.github.laptop59.concocti.common.abstraction.Complexion;
-import io.github.laptop59.concocti.common.abstraction.ComplexionCodec;
 import io.github.laptop59.concocti.common.abstraction.Properties;
 import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
@@ -17,17 +17,17 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -36,13 +36,11 @@ public class ConcoctiMelterBlockEntity extends AbstractConcoctiMachineBlockEntit
     <ConcoctiMelterBlockEntity, ConcoctiMelterMenu, ItemStack, SingleRecipeInput, ConcoctiMelterRecipe> {
     private static final int INPUT_SLOT = 2;
     public static final int TANK_CAPACITY = 64000;
-
     private final FluidTank pureFluidOutput = new FluidTank(TANK_CAPACITY);
     private final FluidTank byproductFluidOutput = new FluidTank(TANK_CAPACITY);
 
     // Properties
-    public final Property<Integer> ENERGY_STORED = Properties.ENERGY_STORED.newWithLinker(() -> energy.getEnergyStored());
-    public final Property<Integer> MAX_ENERGY_STORED = Properties.MAX_ENERGY_STORED.newWithLinker(() -> energy.getMaxEnergyStored());
+
     public final Property<FluidStack> PURE_FLUID_OUTPUT = Properties.PURE_FLUID_OUTPUT.newWithLinker(pureFluidOutput::getFluid);
     public final Property<FluidStack> BYPRODUCT_FLUID_OUTPUT = Properties.BYPRODUCT_FLUID_OUTPUT.newWithLinker(byproductFluidOutput::getFluid);
 
@@ -152,6 +150,8 @@ public class ConcoctiMelterBlockEntity extends AbstractConcoctiMachineBlockEntit
             TOTAL_TICKS.of(0),
             ENERGY_STORED.of(0),
             MAX_ENERGY_STORED.of(0),
+            FACING_DIRECTION.of(Direction.DOWN),
+            MACHINE_SETTINGS_SLOTS.of(new MachineSettingsSlots()),
             PURE_FLUID_OUTPUT.of(FluidStack.EMPTY),
             BYPRODUCT_FLUID_OUTPUT.of(FluidStack.EMPTY)
     );
@@ -159,13 +159,7 @@ public class ConcoctiMelterBlockEntity extends AbstractConcoctiMachineBlockEntit
     public ConcoctiMelterBlockEntity(BlockPos pos, BlockState blockState) {
         super(
                 pos, blockState, 10000, 10000, 3,
-                ConcoctiBlocks.CONCOCTI_MELTER_BLOCK_ENTITY, 25.0f,
-                new MachineSettings(List.of(
-                        MachineSettings.SlotType.ITEM_INPUT,
-                        MachineSettings.SlotType.PURIFIED_FLUID_OUTPUT,
-                        MachineSettings.SlotType.BYPRODUCT_FLUID_OUTPUT,
-                        MachineSettings.SlotType.BOTH_FLUIDS_OUTPUT
-                ))
+                ConcoctiBlocks.CONCOCTI_MELTER_BLOCK_ENTITY, 25.0f
         );
         pureFluidOutput.getFluid().limitSize(TANK_CAPACITY);
         byproductFluidOutput.getFluid().limitSize(TANK_CAPACITY);
@@ -184,21 +178,6 @@ public class ConcoctiMelterBlockEntity extends AbstractConcoctiMachineBlockEntit
     @Override
     public Supplier<RecipeType<ConcoctiMelterRecipe>> getRecipeType() {
         return ConcoctiRecipes.CONCOCTI_MELTER_RECIPE_TYPE;
-    }
-
-    @Override
-    public int @NotNull [] getSlotsForFace(@NotNull Direction side) {
-        return new int[]{INPUT_SLOT};
-    }
-
-    @Override
-    public boolean canPlaceItemThroughFace(int index, @NotNull ItemStack itemStack, @Nullable Direction direction) {
-        return index == INPUT_SLOT;
-    }
-
-    @Override
-    public boolean canTakeItemThroughFace(int index, @NotNull ItemStack stack, @NotNull Direction direction) {
-        return index == INPUT_SLOT;
     }
 
     public ItemStack getInputStack() {
@@ -269,8 +248,42 @@ public class ConcoctiMelterBlockEntity extends AbstractConcoctiMachineBlockEntit
             tag.put("byproduct_fluid_output", byproductFluidOutput.getFluid().save(registries));
     }
 
-    @Override
     public IFluidHandler getFluidTank() {
         return fluids;
+    }
+
+    @Override
+    @Contract(pure = true)
+    protected @NotNull List<SlotType> getAllowedSlotTypes() {
+        return List.of(
+                SlotType.ITEM_INPUT,
+                SlotType.PURE_FLUID_OUTPUT,
+                SlotType.BYPRODUCT_FLUID_OUTPUT,
+                SlotType.BOTH_FLUIDS_OUTPUT
+        );
+    }
+
+    public List<Integer> getItemSlots(SlotType type) {
+        switch (type) {
+            case ITEM_INPUT -> {
+                return List.of(INPUT_SLOT);
+            }
+        }
+        return List.of();
+    }
+
+    public List<IFluidTank> getFluidTanks(SlotType type) {
+        switch (type) {
+            case PURE_FLUID_OUTPUT -> {
+                return List.of(pureFluidOutput);
+            }
+            case BYPRODUCT_FLUID_OUTPUT -> {
+                return List.of(byproductFluidOutput);
+            }
+            case BOTH_FLUIDS_OUTPUT -> {
+                return List.of(pureFluidOutput, byproductFluidOutput);
+            }
+        }
+        return List.of();
     }
 }
