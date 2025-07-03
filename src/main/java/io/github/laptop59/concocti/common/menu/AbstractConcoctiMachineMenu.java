@@ -1,13 +1,10 @@
 package io.github.laptop59.concocti.common.menu;
 
-import io.github.laptop59.concocti.client.gui.components.MachineSettings;
 import io.github.laptop59.concocti.client.gui.components.MachineSettingsSlots;
 import io.github.laptop59.concocti.common.abstraction.Complexion;
 import io.github.laptop59.concocti.common.abstraction.ComplexionViewer;
 import io.github.laptop59.concocti.common.abstraction.Properties;
 import io.github.laptop59.concocti.common.abstraction.Property;
-import io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock;
-import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -18,7 +15,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -125,6 +121,16 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
     /** Gets the machine settings slots associated with this menu. */
     public MachineSettingsSlots getMachineSettingsSlots() {
         return viewer.get(Properties.MACHINE_SETTINGS_SLOTS);
+    }
+
+    /** Whether this machine is set to eject. */
+    public boolean shouldEject() {
+        return viewer.get(Properties.EJECT_ON);
+    }
+
+    /** Whether this machine is set to pull. */
+    public boolean shouldPull() {
+        return viewer.get(Properties.PULL_ON);
     }
 
     /** Gets the facing direction of this machine. */

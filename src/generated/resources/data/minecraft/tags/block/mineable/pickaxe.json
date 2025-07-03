@@ -1,13 +1,13 @@
 {
   "values": [
-    "concocti:dirty_concocti_block",
-    "concocti:purified_concocti_block",
-    "concocti:compressed_concocti_block",
-    "concocti:diamethyst_block",
     "concocti:basic_concocti_frame",
-    "concocti:concocti_solidifier",
-    "concocti:tough_concocti_block",
+    "concocti:diamethyst_block",
     "concocti:concocti_melter",
-    "concocti:advanced_concocti_frame"
+    "concocti:advanced_concocti_frame",
+    "concocti:purified_concocti_block",
+    "concocti:concocti_solidifier",
+    "concocti:dirty_concocti_block",
+    "concocti:compressed_concocti_block",
+    "concocti:tough_concocti_block"
   ]
 }

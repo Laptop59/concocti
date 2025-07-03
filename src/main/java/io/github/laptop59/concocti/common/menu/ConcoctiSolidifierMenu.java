@@ -28,6 +28,10 @@ public class ConcoctiSolidifierMenu extends AbstractConcoctiMachineMenu<Concocti
                 Properties.MAX_ENERGY_STORED,
                 Properties.FACING_DIRECTION,
                 Properties.MACHINE_SETTINGS_SLOTS,
+
+                Properties.EJECT_ON,
+                Properties.PULL_ON,
+
                 Properties.FLUID_INPUT
         );
     }

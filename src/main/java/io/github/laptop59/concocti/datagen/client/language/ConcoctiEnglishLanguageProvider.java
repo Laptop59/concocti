@@ -99,6 +99,11 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add("screen.concocti.slot_front", "Front");
         add("screen.concocti.slot_back", "Back");
 
+        add("screen.concocti.eject_off", "Eject: OFF");
+        add("screen.concocti.eject_on", "Eject: ON");
+        add("screen.concocti.pull_off", "Pull: OFF");
+        add("screen.concocti.pull_on", "Pull: ON");
+
         // Information of items go here.
         add("info.concocti.concocti_seeds", "Hitting a mob with this item usually provides it a status effect of Concoctized, which allows Dirty Concocti Nuggets to start dropping upon taking damage while losing less health.");
         add("info.concocti.dirty_concocti_nugget", "Dropped from hitting a mob with the Concoctized status effect, which is induced by hitting it with Concoctized Seeds.");

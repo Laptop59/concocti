@@ -1,7 +1,7 @@
 {
   "values": [
-    "concocti:dirty_concocti_block",
+    "concocti:concocti_melter",
     "concocti:concocti_solidifier",
-    "concocti:concocti_melter"
+    "concocti:dirty_concocti_block"
   ]
 }

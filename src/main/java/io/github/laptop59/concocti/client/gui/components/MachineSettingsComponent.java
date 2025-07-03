@@ -2,6 +2,8 @@ package io.github.laptop59.concocti.client.gui.components;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
+import io.github.laptop59.concocti.network.ConcoctiMachineSettingsEjectOnChangeC2S;
+import io.github.laptop59.concocti.network.ConcoctiMachineSettingsPullOnChangeC2S;
 import io.github.laptop59.concocti.network.ConcoctiMachineSettingsSlotChangeC2S;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -29,6 +31,12 @@ public class MachineSettingsComponent<T extends AbstractContainerMenu> extends R
     public static final ResourceLocation SLOT_TEXTURE = ResourceLocation.fromNamespaceAndPath(MODID, "textures/gui/container/blockface_slot.png");
     public static final ResourceLocation SLOT_OVERLAY_TEXTURE = ResourceLocation.fromNamespaceAndPath(MODID, "textures/gui/container/blockface_slot_overlay.png");
 
+    public static final ResourceLocation EJECT_OFF = ResourceLocation.fromNamespaceAndPath(MODID, "textures/gui/container/eject_off.png");
+    public static final ResourceLocation EJECT_ON = ResourceLocation.fromNamespaceAndPath(MODID, "textures/gui/container/eject_on.png");
+
+    public static final ResourceLocation PULL_OFF = ResourceLocation.fromNamespaceAndPath(MODID, "textures/gui/container/pull_off.png");
+    public static final ResourceLocation PULL_ON = ResourceLocation.fromNamespaceAndPath(MODID, "textures/gui/container/pull_on.png");
+
     public static final int WIDTH = 176, HEIGHT = 78;
 
     T menu;
@@ -55,10 +63,56 @@ public class MachineSettingsComponent<T extends AbstractContainerMenu> extends R
         int titleX = renderInfo.left() + 8;
         int titleY = renderInfo.top() + 8;
 
+        AbstractConcoctiMachineMenu<?> menu1 = (AbstractConcoctiMachineMenu<?>) menu;
+
+        boolean ejectOn = menu1.shouldEject();
+        boolean pullOn = menu1.shouldPull();
+
         guiGraphics.drawString(renderInfo.font(), Component.translatable("screen.concocti.machine_settings"), titleX, titleY, 0xFFFFFFFF);
         guiGraphics.blit(BASE_TEXTURE, renderInfo.left(), renderInfo.top() + 1, 0, 0, WIDTH, HEIGHT, WIDTH, HEIGHT);
 
-        AbstractConcoctiMachineMenu<?> menu1 = (AbstractConcoctiMachineMenu<?>) menu;
+        {
+            RenderInfo ejectRenderInfo = renderInfo.offset(WIDTH - 24, 8);
+            if (ejectRenderInfo.isHovering(16, 16)) {
+                RenderSystem.setShaderColor(1.1f, 1.1f, 1.1f, 1.1f);
+                ejectRenderInfo.renderTooltip(
+                        guiGraphics, Component.translatable(
+                            "screen.concocti.eject_" + (ejectOn ? "on" : "off")
+                    ).withColor(0xff7a7a7a)
+                );
+            }
+            guiGraphics.blit(
+                    ejectOn ? EJECT_ON : EJECT_OFF,
+                    ejectRenderInfo.left(),
+                    ejectRenderInfo.top(),
+                    0, 0,
+                    16, 16,
+                    16, 16
+            );
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        }
+
+        {
+            RenderInfo pullRenderInfo = renderInfo.offset(WIDTH - 44, 8);
+            if (pullRenderInfo.isHovering(16, 16)) {
+                RenderSystem.setShaderColor(1.1f, 1.1f, 1.1f, 1.1f);
+                pullRenderInfo.renderTooltip(
+                        guiGraphics, Component.translatable(
+                                "screen.concocti.pull_" + (pullOn ? "on" : "off")
+                        ).withColor(0xff7a7a7a)
+                );
+            }
+            guiGraphics.blit(
+                    pullOn ? PULL_ON : PULL_OFF,
+                    pullRenderInfo.left(),
+                    pullRenderInfo.top(),
+                    0, 0,
+                    16, 16,
+                    16, 16
+            );
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        }
+
         MachineSettingsSlots slots = menu1.getMachineSettingsSlots();
         Direction currentDirection = menu1.getFacingDirection();
 
@@ -98,6 +152,22 @@ public class MachineSettingsComponent<T extends AbstractContainerMenu> extends R
         AbstractConcoctiMachineMenu<?> menu1 = (AbstractConcoctiMachineMenu<?>) menu;
         Direction currentDirection = menu1.getFacingDirection();
 
+        RenderInfo renderInfo = this.getActualRenderInfo(new RenderInfo((int) mouseX, (int) mouseY, 0, 0, null));
+
+        RenderInfo pureRenderInfo = renderInfo.offset(WIDTH - 44, 8);
+        if (pureRenderInfo.isHovering(16, 16)) {
+            playClickSound();
+            PacketDistributor.sendToServer(new ConcoctiMachineSettingsPullOnChangeC2S(menu.containerId));
+            return true;
+        }
+
+        RenderInfo ejectRenderInfo = renderInfo.offset(WIDTH - 24, 8);
+        if (ejectRenderInfo.isHovering(16, 16)) {
+            playClickSound();
+            PacketDistributor.sendToServer(new ConcoctiMachineSettingsEjectOnChangeC2S(menu.containerId));
+            return true;
+        }
+
         for (Map.Entry<Direction, SlotType> entry : menu1.getMachineSettingsSlots().entrySet()) {
             Direction direction = entry.getKey();
             //    #   -1
@@ -105,9 +175,9 @@ public class MachineSettingsComponent<T extends AbstractContainerMenu> extends R
             //    # #  1         j
             // -1 0 1          > i
             Pos slotPos = getPos(direction, currentDirection);
-            RenderInfo renderInfo = this.getActualRenderInfo(new RenderInfo((int) mouseX, (int) mouseY, slotPos.x, slotPos.y, null));
-            if (renderInfo.isHovering(16, 16)) {
-                Minecraft.getInstance().player.playSound(SoundEvents.UI_BUTTON_CLICK.value());
+            RenderInfo slotRenderInfo = renderInfo.offset(slotPos.x, slotPos.y);
+            if (slotRenderInfo.isHovering(16, 16)) {
+                playClickSound();
                 PacketDistributor.sendToServer(new ConcoctiMachineSettingsSlotChangeC2S(
                         direction,
                         button == 1,

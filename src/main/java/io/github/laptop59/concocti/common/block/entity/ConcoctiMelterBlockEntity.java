@@ -49,11 +49,6 @@ public class ConcoctiMelterBlockEntity extends AbstractConcoctiMachineBlockEntit
         return List.of(pureFluidOutput, byproductFluidOutput);
     }
 
-    @Override
-    public List<IFluidHandler> getOutputFluidHandlers() {
-        return List.of(pureFluidOutput, byproductFluidOutput);
-    }
-
     public final IFluidHandler fluids = new IFluidHandler() {
         @Override
         public int getTanks() {
@@ -152,6 +147,10 @@ public class ConcoctiMelterBlockEntity extends AbstractConcoctiMachineBlockEntit
             MAX_ENERGY_STORED.of(0),
             FACING_DIRECTION.of(Direction.DOWN),
             MACHINE_SETTINGS_SLOTS.of(new MachineSettingsSlots()),
+
+            EJECT_ON.of(false),
+            PULL_ON.of(false),
+
             PURE_FLUID_OUTPUT.of(FluidStack.EMPTY),
             BYPRODUCT_FLUID_OUTPUT.of(FluidStack.EMPTY)
     );
@@ -248,10 +247,6 @@ public class ConcoctiMelterBlockEntity extends AbstractConcoctiMachineBlockEntit
             tag.put("byproduct_fluid_output", byproductFluidOutput.getFluid().save(registries));
     }
 
-    public IFluidHandler getFluidTank() {
-        return fluids;
-    }
-
     @Override
     @Contract(pure = true)
     protected @NotNull List<SlotType> getAllowedSlotTypes() {
@@ -272,6 +267,14 @@ public class ConcoctiMelterBlockEntity extends AbstractConcoctiMachineBlockEntit
         return List.of();
     }
 
+    @Override
+    public List<IFluidTank> getFluidTanks() {
+        return List.of(
+                pureFluidOutput, byproductFluidOutput
+        );
+    }
+
+    @Override
     public List<IFluidTank> getFluidTanks(SlotType type) {
         switch (type) {
             case PURE_FLUID_OUTPUT -> {

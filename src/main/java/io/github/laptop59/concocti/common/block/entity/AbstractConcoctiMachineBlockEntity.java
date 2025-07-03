@@ -4,6 +4,7 @@ import io.github.laptop59.concocti.client.gui.components.MachineSettings;
 import io.github.laptop59.concocti.client.gui.components.MachineSettingsSlots;
 import io.github.laptop59.concocti.client.gui.components.SlotFlag;
 import io.github.laptop59.concocti.client.gui.components.SlotType;
+import io.github.laptop59.concocti.common.Concocti;
 import io.github.laptop59.concocti.common.abstraction.Properties;
 import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.frame.FrameAttributes;
@@ -35,10 +36,12 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -70,6 +73,12 @@ public abstract class AbstractConcoctiMachineBlockEntity
     int totalTicks = 0;
     int lastUpgradeUnits = -1;
     float rateConsumption;
+    boolean ejectOn;
+    boolean pullOn;
+
+    int autoCooldown = 0;
+
+    public static final int AUTO_COOLDOWN = 5;
 
     public final MachineSettings machineSettings = new MachineSettings(getAllowedSlotTypes());
 
@@ -82,16 +91,21 @@ public abstract class AbstractConcoctiMachineBlockEntity
             Properties.ENERGY_STORED.newWithLinker(() -> energy.getEnergyStored());
     public final Property<Integer> MAX_ENERGY_STORED =
             Properties.MAX_ENERGY_STORED.newWithLinker(() -> energy.getMaxEnergyStored());
+    public final Property<Boolean> EJECT_ON =
+            Properties.EJECT_ON.newWithLinker(() -> ejectOn);
+    public final Property<Boolean> PULL_ON =
+            Properties.PULL_ON.newWithLinker(() -> pullOn);
 
     public final Property<Direction> FACING_DIRECTION =
             Properties.FACING_DIRECTION.newWithLinker(() -> getBlockState().getValue(FACING));
     public final Property<MachineSettingsSlots> MACHINE_SETTINGS_SLOTS =
             Properties.MACHINE_SETTINGS_SLOTS.newWithLinker(() -> machineSettings.slots);
 
+    /** Gets the item handler from a particular direction. */
     public @Nullable IItemHandler getSidedItemHandler(Direction direction) {
         SlotType slotType = machineSettings.getSlot(direction);
-        if (!slotType.isSet(SlotFlag.ITEM)) return null;
-        List<Integer> slots = getItemSlots(slotType);
+        if (slotType != null && !slotType.isSet(SlotFlag.ITEM)) return null;
+        List<Integer> slots = slotType == null ? getAllItemSlots() : getItemSlots(slotType);
         if (slots.isEmpty()) return null;
         return new IItemHandler() {
             @Override
@@ -107,13 +121,13 @@ public abstract class AbstractConcoctiMachineBlockEntity
 
             @Override
             public @NotNull ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-                if (slots.contains(slot) && slotType.isSet(SlotFlag.INPUT)) return itemHandler.insertItem(slot, stack, simulate);
+                if (slots.contains(slot) && (slotType == null || slotType.isSet(SlotFlag.INPUT))) return itemHandler.insertItem(slot, stack, simulate);
                 return stack;
             }
 
             @Override
             public @NotNull ItemStack extractItem(int slot, int amount, boolean simulate) {
-                if (slots.contains(slot) && slotType.isSet(SlotFlag.OUTPUT)) return itemHandler.extractItem(slot, amount, simulate);
+                if (slots.contains(slot) && (slotType == null || slotType.isSet(SlotFlag.OUTPUT))) return itemHandler.extractItem(slot, amount, simulate);
                 return ItemStack.EMPTY.copy();
             }
 
@@ -129,10 +143,181 @@ public abstract class AbstractConcoctiMachineBlockEntity
         };
     }
 
+    /** Negates whether eject is on and returns the new value. */
+    public boolean changeEjectOn() {
+        ejectOn = !ejectOn;
+        attemptToEject();
+        return ejectOn;
+    }
+
+    /** Negates whether pull is on and returns the new value. */
+    public boolean changePullOn() {
+        pullOn = !pullOn;
+        attemptToPull();
+        return pullOn;
+    }
+
+    /** Attempts to eject output items and fluids. However, this is a no-op if eject is not enabled. */
+    public void attemptToEject() {
+        if (!ejectOn) return;
+        attemptToEjectItems();
+        attemptToEjectFluids();
+    }
+
+    /** Attempts to pull input items and fluids. However, this is a no-op if eject is not enabled. */
+    public void attemptToPull() {
+        if (!pullOn) return;
+        attemptToPullItems();
+        attemptToPullFluids();
+    }
+
+    /** Attempts to eject output items. However, this is <b>NOT</b> a no-op if eject is not enabled - it doesn't care whether eject is on or off. */
+    protected void attemptToEjectItems() {
+        for (Direction direction : machineSettings.slots.keySet()) {
+            IItemHandler input = getSidedItemHandler(direction);
+            if (input == null) continue;
+            IItemHandler output = getLevel().getCapability(
+                    Capabilities.ItemHandler.BLOCK,
+                    getBlockPos().relative(direction),
+                    direction.getOpposite()
+            );
+            if (output == null) continue;
+            transfer(input, output, false);
+        }
+    }
+
+    /** Attempts to eject output fluids. However, this is <b>NOT</b> a no-op if eject is not enabled - it doesn't care whether eject is on or off. */
+    protected void attemptToEjectFluids() {
+        for (Direction direction : machineSettings.slots.keySet()) {
+            IFluidHandler input = getSidedFluidHandler(direction);
+            if (input == null) continue;
+            IFluidHandler output = getLevel().getCapability(
+                    Capabilities.FluidHandler.BLOCK,
+                    getBlockPos().relative(direction),
+                    direction.getOpposite()
+            );
+            if (output == null) continue;
+            transfer(input, output);
+        }
+    }
+
+    /** Attempts to pull input items. However, this is <b>NOT</b> a no-op if eject is not enabled - it doesn't care whether eject is on or off. */
+    protected void attemptToPullItems() {
+        for (Direction direction : machineSettings.slots.keySet()) {
+            IItemHandler output = getSidedItemHandler(direction);
+            if (output == null) continue;
+            IItemHandler input = getLevel().getCapability(
+                    Capabilities.ItemHandler.BLOCK,
+                    getBlockPos().relative(direction),
+                    direction.getOpposite()
+            );
+            if (input == null) continue;
+            transfer(input, output, false);
+        }
+    }
+
+    /** Attempts to pull input fluids. However, this is <b>NOT</b> a no-op if eject is not enabled - it doesn't care whether eject is on or off. */
+    protected void attemptToPullFluids() {
+        for (Direction direction : machineSettings.slots.keySet()) {
+            IFluidHandler output = getSidedFluidHandler(direction);
+            if (output == null) continue;
+            IFluidHandler input = getLevel().getCapability(
+                    Capabilities.FluidHandler.BLOCK,
+                    getBlockPos().relative(direction),
+                    direction.getOpposite()
+            );
+            if (input == null) continue;
+            transfer(input, output);
+        }
+    }
+
+    /**
+     * Transfer items from one handler to another.
+     * @param from Handler to take items from.
+     * @param to Handler to put items to.
+     */
+    protected static void transfer(@NotNull IItemHandler from, @NotNull IItemHandler to, boolean fillExistingStacks) {
+        // Transfer all the items possible from `from` to `to`.
+        // Taken from MI.
+        // https://github.com/AztechMC/Modern-Industrialization/blob/c5a997baf3be596049c031bc0b4a7915def7b99d/src/main/java/aztech/modern_industrialization/util/TransferHelper.java#L38
+        for (int i = 0; i < from.getSlots(); i++) {
+            // First, simulate.
+            ItemStack toTake = from.extractItem(i, Integer.MAX_VALUE, true);
+            if (toTake.isEmpty()) continue;
+            int extractCount = toTake.getCount();
+            ItemStack left = fillExistingStacks ?
+                    ItemHandlerHelper.insertItemStacked(to, toTake, true) :
+                    ItemHandlerHelper.insertItem(to, toTake, true);
+            int insertCount = extractCount - left.getCount();
+            if (insertCount <= 0) continue;
+            // Now we can execute the action.
+            toTake = from.extractItem(i, insertCount, false);
+            if (toTake.isEmpty()) continue;
+            left = fillExistingStacks ?
+                    ItemHandlerHelper.insertItemStacked(to, toTake, false) :
+                    ItemHandlerHelper.insertItem(to, toTake, false);
+            if (!left.isEmpty()) {
+                // Try to give the taken items back if possible.
+                left = from.insertItem(i, left, false);
+                if (!left.isEmpty()) {
+                    Concocti.LOGGER.warn("Could not provide back {} to item handler {}, voiding.", left, to);
+                }
+            }
+        }
+    }
+
+    /**
+     * Transfer fluids from one handler to another.
+     * @param from Handler to take fluids from.
+     * @param to Handler to put fluids to.
+     */
+    protected static void transfer(@NotNull IFluidHandler from, @NotNull IFluidHandler to) {
+        while (!transfer(from, to, Integer.MAX_VALUE, false).isEmpty());
+    }
+
+    /**
+     * Transfer fluids from one handler to another. This function is a fixed version of NeoForge's handler, which does
+     * not handle multi-tank to multi-tank transactions properly.
+     * @param from Handler to take fluids from.
+     * @param to Handler to put fluids to.
+     * @param maxAmount The maximum amount of fluid from a tank to take from the {@code from} handler.
+     * @param simulated Whether the transfer is simulated or not.
+     */
+    public static FluidStack transfer(@NotNull IFluidHandler from, @NotNull IFluidHandler to, int maxAmount, boolean simulated) {
+        // Taken from MI.
+        // https://github.com/AztechMC/Modern-Industrialization/blob/c5a997baf3be596049c031bc0b4a7915def7b99d/src/main/java/aztech/modern_industrialization/util/TransferHelper.java#L147
+        int tanks = from.getTanks();
+        for (int i = 0; i < tanks; ++i) {
+            FluidStack toTry = from.getFluidInTank(i).copy();
+            if (toTry.getAmount() > maxAmount) {
+                toTry.setAmount(maxAmount);
+            }
+            FluidStack drainable = from.drain(toTry, IFluidHandler.FluidAction.SIMULATE);
+            if (drainable.isEmpty()) {
+                continue;
+            }
+            int fillableAmount = to.fill(drainable, IFluidHandler.FluidAction.SIMULATE);
+            if (fillableAmount > 0) {
+                drainable.setAmount(fillableAmount);
+                if (!simulated) {
+                    FluidStack drained = from.drain(drainable, IFluidHandler.FluidAction.EXECUTE);
+                    if (!drained.isEmpty()) {
+                        drained.setAmount(to.fill(drained, IFluidHandler.FluidAction.EXECUTE));
+                        return drained;
+                    }
+                } else {
+                    return drainable;
+                }
+            }
+        }
+        return FluidStack.EMPTY;
+    }
+
+    /** Gets the fluid handler from a particular direction. */
     public @Nullable IFluidHandler getSidedFluidHandler(Direction direction) {
         SlotType slotType = machineSettings.getSlot(direction);
-        if (!slotType.isSet(SlotFlag.FLUID)) return null;
-        List<IFluidTank> tanks = getFluidTanks(slotType);
+        if (slotType != null && !slotType.isSet(SlotFlag.FLUID)) return null;
+        List<IFluidTank> tanks = slotType == null ? getFluidTanks() : getFluidTanks(slotType);
         if (tanks.isEmpty()) return null;
         return new IFluidHandler() {
             @Override
@@ -158,7 +343,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
             @Override
             public int fill(@NotNull FluidStack resource, @NotNull FluidAction action) {
                 FluidStack filler = resource.copy();
-                if (!slotType.isSet(SlotFlag.INPUT)) return 0;
+                if (slotType != null && !slotType.isSet(SlotFlag.INPUT)) return 0;
                 for (IFluidTank tank : tanks) {
                     filler.setAmount(filler.getAmount() - tank.fill(resource, action));
                     if (filler.getAmount() == 0) return resource.getAmount();
@@ -169,7 +354,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
             @Override
             public @NotNull FluidStack drain(@NotNull FluidStack resource, @NotNull FluidAction action) {
                 FluidStack totalUndrained = resource.copy();
-                if (!slotType.isSet(SlotFlag.OUTPUT)) return resource.copy();
+                if (slotType != null && !slotType.isSet(SlotFlag.OUTPUT)) return resource.copy();
                 for (IFluidTank tank : tanks) {
                     FluidStack drained = tank.drain(totalUndrained, FluidAction.SIMULATE);
                     if (!drained.isEmpty())
@@ -350,20 +535,6 @@ public abstract class AbstractConcoctiMachineBlockEntity
     }
 
     /**
-     * Gets only the input handlers of fluid stacks of this machine.
-     */
-    public List<IFluidHandler> getInputFluidHandlers() {
-        return List.of();
-    }
-
-    /**
-     * Gets only the output handlers of fluid stacks of this machine.
-     */
-    public List<IFluidHandler> getOutputFluidHandlers() {
-        return List.of();
-    }
-
-    /**
      * A basic implementation of a Concocti Machine's server tick.
      */
     public static <T extends AbstractConcoctiMachineBlockEntity<T, M, V, I, R>,
@@ -375,6 +546,11 @@ public abstract class AbstractConcoctiMachineBlockEntity
             entity.setNewEnergyMultiplier(entity.getInefficientEnergyMultiplier());
         }
         if (entity.ticksLeft >= entity.totalTicks) entity.lastRecipeId = null;
+        if (--entity.autoCooldown <= 0) {
+            entity.autoCooldown = AUTO_COOLDOWN;
+            entity.attemptToPull();
+            entity.attemptToEject();
+        }
         if (entity.canProcess()) {
             V input = entity.getInput();
             ResourceLocation toBeProcessed = entity.getRecipeIdFrom(input);
@@ -389,6 +565,8 @@ public abstract class AbstractConcoctiMachineBlockEntity
             if (recipe != null && entity.ticksLeft <= 0) {
                 // Produce the result.
                 entity.onRecipeCompleted(recipe);
+                entity.attemptToEject();
+                entity.attemptToPull();
                 entity.totalTicks = recipe.getTicks();
                 entity.ticksLeft = entity.totalTicks;
             }
@@ -417,6 +595,8 @@ public abstract class AbstractConcoctiMachineBlockEntity
         this.machineSettings.slots = MachineSettingsSlots.CODEC
                 .parse(NbtOps.INSTANCE, tag.get("machine_settings_slots"))
                 .getOrThrow();
+        this.ejectOn = tag.contains("eject_on") && tag.getBoolean("eject_on");
+        this.pullOn = tag.contains("pull_on") && tag.getBoolean("pull_on");
     }
 
     /**
@@ -434,6 +614,8 @@ public abstract class AbstractConcoctiMachineBlockEntity
         tag.put("machine_settings_slots",
                 MachineSettingsSlots.CODEC.encodeStart(NbtOps.INSTANCE, machineSettings.slots).getOrThrow()
         );
+        tag.putBoolean("eject_on", this.ejectOn);
+        tag.putBoolean("pull_on", this.pullOn);
     }
 
     @Override
@@ -446,7 +628,14 @@ public abstract class AbstractConcoctiMachineBlockEntity
         return isItemValid(index, stack);
     }
 
+    public List<Integer> getAllItemSlots() {
+        ArrayList<Integer> arrayList = new ArrayList<>(SIZE);
+        for (int i = 0; i < SIZE; i++) arrayList.add(i);
+        return arrayList;
+    }
+
     abstract public List<Integer> getItemSlots(SlotType type);
 
+    abstract public List<IFluidTank> getFluidTanks();
     abstract public List<IFluidTank> getFluidTanks(SlotType type);
 }

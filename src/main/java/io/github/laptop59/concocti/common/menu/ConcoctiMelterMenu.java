@@ -27,6 +27,10 @@ public class ConcoctiMelterMenu extends AbstractConcoctiMachineMenu<ConcoctiMelt
                 Properties.MAX_ENERGY_STORED,
                 Properties.FACING_DIRECTION,
                 Properties.MACHINE_SETTINGS_SLOTS,
+
+                Properties.EJECT_ON,
+                Properties.PULL_ON,
+
                 Properties.PURE_FLUID_OUTPUT,
                 Properties.BYPRODUCT_FLUID_OUTPUT
         );
