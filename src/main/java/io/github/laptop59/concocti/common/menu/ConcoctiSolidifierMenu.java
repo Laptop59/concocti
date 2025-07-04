@@ -20,18 +20,8 @@ public class ConcoctiSolidifierMenu extends AbstractConcoctiMachineMenu<Concocti
 
     @Contract(pure = true)
     @Override
-    public List<Property<?>> getProperties() {
+    public List<Property<?>> getMachineSpecificProperties() {
         return List.of(
-                Properties.TICKS_LEFT,
-                Properties.TOTAL_TICKS,
-                Properties.ENERGY_STORED,
-                Properties.MAX_ENERGY_STORED,
-                Properties.FACING_DIRECTION,
-                Properties.MACHINE_SETTINGS_SLOTS,
-
-                Properties.EJECT_ON,
-                Properties.PULL_ON,
-
                 Properties.FLUID_INPUT
         );
     }

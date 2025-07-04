@@ -42,7 +42,7 @@
   "screen.concocti.duration": "Duration: %ss",
   "screen.concocti.eject_off": "Eject: OFF",
   "screen.concocti.eject_on": "Eject: ON",
-  "screen.concocti.energy_bar": "Energy: %s/%s FE",
+  "screen.concocti.energy_bar": "Energy: %s (%s%%)",
   "screen.concocti.fluid_amount": "%s mB",
   "screen.concocti.fluid_bar": "%s: %s/%s mB",
   "screen.concocti.frame_info_efficiency": "Efficiency: %s%%",

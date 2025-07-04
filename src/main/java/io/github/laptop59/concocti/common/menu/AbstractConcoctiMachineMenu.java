@@ -19,6 +19,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -31,6 +32,18 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
     protected final Container container;
     protected final ContainerData data;
     public ComplexionViewer viewer;
+
+    protected final List<Property<?>> BASE_PROPERTIES = List.of(
+            Properties.TICKS_LEFT,
+            Properties.TOTAL_TICKS,
+            Properties.ENERGY_STORED,
+            Properties.MAX_ENERGY_STORED,
+            Properties.FACING_DIRECTION,
+            Properties.MACHINE_SETTINGS_SLOTS,
+
+            Properties.EJECT_ON,
+            Properties.PULL_ON
+    );
 
     // client constructor
     public AbstractConcoctiMachineMenu(
@@ -89,11 +102,17 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
 
     /** Gets all properties synced by a {@link ContainerData} for this menu. */
     @Contract(pure = true)
-    public abstract List<Property<?>> getProperties();
+    public abstract List<Property<?>> getMachineSpecificProperties();
+
+    public List<Property<?>> getMachineProperties() {
+        ArrayList<Property<?>> properties = new ArrayList<>(BASE_PROPERTIES);
+        properties.addAll(getMachineSpecificProperties());
+        return properties;
+    }
 
     protected int getPropertiesSize() {
         int size = 0;
-        for (Property<?> property : getProperties())
+        for (Property<?> property : getMachineProperties())
             size += property.codec().size();
         return size;
     }
@@ -103,7 +122,7 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
         viewer = new ComplexionViewer(containerData) {
             @Override
             public List<Property<?>> getProperties() {
-                return menu.getProperties();
+                return menu.getMachineProperties();
             }
         };
     }
@@ -113,7 +132,7 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
         viewer = new ComplexionViewer(containerData) {
             @Override
             public List<Property<?>> getProperties() {
-                return menu.getProperties();
+                return menu.getMachineProperties();
             }
         };
     }

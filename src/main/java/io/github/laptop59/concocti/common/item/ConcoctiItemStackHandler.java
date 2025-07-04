@@ -1,10 +1,8 @@
 package io.github.laptop59.concocti.common.item;
 
-import io.github.laptop59.concocti.common.block.entity.AbstractPoweredBlockEntity;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.ItemStackHandler;
-import org.jetbrains.annotations.NotNull;
 
 public class ConcoctiItemStackHandler extends ItemStackHandler {
     public ConcoctiItemStackHandler() { super(); }
@@ -22,5 +20,9 @@ public class ConcoctiItemStackHandler extends ItemStackHandler {
 
     public NonNullList<ItemStack> getDirectList() {
         return this.stacks;
+    }
+
+    public void setDirectList(NonNullList<ItemStack> stacks) {
+        this.stacks = stacks;
     }
 }

@@ -2,6 +2,7 @@ package io.github.laptop59.concocti.common.abstraction;
 
 import net.minecraft.world.inventory.ContainerData;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -37,13 +38,18 @@ public class Complexion implements ContainerData {
 
     /** Creates a new {@code Complexion} instance with the specified codecs and values. */
     public Complexion(ValuedComplexionCodec<?>... valuedComplexionCodecs) {
+        this(Arrays.stream(valuedComplexionCodecs).toList());
+    }
+
+    /** Creates a new {@code Complexion} instance with the specified codecs and values. */
+    public Complexion(List<ValuedComplexionCodec<?>> valuedComplexionCodecs) {
         int totalSize = 0;
         for (ValuedComplexionCodec<?> valuedComplexionCodec : valuedComplexionCodecs) {
             int size = valuedComplexionCodec.complexionCodec().codec().size();
             totalSize += size;
         }
         data = new int[totalSize];
-        properties = new Property[valuedComplexionCodecs.length];
+        properties = new Property[valuedComplexionCodecs.size()];
         int i = 0;
         for (ValuedComplexionCodec<?> valuedComplexionCodec : valuedComplexionCodecs) {
             properties[i] = valuedComplexionCodec.complexionCodec();

@@ -19,18 +19,8 @@ import java.util.List;
 public class ConcoctiMelterMenu extends AbstractConcoctiMachineMenu<ConcoctiMelterMenu> {
     @Contract(pure = true)
     @Override
-    public List<Property<?>> getProperties() {
+    public List<Property<?>> getMachineSpecificProperties() {
         return List.of(
-                Properties.TICKS_LEFT,
-                Properties.TOTAL_TICKS,
-                Properties.ENERGY_STORED,
-                Properties.MAX_ENERGY_STORED,
-                Properties.FACING_DIRECTION,
-                Properties.MACHINE_SETTINGS_SLOTS,
-
-                Properties.EJECT_ON,
-                Properties.PULL_ON,
-
                 Properties.PURE_FLUID_OUTPUT,
                 Properties.BYPRODUCT_FLUID_OUTPUT
         );
