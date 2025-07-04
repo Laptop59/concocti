@@ -5,16 +5,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.MenuProvider;
-import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.energy.EnergyStorage;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemStackHandler;
+import org.checkerframework.checker.units.qual.N;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -22,32 +19,41 @@ import org.jetbrains.annotations.NotNull;
  */
 public abstract class AbstractPoweredBlockEntity extends BaseContainerBlockEntity implements MenuProvider {
 
-    protected final int SIZE;
+    protected int slotSize;
 
     public DynamicEnergyStorage energy;
 
-    public final int baseEnergy, baseEnergyTransfer;
+    public int maxEnergy, maxEnergyTransfer;
 
-    protected final ConcoctiItemStackHandler itemHandler;
+    protected ConcoctiItemStackHandler itemHandler;
 
     protected AbstractPoweredBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState blockState, int maxEnergy, int maxEnergyTransfer, int slotSize) {
         super(type, pos, blockState);
-        this.SIZE = slotSize;
-        this.itemHandler = new ConcoctiItemStackHandler(SIZE) {
+        this.slotSize = slotSize;
+        this.itemHandler = createItemHandler(slotSize);
+        this.maxEnergy = maxEnergy;
+        this.maxEnergyTransfer = maxEnergyTransfer;
+        this.energy = new DynamicEnergyStorage(this.maxEnergy, maxEnergyTransfer, maxEnergyTransfer, 0);
+    }
+
+    public void resetItemHandler(int newSlotsAmount) {
+        this.slotSize = newSlotsAmount;
+        this.itemHandler.setDirectList(NonNullList.withSize(newSlotsAmount, ItemStack.EMPTY));
+    }
+
+    private @NotNull ConcoctiItemStackHandler createItemHandler(int slotSize) {
+        return new ConcoctiItemStackHandler(slotSize) {
             @Override
             public boolean isItemValid(int slot, @NotNull ItemStack stack) {
                 validate(slot);
                 return AbstractPoweredBlockEntity.this.isItemValid(slot, stack);
             }
         };
-        this.baseEnergy = maxEnergy;
-        this.baseEnergyTransfer = maxEnergyTransfer;
-        this.energy = new DynamicEnergyStorage(baseEnergy, maxEnergyTransfer, maxEnergyTransfer, 0);
     }
 
     public void setNewEnergyMultiplier(float multiplier) {
-        int newMaxEnergy = (int) (this.baseEnergy * multiplier);
-        int newMaxEnergyTransfer = (int) (this.baseEnergyTransfer * multiplier);
+        int newMaxEnergy = (int) (this.maxEnergy * multiplier);
+        int newMaxEnergyTransfer = (int) (this.maxEnergyTransfer * multiplier);
         this.energy.setMaxEnergy(newMaxEnergy);
         this.energy.setMaxEnergyTransfer(newMaxEnergyTransfer);
     }

@@ -7,7 +7,7 @@ import java.util.EnumMap;
 import java.util.List;
 
 public class MachineSettings {
-    final List<SlotType> availableTypes;
+    public List<SlotType> availableTypes;
     public MachineSettingsSlots slots;
 
     /**

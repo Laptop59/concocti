@@ -76,7 +76,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         addCommonTag("storage_blocks.concocti", "Concocti Storage Blocks");
 
         // GUI elements go here.
-        add("screen.concocti.energy_bar", "Energy: %s/%s FE");
+        add("screen.concocti.energy_bar", "Energy: %s (%s%%)");
         add("screen.concocti.fluid_bar", "%s: %s/%s mB");
         add("screen.concocti.fluid_amount", "%s mB");
         add("screen.concocti.no_upgrade", "Put a Concocti Upgrade here to speed up this block.");

@@ -9,6 +9,7 @@ import io.github.laptop59.concocti.common.abstraction.Properties;
 import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.frame.FrameAttributes;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
+import io.github.laptop59.concocti.common.machine.ConcoctiMachineDetails;
 import io.github.laptop59.concocti.common.menu.ConcoctiFrameSlot;
 import io.github.laptop59.concocti.common.menu.ConcoctiUpgradeSlot;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
@@ -19,6 +20,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
@@ -35,13 +37,16 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -64,10 +69,6 @@ public abstract class AbstractConcoctiMachineBlockEntity
                 M extends AbstractContainerMenu, V, I extends RecipeInput, R extends ProcessingRecipe<R, I>>
         extends AbstractPoweredBlockEntity
         implements ItemHandlerBlockEntity, FluidHandlerBlockEntity {
-    public static final int UPGRADE_SLOT = 0;
-    public static final int FRAME_SLOT = 1;
-
-    ResourceLocation lastRecipeId = null;
 
     int ticksLeft = 0;
     int totalTicks = 0;
@@ -75,12 +76,19 @@ public abstract class AbstractConcoctiMachineBlockEntity
     float rateConsumption;
     boolean ejectOn;
     boolean pullOn;
+    ResourceLocation lastRecipeId = null;
 
     int autoCooldown = 0;
 
-    public static final int AUTO_COOLDOWN = 5;
+    public ConcoctiMachineDetails<T, M, V, I, R> machineDetails;
+    public final MachineSettings machineSettings = new MachineSettings(List.of());
 
-    public final MachineSettings machineSettings = new MachineSettings(getAllowedSlotTypes());
+    public static final int AUTO_COOLDOWN = 5;
+    public static final int TANK_CAPACITY = 64000;
+
+    // Slots
+    public static final int UPGRADE_SLOT = 0;
+    public static final int FRAME_SLOT = 1;
 
     // Properties
     public final Property<Integer> TICKS_LEFT =
@@ -101,16 +109,27 @@ public abstract class AbstractConcoctiMachineBlockEntity
     public final Property<MachineSettingsSlots> MACHINE_SETTINGS_SLOTS =
             Properties.MACHINE_SETTINGS_SLOTS.newWithLinker(() -> machineSettings.slots);
 
+    /** Get the machine-specific details of this machine, uncached. Do not use this function for normal use. */
+    protected abstract Supplier<ConcoctiMachineDetails<T, M, V, I, R>> getUncachedMachineDetails();
+
+    /** Get the machine-specific details of this machine and caches it if not done yet. */
+    protected ConcoctiMachineDetails<T, M, V, I, R> getMachineDetails() {
+        if (this.machineDetails != null) return this.machineDetails;
+        ConcoctiMachineDetails<T, M, V, I, R> details = getUncachedMachineDetails().get();
+        this.machineDetails = details;
+        return details;
+    }
+
     /** Gets the item handler from a particular direction. */
     public @Nullable IItemHandler getSidedItemHandler(Direction direction) {
         SlotType slotType = machineSettings.getSlot(direction);
         if (slotType != null && !slotType.isSet(SlotFlag.ITEM)) return null;
-        List<Integer> slots = slotType == null ? getAllItemSlots() : getItemSlots(slotType);
+        List<Integer> slots = slotType == null ? getItemSlots() : getItemSlots(slotType);
         if (slots.isEmpty()) return null;
         return new IItemHandler() {
             @Override
             public int getSlots() {
-                return SIZE;
+                return slotSize;
             }
 
             @Override
@@ -402,22 +421,36 @@ public abstract class AbstractConcoctiMachineBlockEntity
      */
     abstract protected boolean isItemValidInMachine(int slot, @NotNull ItemStack stack);
 
-    public AbstractConcoctiMachineBlockEntity(BlockPos pos, BlockState blockState, int maxEnergy,
-                                              int maxEnergyTransfer, int slotSize, Supplier<BlockEntityType<T>> typeSupplier,
-                                              float rateConsumption) {
-        super(typeSupplier.get(), pos, blockState, maxEnergy, maxEnergyTransfer, slotSize);
+    public AbstractConcoctiMachineBlockEntity(Supplier<BlockEntityType<T>> blockEntityType, BlockPos pos, BlockState blockState) {
+        super(
+                blockEntityType.get(),
+                pos,
+                blockState,
+                0,
+                0,
+                0
+        );
 
-        this.rateConsumption = rateConsumption;
+        // Now fill up the blank variables.
+        ConcoctiMachineDetails<T, M, V, I, R> details = getMachineDetails();
 
-        if (slotSize < 2) throw new IllegalArgumentException("Expected at least two slots for upgrades and frame.");
+        this.maxEnergy = details.maxEnergy();
+        this.maxEnergyTransfer = details.maxEnergyTransfer();
+        this.resetItemHandler(details.slots());
+        this.rateConsumption = details.rateConsumption();
+        this.machineSettings.availableTypes = details.allowedSlotTypes();
+
+        if (details.slots() < 2) throw new IllegalArgumentException("Expected at least two slots for upgrades and frame.");
     }
 
     @Contract(pure = true)
-    abstract protected @NotNull List<SlotType> getAllowedSlotTypes();
+    protected @NotNull List<SlotType> getAllowedSlotTypes() {
+        return getMachineDetails().allowedSlotTypes();
+    }
 
     @Override
     public final int getContainerSize() {
-        return SIZE;
+        return slotSize;
     }
 
     @Override
@@ -430,7 +463,16 @@ public abstract class AbstractConcoctiMachineBlockEntity
 
     /** Creates a menu for this block entity. */
     @Override
-    abstract protected @NotNull M createMenu(int containerId, @NotNull Inventory inventory);
+    protected @NotNull M createMenu(int containerId, @NotNull Inventory inventory) {
+        try {
+            Class<M> menuClass = getMachineDetails().menuClass();
+            return menuClass.getConstructor(int.class, Inventory.class, Container.class, ContainerData.class).newInstance(
+                    containerId, inventory, this, getMachineDetails().complexion().get()
+            );
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     /** Gives the amount of energy (in FE) that this block entity consumes per tick. */
     protected int getTickEnergyIntake() {
@@ -476,7 +518,9 @@ public abstract class AbstractConcoctiMachineBlockEntity
 
     /** Gives this block entity's recipe type. This should usually be from
      * {@link io.github.laptop59.concocti.common.recipe.ConcoctiRecipes}. */
-    public abstract Supplier<RecipeType<R>> getRecipeType();
+    public Supplier<RecipeType<R>> getRecipeType() {
+        return getMachineDetails().recipeType();
+    }
 
     /**
      * Tells whether this block entity can process an input. This should check for all conditions. <p>
@@ -494,6 +538,11 @@ public abstract class AbstractConcoctiMachineBlockEntity
         // Check for a match between the ID of the stack and the last known one (via an ID).
         ResourceLocation toBeProcessed = getRecipeIdFrom(input);
         return lastRecipeId == null || lastRecipeId.equals(toBeProcessed);
+    }
+
+    @Override
+    protected @NotNull Component getDefaultName() {
+        return getMachineDetails().defaultName();
     }
 
     /** Creates a {@link RecipeInput} for an input. */
@@ -628,14 +677,47 @@ public abstract class AbstractConcoctiMachineBlockEntity
         return isItemValid(index, stack);
     }
 
-    public List<Integer> getAllItemSlots() {
-        ArrayList<Integer> arrayList = new ArrayList<>(SIZE);
-        for (int i = 0; i < SIZE; i++) arrayList.add(i);
+    public List<Integer> getItemSlots() {
+        ArrayList<Integer> arrayList = new ArrayList<>(slotSize);
+        for (int i = 0; i < slotSize; i++) arrayList.add(i);
         return arrayList;
     }
 
-    abstract public List<Integer> getItemSlots(SlotType type);
+    @Contract(pure = true)
+    public List<Integer> getItemSlots(SlotType type) {
+        return getItemSlotsMap().getOrDefault(type, List.of());
+    }
+
+    @Contract(pure = true)
+    public EnumMap<SlotType, List<Integer>> getItemSlotsMap() {
+        return getMachineDetails().itemSlotsMap();
+    }
+
+    @Contract(pure = true)
+    public List<IFluidTank> getFluidTanks(SlotType type) {
+        return getFluidTanksMap()
+                .getOrDefault(type, List.of())
+                .stream()
+                .map(Supplier::get)
+                .toList();
+    }
+
+
+    public EnumMap<SlotType, List<Supplier<IFluidTank>>> getFluidTanksMap() {
+        return getMachineDetails().fluidSlotsMap();
+    }
 
     abstract public List<IFluidTank> getFluidTanks();
-    abstract public List<IFluidTank> getFluidTanks(SlotType type);
+
+    protected FluidStack parseFluidStack(CompoundTag tag, HolderLookup.@NotNull Provider registries) {
+        if (tag != null)
+            return FluidStack.parseOptional(registries, tag);
+        else
+            return FluidStack.EMPTY.copy();
+    }
+
+    protected void saveFluidStack(String key, @NotNull CompoundTag tag, FluidTank tank, HolderLookup.@NotNull Provider registries) {
+        if (tank.isEmpty()) return;
+        tag.put(key, tank.getFluid().save(registries));
+    }
 }
