@@ -164,14 +164,14 @@ public abstract class AbstractConcoctiMachineBlockEntity
         attemptToEjectFluids();
     }
 
-    /** Attempts to pull input items and fluids. However, this is a no-op if eject is not enabled. */
+    /** Attempts to pull input items and fluids. However, this is a no-op if pull is not enabled. */
     public void attemptToPull() {
         if (!pullOn) return;
         attemptToPullItems();
         attemptToPullFluids();
     }
 
-    /** Attempts to eject output items. However, this is <b>NOT</b> a no-op if eject is not enabled - it doesn't care whether eject is on or off. */
+    /** Attempts to eject output items. However, this is <b>NOT</b> a no-op if pull is not enabled - it doesn't care whether pull is on or off. */
     protected void attemptToEjectItems() {
         for (Direction direction : machineSettings.slots.keySet()) {
             IItemHandler input = getSidedItemHandler(direction);
@@ -201,7 +201,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
         }
     }
 
-    /** Attempts to pull input items. However, this is <b>NOT</b> a no-op if eject is not enabled - it doesn't care whether eject is on or off. */
+    /** Attempts to pull input items. However, this is <b>NOT</b> a no-op if pull is not enabled - it doesn't care whether pull is on or off. */
     protected void attemptToPullItems() {
         for (Direction direction : machineSettings.slots.keySet()) {
             IItemHandler output = getSidedItemHandler(direction);
@@ -212,11 +212,11 @@ public abstract class AbstractConcoctiMachineBlockEntity
                     direction.getOpposite()
             );
             if (input == null) continue;
-            transfer(input, output, false);
+            transfer(input, output, true);
         }
     }
 
-    /** Attempts to pull input fluids. However, this is <b>NOT</b> a no-op if eject is not enabled - it doesn't care whether eject is on or off. */
+    /** Attempts to pull input fluids. However, this is <b>NOT</b> a no-op if pull is not enabled - it doesn't care whether pull is on or off. */
     protected void attemptToPullFluids() {
         for (Direction direction : machineSettings.slots.keySet()) {
             IFluidHandler output = getSidedFluidHandler(direction);
