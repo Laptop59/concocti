@@ -41,7 +41,7 @@ public class ConcoctiSolidifierRecipeCategory extends AbstractConcoctiRecipeCate
     }
 
     @Override
-    protected int getHorizontalArrowOffset() { return 16; }
+    protected int getHorizontalArrowOffset(@NotNull ConcoctiSolidifierRecipe recipe) { return 16; }
 
     @Override
     public void setRecipe(@NotNull IRecipeLayoutBuilder builder, ConcoctiSolidifierRecipe recipe, @NotNull IFocusGroup focuses) {

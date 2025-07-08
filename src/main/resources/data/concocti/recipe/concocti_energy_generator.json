@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "###",
+    "#R#",
+    "#C#"
+  ],
+  "key": {
+    "#": {
+      "item": "concocti:purified_concocti_nugget"
+    },
+    "R": {
+      "item": "minecraft:redstone_block"
+    },
+    "C": {
+      "item": "minecraft:coal_block"
+    }
+  },
+  "result": {
+    "id": "concocti:concocti_energy_generator",
+    "count": 1
+  }
+}

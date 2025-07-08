@@ -5,4 +5,5 @@ public final class SlotFlag {
     public final static int OUTPUT = 0x02;
     public final static int ITEM = 0x04;
     public final static int FLUID = 0x08;
+    public final static int ENERGY = 0x10;
 }

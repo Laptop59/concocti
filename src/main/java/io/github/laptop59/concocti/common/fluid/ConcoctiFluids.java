@@ -36,7 +36,7 @@ public class ConcoctiFluids {
             )
         );
 
-    public static final DeferredBlock<LiquidBlock> MOLTEN_CONCOCTI_BLOCK = ConcoctiBlocks.registerFluidBlock("molten_concoctized_dirt", MOLTEN_CONCOCTI,
+    public static final DeferredBlock<LiquidBlock> MOLTEN_CONCOCTI_BLOCK = ConcoctiBlocks.registerFluidBlock("molten_concocti", MOLTEN_CONCOCTI,
             BlockBehaviour.Properties.ofFullCopy(Blocks.LAVA).mapColor(DyeColor.PURPLE)
     );
 
@@ -56,7 +56,67 @@ public class ConcoctiFluids {
             )
     );
 
-    public static final DeferredBlock<LiquidBlock> MOLTEN_CONCOCTIZED_DIRT_BLOCK = ConcoctiBlocks.registerFluidBlock("molten_concoctized_dirt_block", MOLTEN_CONCOCTIZED_DIRT,
+    public static final DeferredBlock<LiquidBlock> MOLTEN_CONCOCTIZED_DIRT_BLOCK = ConcoctiBlocks.registerFluidBlock("molten_concoctized_dirt", MOLTEN_CONCOCTIZED_DIRT,
             BlockBehaviour.Properties.ofFullCopy(Blocks.LAVA).mapColor(DyeColor.PURPLE)
+    );
+
+    public static final DeferredHolder<Fluid, FlowingFluid> MOLTEN_COPPER = FLUIDS.register("molten_copper", (loc) -> new MoltenCopperFluid.Source());
+    public static final DeferredHolder<Fluid, FlowingFluid> FLOWING_MOLTEN_COPPER = FLUIDS.register("flowing_molten_copper", (loc) -> new MoltenCopperFluid.Flowing());
+
+    public static final DeferredHolder<FluidType, FluidType> MOLTEN_COPPER_FLUID_TYPE = FLUID_TYPES.register("molten_copper",
+            (loc) -> new FluidType(
+                    FluidType.Properties.create()
+                            .temperature(1084)
+                            .lightLevel(12)
+                            .viscosity(1000)
+                            .density(3)
+                            .canConvertToSource(false)
+                            .canDrown(false)
+                            .canSwim(true)
+            )
+    );
+
+    public static final DeferredBlock<LiquidBlock> MOLTEN_COPPER_BLOCK = ConcoctiBlocks.registerFluidBlock("molten_copper", MOLTEN_COPPER,
+            BlockBehaviour.Properties.ofFullCopy(Blocks.LAVA).mapColor(DyeColor.RED)
+    );
+
+    public static final DeferredHolder<Fluid, FlowingFluid> MOLTEN_CONDUCTIVIUM = FLUIDS.register("molten_conductivium", (loc) -> new MoltenConductiviumFluid.Source());
+    public static final DeferredHolder<Fluid, FlowingFluid> FLOWING_MOLTEN_CONDUCTIVIUM = FLUIDS.register("flowing_molten_conductivium", (loc) -> new MoltenConductiviumFluid.Flowing());
+
+    public static final DeferredHolder<FluidType, FluidType> MOLTEN_CONDUCTIVIUM_FLUID_TYPE = FLUID_TYPES.register("molten_conductivium",
+            (loc) -> new FluidType(
+                    FluidType.Properties.create()
+                            .temperature(2000)
+                            .lightLevel(15)
+                            .viscosity(1000)
+                            .density(3)
+                            .canConvertToSource(false)
+                            .canDrown(false)
+                            .canSwim(true)
+            )
+    );
+
+    public static final DeferredHolder<Fluid, FlowingFluid> MOLTEN_LIGHTNING = FLUIDS.register("molten_lightning", (loc) -> new MoltenLightningFluid.Source());
+    public static final DeferredHolder<Fluid, FlowingFluid> FLOWING_MOLTEN_LIGHTNING = FLUIDS.register("flowing_molten_lightning", (loc) -> new MoltenLightningFluid.Flowing());
+
+    public static final DeferredHolder<FluidType, FluidType> MOLTEN_LIGHTNING_FLUID_TYPE = FLUID_TYPES.register("molten_lightning",
+            (loc) -> new FluidType(
+                    FluidType.Properties.create()
+                            .temperature(1000000000)
+                            .lightLevel(15)
+                            .viscosity(10)
+                            .density(33)
+                            .canConvertToSource(false)
+                            .canDrown(false)
+                            .canSwim(true)
+            )
+    );
+
+    public static final DeferredBlock<LiquidBlock> MOLTEN_LIGHTNING_BLOCK = ConcoctiBlocks.registerFluidBlock("molten_lightning", MOLTEN_LIGHTNING,
+            BlockBehaviour.Properties.ofFullCopy(Blocks.LAVA).mapColor(DyeColor.WHITE)
+    );
+
+    public static final DeferredBlock<LiquidBlock> MOLTEN_CONDUCTIVIUM_BLOCK = ConcoctiBlocks.registerFluidBlock("molten_conductivium", MOLTEN_CONDUCTIVIUM,
+            BlockBehaviour.Properties.ofFullCopy(Blocks.LAVA).mapColor(DyeColor.CYAN)
     );
 }

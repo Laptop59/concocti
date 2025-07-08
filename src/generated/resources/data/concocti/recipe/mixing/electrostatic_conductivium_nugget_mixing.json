@@ -1,0 +1,29 @@
+{
+  "type": "concocti:concocti_mixer",
+  "input_fluids": [
+    {
+      "amount": 1,
+      "fluid": "concocti:molten_lightning"
+    },
+    {
+      "amount": 16,
+      "fluid": "concocti:molten_concocti"
+    }
+  ],
+  "input_items": [
+    {
+      "count": 3,
+      "item": "concocti:conductivium_nugget"
+    },
+    {
+      "count": 16,
+      "item": "minecraft:redstone"
+    }
+  ],
+  "output_fluid": {},
+  "output_item": {
+    "count": 1,
+    "id": "concocti:electrostatic_conductivium_nugget"
+  },
+  "ticks": 400
+}

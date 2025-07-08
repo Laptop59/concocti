@@ -3,6 +3,7 @@
     "concocti:dirty_concocti_block",
     "concocti:purified_concocti_block",
     "concocti:tough_concocti_block",
-    "concocti:compressed_concocti_block"
+    "concocti:compressed_concocti_block",
+    "concocti:conductivium_block"
   ]
 }

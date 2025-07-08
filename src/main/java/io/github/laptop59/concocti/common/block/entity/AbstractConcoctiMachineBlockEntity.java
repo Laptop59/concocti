@@ -8,6 +8,9 @@ import io.github.laptop59.concocti.common.Concocti;
 import io.github.laptop59.concocti.common.abstraction.Properties;
 import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.frame.FrameAttributes;
+import io.github.laptop59.concocti.common.block.frame.FrameBlock;
+import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTankHandler;
+import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTankSlotTypedHandler;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachineDetails;
 import io.github.laptop59.concocti.common.menu.ConcoctiFrameSlot;
@@ -34,6 +37,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
@@ -45,11 +49,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock.FACING;
 import static io.github.laptop59.concocti.common.block.ConcoctiMelterBlock.LIT;
@@ -77,6 +79,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
     boolean ejectOn;
     boolean pullOn;
     ResourceLocation lastRecipeId = null;
+    protected ConcoctiFluidTankHandler fluidHandler;
 
     int autoCooldown = 0;
 
@@ -176,11 +179,12 @@ public abstract class AbstractConcoctiMachineBlockEntity
         return pullOn;
     }
 
-    /** Attempts to eject output items and fluids. However, this is a no-op if eject is not enabled. */
+    /** Attempts to eject output items, fluids and energy. However, this is a no-op if eject is not enabled. */
     public void attemptToEject() {
         if (!ejectOn) return;
         attemptToEjectItems();
         attemptToEjectFluids();
+        attemptToEjectEnergy();
     }
 
     /** Attempts to pull input items and fluids. However, this is a no-op if pull is not enabled. */
@@ -212,6 +216,23 @@ public abstract class AbstractConcoctiMachineBlockEntity
             if (input == null) continue;
             IFluidHandler output = getLevel().getCapability(
                     Capabilities.FluidHandler.BLOCK,
+                    getBlockPos().relative(direction),
+                    direction.getOpposite()
+            );
+            if (output == null) continue;
+            transfer(input, output);
+        }
+    }
+
+    /** Attempts to eject output energy (if applicable). However, this is <b>NOT</b> a no-op if eject is not enabled - it doesn't care whether eject is on or off. */
+    protected void attemptToEjectEnergy() {
+        for (Direction direction : machineSettings.slots.keySet()) {
+            SlotType slotType = machineSettings.getSlot(direction);
+            if (!slotType.isSet(SlotFlag.ENERGY | SlotFlag.OUTPUT)) continue;
+            IEnergyStorage input = energy;
+            if (input == null) continue;
+            IEnergyStorage output = getLevel().getCapability(
+                    Capabilities.EnergyStorage.BLOCK,
                     getBlockPos().relative(direction),
                     direction.getOpposite()
             );
@@ -295,6 +316,18 @@ public abstract class AbstractConcoctiMachineBlockEntity
     }
 
     /**
+     * Transfer energy from one storage to another.
+     * @param from Storage to extract energy from.
+     * @param to Storage to insert energy to.
+     */
+    protected static void transfer(@NotNull IEnergyStorage from, @NotNull IEnergyStorage to) {
+        if (!from.canExtract() || !to.canReceive()) return;
+        int energy = Math.min(from.extractEnergy(Integer.MAX_VALUE, true), to.receiveEnergy(Integer.MAX_VALUE, true));
+        // Now try to extract and put.
+        to.receiveEnergy(from.extractEnergy(energy, false), false);
+    }
+
+    /**
      * Transfer fluids from one handler to another. This function is a fixed version of NeoForge's handler, which does
      * not handle multi-tank to multi-tank transactions properly.
      * @param from Handler to take fluids from.
@@ -322,7 +355,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
                     FluidStack drained = from.drain(drainable, IFluidHandler.FluidAction.EXECUTE);
                     if (!drained.isEmpty()) {
                         drained.setAmount(to.fill(drained, IFluidHandler.FluidAction.EXECUTE));
-                        return drained;
+                         return drained;
                     }
                 } else {
                     return drainable;
@@ -338,78 +371,13 @@ public abstract class AbstractConcoctiMachineBlockEntity
         if (slotType != null && !slotType.isSet(SlotFlag.FLUID)) return null;
         List<IFluidTank> tanks = slotType == null ? getFluidTanks() : getFluidTanks(slotType);
         if (tanks.isEmpty()) return null;
-        return new IFluidHandler() {
-            @Override
-            public int getTanks() {
-                return tanks.size();
-            }
-
-            @Override
-            public @NotNull FluidStack getFluidInTank(int tank) {
-                return tanks.get(tank).getFluid();
-            }
-
-            @Override
-            public int getTankCapacity(int tank) {
-                return tanks.get(tank).getCapacity();
-            }
-
-            @Override
-            public boolean isFluidValid(int tank, @NotNull FluidStack stack) {
-                return tanks.get(tank).isFluidValid(stack);
-            }
-
-            @Override
-            public int fill(@NotNull FluidStack resource, @NotNull FluidAction action) {
-                FluidStack filler = resource.copy();
-                if (slotType != null && !slotType.isSet(SlotFlag.INPUT)) return 0;
-                for (IFluidTank tank : tanks) {
-                    filler.setAmount(filler.getAmount() - tank.fill(resource, action));
-                    if (filler.getAmount() == 0) return resource.getAmount();
-                }
-                return resource.getAmount() - filler.getAmount();
-            }
-
-            @Override
-            public @NotNull FluidStack drain(@NotNull FluidStack resource, @NotNull FluidAction action) {
-                FluidStack totalUndrained = resource.copy();
-                if (slotType != null && !slotType.isSet(SlotFlag.OUTPUT)) return resource.copy();
-                for (IFluidTank tank : tanks) {
-                    FluidStack drained = tank.drain(totalUndrained, FluidAction.SIMULATE);
-                    if (!drained.isEmpty())
-                        drained = tank.drain(resource, action);
-                    if (!FluidStack.isSameFluid(drained, totalUndrained)) continue; // This should never happen.
-                    totalUndrained.setAmount(totalUndrained.getAmount() - drained.getAmount());
-                    if (totalUndrained.isEmpty()) break;
-                }
-                FluidStack totalDrained = resource.copy();
-                totalDrained.setAmount(resource.getAmount() - totalUndrained.getAmount());
-                return totalDrained;
-            }
-
-            @Override
-            public @NotNull FluidStack drain(int maxDrain, @NotNull FluidAction action) {
-                FluidStack totalDrained = FluidStack.EMPTY.copy();
-                for (IFluidTank tank : tanks) {
-                    FluidStack drained = tank.drain(maxDrain, FluidAction.SIMULATE);
-                    boolean drainSuccess = false;
-                    if (FluidStack.isSameFluidSameComponents(totalDrained, drained)) {
-                        totalDrained.setAmount(totalDrained.getAmount() + drained.getAmount());
-                        drainSuccess = true;
-                    } else if (totalDrained.isEmpty()) {
-                        totalDrained = drained.copy();
-                        drainSuccess = true;
-                    }
-                    if (drainSuccess && action.execute()) tank.drain(maxDrain, action);
-                }
-                return totalDrained;
-            }
-        };
+        return new ConcoctiFluidTankSlotTypedHandler(() -> tanks, slotType);
     }
 
     @Override
     protected final boolean isItemValid(int slot, @NotNull ItemStack stack) {
         if (slot == 0) return stack.is(ConcoctiItems.Tags.CONCOCTI_UPGRADES);
+        if (slot == 1) return ConcoctiFrameSlot.getFrameAttributes(stack.getItem()).isPresent();
         return isItemValidInMachine(slot, stack);
     }
 
@@ -428,8 +396,10 @@ public abstract class AbstractConcoctiMachineBlockEntity
                 blockState,
                 0,
                 0,
-                0
+                0,
+                () -> DynamicEnergyStorage.Mode.NONE
         );
+        AbstractConcoctiMachineBlockEntity<T, M, V, I, R> blockEntity = this;
 
         // Now fill up the blank variables.
         ConcoctiMachineDetails<T, M, V, I, R> details = getMachineDetails();
@@ -439,6 +409,9 @@ public abstract class AbstractConcoctiMachineBlockEntity
         this.resetItemHandler(details.slots());
         this.rateConsumption = details.rateConsumption();
         this.machineSettings.availableTypes = details.allowedSlotTypes();
+        this.setEnergyModeSupplier(details.energyMode());
+
+        this.fluidHandler = new ConcoctiFluidTankHandler(blockEntity::getFluidTanks);
 
         if (details.slots() < 2) throw new IllegalArgumentException("Expected at least two slots for upgrades and frame.");
     }
@@ -476,8 +449,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
 
     /** Gives the amount of energy (in FE) that this block entity consumes per tick. */
     protected int getTickEnergyIntake() {
-        int s = ConcoctiUpgradeSlot.getUpgradeUnits(getItem(UPGRADE_SLOT));
-        return Math.toIntExact(Math.round(rateConsumption * (1 - getEfficiency()) * Math.pow(1.2f, s)));
+        return (int) (getTickMultiplier() * rateConsumption);
     }
 
     /** Gives the amount of energy (in FE) that this block entity consumes per tick. */
@@ -492,8 +464,13 @@ public abstract class AbstractConcoctiMachineBlockEntity
 
     /** Gives the tick process multiplier (tells how must faster a recipe is for this block entity). */
     protected int getTickMultiplier() {
-        int s = ConcoctiUpgradeSlot.getUpgradeUnits(getItem(UPGRADE_SLOT));
-        return (int) (Math.clamp(Math.ceil(Math.pow(0.9f, -s)), 1, 19) * getFrameMultiplier());
+        return (int) (getTickMultiplier(ConcoctiUpgradeSlot.getUpgradeUnits(getItem(UPGRADE_SLOT))) * getFrameMultiplier());
+    }
+
+    /** Gives the tick process multiplier (tells how must faster a recipe is for this block entity) from upgrade units. */
+    public static int getTickMultiplier(int upgradeUnits) {
+        double ticks = Math.pow(1.2, upgradeUnits);
+        return (int) ticks + upgradeUnits;
     }
 
     /** Gives the multiplier caused by an upgradable frame in this machine. */
@@ -586,9 +563,8 @@ public abstract class AbstractConcoctiMachineBlockEntity
     /**
      * A basic implementation of a Concocti Machine's server tick.
      */
-    public static <T extends AbstractConcoctiMachineBlockEntity<T, M, V, I, R>,
-            M extends AbstractContainerMenu, V, I extends RecipeInput, R extends ProcessingRecipe<R, I>>
-        void serverTick(Level level, BlockPos pos, BlockState state, AbstractConcoctiMachineBlockEntity<T, M, V, I, R> entity) {
+    public void tick(Level level, BlockPos pos, BlockState state) {
+        AbstractConcoctiMachineBlockEntity<T, M, V, I, R> entity = this;
         int currentUpgradeUnits = ConcoctiUpgradeSlot.getUpgradeUnits(entity.getItem(UPGRADE_SLOT));
         if (currentUpgradeUnits != entity.lastUpgradeUnits) {
             entity.lastUpgradeUnits = currentUpgradeUnits;
@@ -600,31 +576,43 @@ public abstract class AbstractConcoctiMachineBlockEntity
             entity.attemptToPull();
             entity.attemptToEject();
         }
-        if (entity.canProcess()) {
-            V input = entity.getInput();
-            ResourceLocation toBeProcessed = entity.getRecipeIdFrom(input);
-            R recipe = entity.getCurrentRecipe(input);
-            if (recipe != null && (entity.lastRecipeId == null || !entity.lastRecipeId.equals(toBeProcessed))) {
-                entity.lastRecipeId = toBeProcessed;
-                entity.totalTicks = recipe.getTicks();
-                entity.ticksLeft = entity.totalTicks;
+        int consumableTicks = getTickMultiplier();
+        while (consumableTicks > 0) {
+            if (entity.canProcess()) {
+                V input = entity.getInput();
+                ResourceLocation toBeProcessed = entity.getRecipeIdFrom(input);
+                R recipe = entity.getCurrentRecipe(input);
+                if (recipe != null && (entity.lastRecipeId == null || !entity.lastRecipeId.equals(toBeProcessed))) {
+                    entity.lastRecipeId = toBeProcessed;
+                    entity.totalTicks = recipe.getTicks();
+                    entity.ticksLeft = entity.totalTicks;
+                }
+                int ticksConsumed = Math.min(consumableTicks, entity.ticksLeft);
+                entity.ticksLeft -= ticksConsumed;
+                consumableTicks -= ticksConsumed;
+                entity.energy.forceExtractEnergy((int) (rateConsumption * ticksConsumed), false);
+                if (recipe != null && entity.ticksLeft <= 0) {
+                    // Produce the result.
+                    entity.onRecipeCompleted(recipe);
+                    entity.attemptToEject();
+                    entity.attemptToPull();
+                    entity.totalTicks = recipe.getTicks();
+                    entity.ticksLeft = entity.totalTicks;
+                }
+            } else {
+                if (entity.ticksLeft < entity.totalTicks) entity.ticksLeft += entity.getTickMultiplier();
+                break;
             }
-            entity.ticksLeft -= entity.getTickMultiplier();
-            entity.energy.extractEnergy(entity.getTickEnergyIntake(), false);
-            if (recipe != null && entity.ticksLeft <= 0) {
-                // Produce the result.
-                entity.onRecipeCompleted(recipe);
-                entity.attemptToEject();
-                entity.attemptToPull();
-                entity.totalTicks = recipe.getTicks();
-                entity.ticksLeft = entity.totalTicks;
-            }
-        } else {
-            if (entity.ticksLeft < entity.totalTicks) entity.ticksLeft += entity.getTickMultiplier();
         }
         if (state.getValue(LIT) != entity.canProcess()) {
             level.setBlock(pos, state.setValue(LIT, entity.canProcess()), 1 | 2);
         }
+    }
+
+    public static <T extends AbstractConcoctiMachineBlockEntity<T, M, V, I, R>,
+            M extends AbstractContainerMenu, V, I extends RecipeInput, R extends ProcessingRecipe<R, I>>
+        void serverTick(Level level, BlockPos pos, BlockState state, AbstractConcoctiMachineBlockEntity<T, M, V, I, R> entity) {
+        entity.tick(level, pos, state);
     }
 
     /**
@@ -695,11 +683,11 @@ public abstract class AbstractConcoctiMachineBlockEntity
 
     @Contract(pure = true)
     public List<IFluidTank> getFluidTanks(SlotType type) {
-        return getFluidTanksMap()
-                .getOrDefault(type, List.of())
-                .stream()
-                .map(Supplier::get)
-                .toList();
+        Set<IFluidTank> tanks = new HashSet<>();
+        for (Supplier<IFluidTank> listedTanks : getFluidTanksMap().getOrDefault(type, List.of())) {
+            tanks.add(listedTanks.get());
+        }
+        return tanks.stream().toList();
     }
 
 

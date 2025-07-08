@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " # ",
+    " # ",
+    " # "
+  ],
+  "key": {
+    "#": {
+      "item": "concocti:conductivium_ingot"
+    }
+  },
+  "result": {
+    "id": "concocti:conductivium_lightning_rod",
+    "count": 1
+  }
+}

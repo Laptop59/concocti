@@ -49,9 +49,22 @@ public class ConcoctiItems {
 
     public static final DeferredItem<BlockItem> CONCOCTI_MELTER = registerBlockItem(ConcoctiBlocks.CONCOCTI_MELTER);
     public static final DeferredItem<BlockItem> CONCOCTI_SOLIDIFIER = registerBlockItem(ConcoctiBlocks.CONCOCTI_SOLIDIFIER);
+    public static final DeferredItem<BlockItem> CONCOCTI_ENERGY_GENERATOR = registerBlockItem(ConcoctiBlocks.CONCOCTI_ENERGY_GENERATOR);
+    public static final DeferredItem<BlockItem> CONCOCTI_MIXER = registerBlockItem(ConcoctiBlocks.CONCOCTI_MIXER);
+    public static final DeferredItem<BlockItem> CONCOCTI_ELECTRON_COLLECTOR = registerBlockItem(ConcoctiBlocks.CONCOCTI_ELECTRON_COLLECTOR);
+
+    public static final DeferredItem<Item> CONDUCTIVIUM_NUGGET = registerItem("conductivium_nugget", new Item.Properties());
+    public static final DeferredItem<Item> CONDUCTIVIUM_INGOT = registerItem("conductivium_ingot", new Item.Properties());
+    public static final DeferredItem<BlockItem> CONDUCTIVIUM_BLOCK = registerBlockItem(ConcoctiBlocks.CONDUCTIVIUM_BLOCK);
+    public static final DeferredItem<BlockItem> CONDUCTIVIUM_LIGHTNING_ROD = registerBlockItem(ConcoctiBlocks.CONDUCTIVIUM_LIGHTNING_ROD);
+
+    public static final DeferredItem<Item> ELECTROSTATIC_CONDUCTIVIUM_NUGGET = registerItem("electrostatic_conductivium_nugget", new Item.Properties());
+    public static final DeferredItem<Item> ELECTROSTATIC_CONDUCTIVIUM_INGOT = registerItem("electrostatic_conductivium_ingot", new Item.Properties());
 
     public static final DeferredItem<BucketItem> MOLTEN_CONCOCTI_BUCKET = registerBucketItem("molten_concocti_bucket", ConcoctiFluids.MOLTEN_CONCOCTI);
     public static final DeferredItem<BucketItem> MOLTEN_CONCOCTIZED_DIRT_BUCKET = registerBucketItem("molten_concoctized_dirt_bucket", ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT);
+    public static final DeferredItem<BucketItem> MOLTEN_COPPER_BUCKET = registerBucketItem("molten_copper_bucket", ConcoctiFluids.MOLTEN_COPPER);
+    public static final DeferredItem<BucketItem> MOLTEN_CONDUCTIVIUM_BUCKET = registerBucketItem("molten_conductivium_bucket", ConcoctiFluids.MOLTEN_CONDUCTIVIUM);
 
     public static final DeferredItem<? extends Item> COMPACT_CONCOCTI_UPGRADE = registerItem("compact_concocti_upgrade", ConcoctiUpgradeItem::new, new Item.Properties().stacksTo(8));
     public static final DeferredItem<? extends Item> COMPACTER_CONCOCTI_UPGRADE = registerItem("compacter_concocti_upgrade", ConcoctiUpgradeItem::new, new Item.Properties().stacksTo(8));
@@ -59,6 +72,8 @@ public class ConcoctiItems {
 
     public static final DeferredItem<BlockItem> BASIC_CONCOCTI_FRAME = registerBlockItem(ConcoctiBlocks.BASIC_CONCOCTI_FRAME);
     public static final DeferredItem<BlockItem> ADVANCED_CONCOCTI_FRAME = registerBlockItem(ConcoctiBlocks.ADVANCED_CONCOCTI_FRAME);
+
+    public static final DeferredItem<BlockItem> CONCOCTI_BRICKS = registerBlockItem(ConcoctiBlocks.CONCOCTI_BRICKS);
 
     public static final Set<DeferredItem<? extends Item>> DISABLED_DURABILITY_TOOLTIP_ITEMS = new HashSet<>();
 
@@ -191,6 +206,7 @@ public class ConcoctiItems {
         acceptStack(output, DIAMETHYST_CRYSTAL_BLOCK);
 
         acceptStack(output, CONCOCTI_SEEDS);
+        acceptStack(output, CONCOCTI_BRICKS);
 
         acceptStack(output, DIRTY_CONCOCTI_NUGGET);
         acceptStack(output, DIRTY_CONCOCTI_INGOT);
@@ -208,11 +224,19 @@ public class ConcoctiItems {
         acceptStack(output, COMPRESSED_CONCOCTI_INGOT);
         acceptStack(output, COMPRESSED_CONCOCTI_BLOCK);
 
+        acceptStack(output, CONDUCTIVIUM_NUGGET);
+        acceptStack(output, CONDUCTIVIUM_INGOT);
+        acceptStack(output, CONDUCTIVIUM_BLOCK);
+        acceptStack(output, CONDUCTIVIUM_LIGHTNING_ROD);
+
+        acceptStack(output, ELECTROSTATIC_CONDUCTIVIUM_NUGGET);
+        acceptStack(output, ELECTROSTATIC_CONDUCTIVIUM_INGOT);
+
         acceptStack(output, CONCOCTI_MELTER);
         acceptStack(output, CONCOCTI_SOLIDIFIER);
-
-        acceptStack(output, MOLTEN_CONCOCTI_BUCKET);
-        acceptStack(output, MOLTEN_CONCOCTIZED_DIRT_BUCKET);
+        acceptStack(output, CONCOCTI_ENERGY_GENERATOR);
+        acceptStack(output, CONCOCTI_MIXER);
+        acceptStack(output, CONCOCTI_ELECTRON_COLLECTOR);
 
         acceptStack(output, COMPACT_CONCOCTI_UPGRADE);
         acceptStack(output, COMPACTER_CONCOCTI_UPGRADE);
@@ -220,6 +244,11 @@ public class ConcoctiItems {
 
         acceptStack(output, BASIC_CONCOCTI_FRAME);
         acceptStack(output, ADVANCED_CONCOCTI_FRAME);
+
+        acceptStack(output, MOLTEN_CONCOCTI_BUCKET);
+        acceptStack(output, MOLTEN_CONCOCTIZED_DIRT_BUCKET);
+        acceptStack(output, MOLTEN_COPPER_BUCKET);
+        acceptStack(output, MOLTEN_CONDUCTIVIUM_BUCKET);
 
         for (Map.Entry<MoldItem.Material, Map<MoldItem.Type, DeferredItem<? extends Item>>> entry : MOLDS.entrySet()) {
             acceptStack(output, MOLD_BASES.get(entry.getKey()));

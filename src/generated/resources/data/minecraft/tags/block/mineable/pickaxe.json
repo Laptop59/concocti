@@ -1,12 +1,18 @@
 {
   "values": [
-    "concocti:diamethyst_block",
+    "concocti:conductivium_lightning_rod",
     "concocti:dirty_concocti_block",
+    "concocti:advanced_concocti_frame",
+    "concocti:concocti_mixer",
+    "concocti:concocti_bricks",
+    "concocti:tough_concocti_block",
+    "concocti:conductivium_block",
+    "concocti:diamethyst_block",
+    "concocti:concocti_solidifier",
     "concocti:basic_concocti_frame",
     "concocti:purified_concocti_block",
-    "concocti:tough_concocti_block",
-    "concocti:advanced_concocti_frame",
-    "concocti:concocti_solidifier",
+    "concocti:concocti_energy_generator",
+    "concocti:concocti_electron_collector",
     "concocti:concocti_melter",
     "concocti:compressed_concocti_block"
   ]

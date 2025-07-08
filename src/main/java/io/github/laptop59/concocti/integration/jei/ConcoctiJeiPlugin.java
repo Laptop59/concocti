@@ -2,9 +2,7 @@ package io.github.laptop59.concocti.integration.jei;
 
 import io.github.laptop59.concocti.common.Concocti;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
-import io.github.laptop59.concocti.common.recipe.ConcoctiMelterRecipe;
-import io.github.laptop59.concocti.common.recipe.ConcoctiRecipes;
-import io.github.laptop59.concocti.common.recipe.ConcoctiSolidifierRecipe;
+import io.github.laptop59.concocti.common.recipe.*;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.VanillaTypes;
@@ -35,18 +33,24 @@ public class ConcoctiJeiPlugin implements IModPlugin {
 
     @Override
     public @NotNull ResourceLocation getPluginUid() {
-        return ResourceLocation.fromNamespaceAndPath(Concocti.MODID, Concocti.MODID);
+        return ResourceLocation.fromNamespaceAndPath(Concocti.MODID, "main");
     }
 
     public static final RecipeType<ConcoctiMelterRecipe> CONCOCTI_MELTER_TYPE = RecipeType.create(
             Concocti.MODID, "concocti_melter", ConcoctiMelterRecipe.class);
     public static final RecipeType<ConcoctiSolidifierRecipe> CONCOCTI_SOLIDIFIER_TYPE = RecipeType.create(
             Concocti.MODID, "concocti_solidifier", ConcoctiSolidifierRecipe.class);
+    public static final RecipeType<ConcoctiMixerRecipe> CONCOCTI_MIXER_TYPE = RecipeType.create(
+            Concocti.MODID, "concocti_mixer", ConcoctiMixerRecipe.class);
+    public static final RecipeType<ConcoctiElectronCollectorRecipe> CONCOCTI_ELECTRON_COLLECTOR_TYPE = RecipeType.create(
+            Concocti.MODID, "concocti_electron_collector", ConcoctiElectronCollectorRecipe.class);
 
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
         registration.addRecipeCatalyst(new ItemStack(ConcoctiBlocks.CONCOCTI_MELTER), CONCOCTI_MELTER_TYPE);
         registration.addRecipeCatalyst(new ItemStack(ConcoctiBlocks.CONCOCTI_SOLIDIFIER), CONCOCTI_SOLIDIFIER_TYPE);
+        registration.addRecipeCatalyst(new ItemStack(ConcoctiBlocks.CONCOCTI_MIXER), CONCOCTI_MIXER_TYPE);
+        registration.addRecipeCatalyst(new ItemStack(ConcoctiBlocks.CONCOCTI_ELECTRON_COLLECTOR), CONCOCTI_ELECTRON_COLLECTOR_TYPE);
     }
 
     @Override
@@ -56,6 +60,8 @@ public class ConcoctiJeiPlugin implements IModPlugin {
 
         registration.addRecipeCategories(new ConcoctiMelterRecipeCategory(guiHelper));
         registration.addRecipeCategories(new ConcoctiSolidifierRecipeCategory(guiHelper));
+        registration.addRecipeCategories(new ConcoctiMixerRecipeCategory(guiHelper));
+        registration.addRecipeCategories(new ConcoctiElectronCollectorRecipeCategory(guiHelper));
     }
 
     private <R extends Recipe<I>, I extends RecipeInput> void registerRecipesFor(IRecipeRegistration registration,
@@ -75,6 +81,8 @@ public class ConcoctiJeiPlugin implements IModPlugin {
         RecipeManager recipeManager = Minecraft.getInstance().level.getRecipeManager();
         registerRecipesFor(registration, recipeManager, ConcoctiRecipes.CONCOCTI_MELTER_RECIPE_TYPE.get(), CONCOCTI_MELTER_TYPE);
         registerRecipesFor(registration, recipeManager, ConcoctiRecipes.CONCOCTI_SOLIDIFIER_RECIPE_TYPE.get(), CONCOCTI_SOLIDIFIER_TYPE);
+        registerRecipesFor(registration, recipeManager, ConcoctiRecipes.CONCOCTI_MIXER_RECIPE_TYPE.get(), CONCOCTI_MIXER_TYPE);
+        registerRecipesFor(registration, recipeManager, ConcoctiRecipes.CONCOCTI_ELECTRON_COLLECTOR_RECIPE_TYPE.get(), CONCOCTI_ELECTRON_COLLECTOR_TYPE);
 
         registerInfos(registration);
     }
@@ -82,7 +90,9 @@ public class ConcoctiJeiPlugin implements IModPlugin {
     private void registerInfos(@NotNull IRecipeRegistration registration) {
         List<String> items = Arrays.asList(
                 "concocti_seeds",
-                "dirty_concocti_nugget"
+                "dirty_concocti_nugget",
+                "conductivium_lightning_rod",
+                "concocti_electron_collector"
         );
 
         for (String name : items) {

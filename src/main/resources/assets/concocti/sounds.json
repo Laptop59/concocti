@@ -7,6 +7,26 @@
       "block/blastfurnace/blastfurnace4",
       "block/blastfurnace/blastfurnace5"
     ],
-    "subtitle": "subtitles.concocti.block.blastfurnace.fire_crackle"
+    "subtitle": "subtitles.concocti.block.concocti_melter.fire_crackle"
+  },
+  "block.concocti_energy_generator.fire_crackle": {
+    "sounds": [
+      "block/blastfurnace/blastfurnace1",
+      "block/blastfurnace/blastfurnace2",
+      "block/blastfurnace/blastfurnace3",
+      "block/blastfurnace/blastfurnace4",
+      "block/blastfurnace/blastfurnace5"
+    ],
+    "subtitle": "subtitles.concocti.block.concocti_energy_generator.fire_crackle"
+  },
+  "block.concocti_mixer.fire_crackle": {
+    "sounds": [
+      "block/blastfurnace/blastfurnace1",
+      "block/blastfurnace/blastfurnace2",
+      "block/blastfurnace/blastfurnace3",
+      "block/blastfurnace/blastfurnace4",
+      "block/blastfurnace/blastfurnace5"
+    ],
+    "subtitle": "subtitles.concocti.block.concocti_mixer.fire_crackle"
   }
 }

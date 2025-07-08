@@ -1,0 +1,12 @@
+{
+  "type": "concocti:concocti_melter",
+  "byproduct_result": {},
+  "ingredient": {
+    "item": "minecraft:copper_block"
+  },
+  "pure_result": {
+    "amount": 1296,
+    "id": "concocti:molten_copper"
+  },
+  "ticks": 320
+}

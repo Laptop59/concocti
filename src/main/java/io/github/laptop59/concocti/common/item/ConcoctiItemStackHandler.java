@@ -2,7 +2,11 @@ package io.github.laptop59.concocti.common.item;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.*;
 
 public class ConcoctiItemStackHandler extends ItemStackHandler {
     public ConcoctiItemStackHandler() { super(); }
@@ -15,7 +19,7 @@ public class ConcoctiItemStackHandler extends ItemStackHandler {
     @Override
     public int getSlotLimit(int slot) {
         validate(slot);
-        return 64;
+        return super.getSlotLimit(slot);
     }
 
     public NonNullList<ItemStack> getDirectList() {
@@ -24,5 +28,48 @@ public class ConcoctiItemStackHandler extends ItemStackHandler {
 
     public void setDirectList(NonNullList<ItemStack> stacks) {
         this.stacks = stacks;
+    }
+
+    /** Creates an item handler around this handler that only shows the provided slots and hides everything else. */
+    public IItemHandler whitelistWrapper(int... slots) {
+        Set<Integer> whitelisted = new HashSet<>(slots.length);
+        for (int slot : slots) whitelisted.add(slot);
+        IItemHandler parentHandler = this;
+        return new IItemHandler() {
+            @Override
+            public int getSlots() {
+                return parentHandler.getSlots();
+            }
+
+            @Override
+            public @NotNull ItemStack getStackInSlot(int slot) {
+                if (whitelisted.contains(slot)) return parentHandler.getStackInSlot(slot);
+                return ItemStack.EMPTY;
+            }
+
+            @Override
+            public @NotNull ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+                if (whitelisted.contains(slot)) return parentHandler.insertItem(slot, stack, simulate);
+                return stack;
+            }
+
+            @Override
+            public @NotNull ItemStack extractItem(int slot, int amount, boolean simulate) {
+                if (whitelisted.contains(slot)) return parentHandler.extractItem(slot, amount, simulate);
+                return ItemStack.EMPTY.copy();
+            }
+
+            @Override
+            public int getSlotLimit(int slot) {
+                if (whitelisted.contains(slot)) return parentHandler.getSlotLimit(slot);
+                return 0;
+            }
+
+            @Override
+            public boolean isItemValid(int slot, ItemStack stack) {
+                if (whitelisted.contains(slot)) return parentHandler.isItemValid(slot, stack);
+                return false;
+            }
+        };
     }
 }

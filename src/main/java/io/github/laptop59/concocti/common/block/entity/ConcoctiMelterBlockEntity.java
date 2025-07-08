@@ -60,6 +60,7 @@ public class ConcoctiMelterBlockEntity extends AbstractConcoctiMachineBlockEntit
                 .withMaxEnergyTransfer(10_000)
                 .withSlots(3)
                 .withRateConsumption(25.0f)
+                .withEnergyMode(() -> DynamicEnergyStorage.Mode.INPUT_ONLY)
                 .withRecipeType(ConcoctiRecipes.CONCOCTI_MELTER_RECIPE_TYPE)
                 .withDefaultName(Component.translatable("block.concocti.concocti_melter"))
                 .withAllowedSlotTypes(

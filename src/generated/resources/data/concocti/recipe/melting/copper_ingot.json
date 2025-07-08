@@ -1,0 +1,12 @@
+{
+  "type": "concocti:concocti_melter",
+  "byproduct_result": {},
+  "ingredient": {
+    "item": "minecraft:copper_ingot"
+  },
+  "pure_result": {
+    "amount": 144,
+    "id": "concocti:molten_copper"
+  },
+  "ticks": 40
+}

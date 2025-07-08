@@ -1,8 +1,7 @@
 package io.github.laptop59.concocti.common;
 
 import com.mojang.logging.LogUtils;
-import io.github.laptop59.concocti.client.gui.ConcoctiMelterScreen;
-import io.github.laptop59.concocti.client.gui.ConcoctiSolidifierScreen;
+import io.github.laptop59.concocti.client.gui.*;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
 import io.github.laptop59.concocti.common.block.entity.AbstractPoweredBlockEntity;
@@ -11,7 +10,9 @@ import io.github.laptop59.concocti.common.block.entity.ItemHandlerBlockEntity;
 import io.github.laptop59.concocti.common.effect.ConcoctizedMobEffect;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
+import io.github.laptop59.concocti.common.menu.ConcoctiElectronCollectorMenu;
 import io.github.laptop59.concocti.common.menu.ConcoctiMenus;
+import io.github.laptop59.concocti.common.poi.ConcoctiPoiTypes;
 import io.github.laptop59.concocti.common.recipe.ConcoctiRecipes;
 import io.github.laptop59.concocti.network.*;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -54,7 +55,7 @@ public class Concocti {
 
     // Creates a creative tab with the id "concocti:concocti" for the example item, that is placed after the combat tab
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CONCOCTI_TAB = CREATIVE_MODE_TABS.register("concocti", () -> CreativeModeTab.builder()
-            .title(Component.translatable("itemGroup.concocti")) //The language key for the title of your CreativeModeTab
+            .title(Component.translatable("itemGroup.concocti")) // The language key for the title of your CreativeModeTab
             .withTabsBefore(CreativeModeTabs.COMBAT)
             .icon(() -> ConcoctiItems.PURIFIED_CONCOCTI_INGOT.get().getDefaultInstance())
             .displayItems((parameters, output) -> ConcoctiItems.addItemsToCreativeTab(output)).build()
@@ -67,62 +68,16 @@ public class Concocti {
 
     @SubscribeEvent
     private static void registerPayloads(final RegisterPayloadHandlersEvent event) {
-        // Sets the current network version
-        final PayloadRegistrar registrar = event.registrar("1");
-        registrar.playToClient(
-                ConcoctizedEntitiesPayload.TYPE,
-                ConcoctizedEntitiesPayload.STREAM_CODEC,
-                new DirectionalPayloadHandler<>(
-                        ConcoctizedEntitiesPayloadHandler::handleData,
-                        ConcoctizedEntitiesPayloadHandler::handleData
-                )
-        );
-        registrar.playToClient(
-                FluidBarSoundPayloadS2C.TYPE,
-                FluidBarSoundPayloadS2C.STREAM_CODEC,
-                new DirectionalPayloadHandler<>(
-                        FluidBarSoundPayloadS2CHandler::handleData,
-                        FluidBarSoundPayloadS2CHandler::handleData
-                )
-        );
-        registrar.playToServer(
-                FluidBarInteractionPayloadC2S.TYPE,
-                FluidBarInteractionPayloadC2S.STREAM_CODEC,
-                new DirectionalPayloadHandler<>(
-                        FluidBarInteractionPayloadC2SHandler::handleData,
-                        FluidBarInteractionPayloadC2SHandler::handleData
-                )
-        );
-        registrar.playToServer(
-                ConcoctiMachineSettingsSlotChangeC2S.TYPE,
-                ConcoctiMachineSettingsSlotChangeC2S.STREAM_CODEC,
-                new DirectionalPayloadHandler<>(
-                        ConcoctiMachineSettingsSlotChangeC2SHandler::handleData,
-                        ConcoctiMachineSettingsSlotChangeC2SHandler::handleData
-                )
-        );
-        registrar.playToServer(
-                ConcoctiMachineSettingsEjectOnChangeC2S.TYPE,
-                ConcoctiMachineSettingsEjectOnChangeC2S.STREAM_CODEC,
-                new DirectionalPayloadHandler<>(
-                        ConcoctiMachineSettingsEjectOnChangeC2SHandler::handleData,
-                        ConcoctiMachineSettingsEjectOnChangeC2SHandler::handleData
-                )
-        );
-        registrar.playToServer(
-                ConcoctiMachineSettingsPullOnChangeC2S.TYPE,
-                ConcoctiMachineSettingsPullOnChangeC2S.STREAM_CODEC,
-                new DirectionalPayloadHandler<>(
-                        ConcoctiMachineSettingsPullOnChangeC2SHandler::handleData,
-                        ConcoctiMachineSettingsPullOnChangeC2SHandler::handleData
-                )
-        );
+        ConcoctiPayloads.registerPayloads(event);
     }
 
     @SubscribeEvent
     private static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(ConcoctiMenus.CONCOCTI_MELTER_MENU.get(), ConcoctiMelterScreen::new);
         event.register(ConcoctiMenus.CONCOCTI_SOLIDIFIER_MENU.get(), ConcoctiSolidifierScreen::new);
+        event.register(ConcoctiMenus.CONCOCTI_ENERGY_GENERATOR_MENU.get(), ConcoctiEnergyGeneratorScreen::new);
+        event.register(ConcoctiMenus.CONCOCTI_MIXER_MENU.get(), ConcoctiMixerScreen::new);
+        event.register(ConcoctiMenus.CONCOCTI_ELECTRON_COLLECTOR_MENU.get(), ConcoctiElectronCollectorScreen::new);
     }
 
     @SubscribeEvent
@@ -148,6 +103,7 @@ public class Concocti {
         ConcoctiFluids.FLUID_TYPES.register(modEventBus);
         ConcoctiRecipes.RECIPE_SERIALIZERS.register(modEventBus);
         ConcoctiRecipes.RECIPE_TYPES.register(modEventBus);
+        ConcoctiPoiTypes.POI_TYPES.register(modEventBus);
 
         MOB_EFFECTS.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);

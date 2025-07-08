@@ -64,6 +64,7 @@ public class ConcoctiSolidifierBlockEntity extends AbstractConcoctiMachineBlockE
                 .withMaxEnergyTransfer(10_000)
                 .withSlots(5)
                 .withRateConsumption(20.0f)
+                .withEnergyMode(() -> DynamicEnergyStorage.Mode.INPUT_ONLY)
                 .withRecipeType(ConcoctiRecipes.CONCOCTI_SOLIDIFIER_RECIPE_TYPE)
                 .withDefaultName(Component.translatable("block.concocti.concocti_solidifier"))
                 .withAllowedSlotTypes(

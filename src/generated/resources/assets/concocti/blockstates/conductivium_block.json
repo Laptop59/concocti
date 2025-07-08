@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "concocti:block/conductivium_block"
+    }
+  }
+}

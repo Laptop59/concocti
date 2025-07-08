@@ -1,0 +1,29 @@
+{
+  "type": "concocti:concocti_mixer",
+  "input_fluids": [
+    {
+      "amount": 1296,
+      "fluid": "concocti:molten_copper"
+    }
+  ],
+  "input_items": [
+    {
+      "count": 9,
+      "item": "concocti:electrostatic_conductivium_nugget"
+    },
+    {
+      "count": 64,
+      "item": "minecraft:redstone"
+    },
+    {
+      "count": 1,
+      "item": "concocti:purified_concocti_ingot"
+    }
+  ],
+  "output_fluid": {},
+  "output_item": {
+    "count": 1,
+    "id": "concocti:electrostatic_conductivium_ingot"
+  },
+  "ticks": 1600
+}

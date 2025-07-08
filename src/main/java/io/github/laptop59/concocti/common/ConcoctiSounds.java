@@ -16,4 +16,14 @@ public class ConcoctiSounds {
             "block.concocti_melter.fire_crackle", // must match the resource location on the next line
             () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(MODID, "block.concocti_melter.fire_crackle"))
     );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> CONCOCTI_ENERGY_GENERATOR_FIRE_CRACKLE = SOUND_EVENTS.register(
+            "block.concocti_energy_generator.fire_crackle", // must match the resource location on the next line
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(MODID, "block.concocti_energy_generator.fire_crackle"))
+    );
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> CONCOCTI_MIXER_FIRE_CRACKLE = SOUND_EVENTS.register(
+            "block.concocti_mixer.fire_crackle", // must match the resource location on the next line
+            () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(MODID, "block.concocti_mixer.fire_crackle"))
+    );
 }

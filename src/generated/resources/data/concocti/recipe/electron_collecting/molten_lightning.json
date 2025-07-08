@@ -1,0 +1,9 @@
+{
+  "type": "concocti:concocti_electron_collector",
+  "chance": 0.5,
+  "output_fluid": {
+    "amount": 1,
+    "id": "concocti:molten_lightning"
+  },
+  "ticks": 600
+}

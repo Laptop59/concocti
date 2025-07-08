@@ -7,6 +7,7 @@ import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.item.MoldItem;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.FlowingFluid;
@@ -41,10 +42,16 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiBlocks.DIRTY_CONCOCTI_BLOCK, "Block of Dirty Concocti");
         add(ConcoctiBlocks.TOUGH_CONCOCTI_BLOCK, "Block of Tough Concocti");
         add(ConcoctiBlocks.COMPRESSED_CONCOCTI_BLOCK, "Block of Compressed Concocti");
+        add(ConcoctiBlocks.CONDUCTIVIUM_BLOCK, "Block of Conductivium");
         add(ConcoctiBlocks.CONCOCTI_MELTER, "Concocti Melter");
         add(ConcoctiBlocks.CONCOCTI_SOLIDIFIER, "Concocti Solidifier");
+        add(ConcoctiBlocks.CONCOCTI_ENERGY_GENERATOR, "Concocti Energy Generator");
         add(ConcoctiBlocks.BASIC_CONCOCTI_FRAME, "Basic Concocti Frame");
         add(ConcoctiBlocks.ADVANCED_CONCOCTI_FRAME, "Advanced Concocti Frame");
+        add(ConcoctiBlocks.CONCOCTI_BRICKS, "Concocti Bricks");
+        add(ConcoctiBlocks.CONCOCTI_MIXER, "Concocti Mixer");
+        add(ConcoctiBlocks.CONDUCTIVIUM_LIGHTNING_ROD, "Conductivium Lightning Rod");
+        add(ConcoctiBlocks.CONCOCTI_ELECTRON_COLLECTOR, "Concocti Electron Collector");
 
         // Items go here.
         add(ConcoctiItems.DIAMETHYST_CRYSTAL, "Diamethyst Crystal");
@@ -57,19 +64,35 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiItems.TOUGH_CONCOCTI_NUGGET, "Tough Concocti Nugget");
         add(ConcoctiItems.COMPRESSED_CONCOCTI_INGOT, "Compressed Concocti Ingot");
         add(ConcoctiItems.COMPRESSED_CONCOCTI_NUGGET, "Compressed Concocti Nugget");
+        add(ConcoctiItems.CONDUCTIVIUM_NUGGET, "Conductivium Nugget");
+        add(ConcoctiItems.CONDUCTIVIUM_INGOT, "Conductivium Ingot");
         add(ConcoctiItems.MOLTEN_CONCOCTI_BUCKET, "Bucket of Molten Concocti");
         add(ConcoctiItems.MOLTEN_CONCOCTIZED_DIRT_BUCKET, "Bucket of Molten Concoctized Dirt");
+        add(ConcoctiItems.MOLTEN_COPPER_BUCKET, "Bucket of Molten Copper");
+        add(ConcoctiItems.MOLTEN_CONDUCTIVIUM_BUCKET, "Bucket of Molten Conductivium");
         add(ConcoctiItems.COMPACT_CONCOCTI_UPGRADE, "Compact Concocti Upgrade");
         add(ConcoctiItems.COMPACTER_CONCOCTI_UPGRADE, "Compacter Concocti Upgrade");
         add(ConcoctiItems.COMPACTEST_CONCOCTI_UPGRADE, "Compactest Concocti Upgrade");
+        add(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_NUGGET, "Electrostatic Conductivium Nugget");
+        add(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_INGOT, "Electrostatic Conductivium Ingot");
+
+        add(ConcoctiItems.Tags.CONCOCTI_UPGRADES, "Concocti Upgrades");
+        for (Map.Entry<MoldItem.Type, TagKey<Item>> moldType : ConcoctiItems.Tags.MOLDS.entrySet()) {
+            add(moldType.getValue(), capitalize(moldType.getKey().id + "_molds"));
+        }
 
         // Fluid types go here.
         add(ConcoctiFluids.MOLTEN_CONCOCTI, "Molten Concocti");
         add(ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT, "Molten Concoctized Dirt");
+        add(ConcoctiFluids.MOLTEN_COPPER, "Molten Copper");
+        add(ConcoctiFluids.MOLTEN_CONDUCTIVIUM, "Molten Conductivium");
+        add(ConcoctiFluids.MOLTEN_LIGHTNING, "Molten Lightning");
 
         // Miscellaneous things go here.
         add("effect.concocti.concoctized", "Concoctized");
         add("subtitles.concocti.block.concocti_melter.fire_crackle", "Concocti Melter crackles");
+        add("subtitles.concocti.block.concocti_energy_generator.fire_crackle", "Concocti Energy Generator crackles");
+        add("subtitles.concocti.block.concocti_mixer.fire_crackle", "Concocti Mixer crackles");
 
         addCommonTag("ingots.concocti", "Concocti Ingots");
         addCommonTag("nuggets.concocti", "Concocti Nuggets");
@@ -82,6 +105,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add("screen.concocti.no_upgrade", "Put a Concocti Upgrade here to speed up this block.");
         add("screen.concocti.upgrade_info", "Upgrade units: +%s");
         add("screen.concocti.duration", "Duration: %ss");
+        add("screen.concocti.chance", "Chance: %s%%");
         add("screen.concocti.no_frame", "Put a Concocti Frame here to improve this block.");
         add("screen.concocti.frame_info_rate", "Additional Rate: +%s%%");
         add("screen.concocti.frame_info_efficiency", "Efficiency: %s%%");
@@ -90,6 +114,11 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add("screen.concocti.close_machine_settings", "Close Machine Settings");
         add("screen.concocti.machine_settings", "Settings");
         add("screen.concocti.durability_info", "Durability: %s/%s");
+        add("screen.concocti.mold_base_durability_info", "Available Durability: %s");
+        add("screen.concocti.rate", "Rate: ×%s");
+        add("screen.concocti.requirements", "Requirements:");
+        add("screen.concocti.on_top_of_machine", "On top of machine");
+        add("screen.concocti.struck_by_lightning", "Struck by lightning");
 
         add("screen.concocti.slot_compound", "%s (%s)");
         add("screen.concocti.slot_up", "Up");
@@ -107,6 +136,8 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         // Information of items go here.
         add("info.concocti.concocti_seeds", "Hitting a mob with this item usually provides it a status effect of Concoctized, which allows Dirty Concocti Nuggets to start dropping upon taking damage while losing less health.");
         add("info.concocti.dirty_concocti_nugget", "Dropped from hitting a mob with the Concoctized status effect, which is induced by hitting it with Concoctized Seeds.");
+        add("info.concocti.conductivium_lightning_rod", "Being more conductive than the copper variant of this block, even without thunderstorms or rain, lightning strikes can still hit this rod.");
+        add("info.concocti.concocti_electron_collector", "Collects electrons from lightning strikes struck on the Conductivium Lightning Rod above it and converts them into a fluid called Molten Lightning.");
 
         // Translation key for molds.
         for (Map.Entry<MoldItem.Material, Map<MoldItem.Type, DeferredItem<? extends Item>>> entry : ConcoctiItems.MOLDS.entrySet()) {

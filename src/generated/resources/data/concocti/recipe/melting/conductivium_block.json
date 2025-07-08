@@ -1,0 +1,12 @@
+{
+  "type": "concocti:concocti_melter",
+  "byproduct_result": {},
+  "ingredient": {
+    "item": "concocti:conductivium_block"
+  },
+  "pure_result": {
+    "amount": 1296,
+    "id": "concocti:molten_conductivium"
+  },
+  "ticks": 640
+}

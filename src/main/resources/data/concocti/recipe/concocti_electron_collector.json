@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "#I#",
+    "#C#",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "concocti:purified_concocti_ingot"
+    },
+    "I": {
+      "item": "concocti:conductivium_ingot"
+    },
+    "C": {
+      "item": "concocti:conductivium_block"
+    }
+  },
+  "result": {
+    "id": "concocti:concocti_electron_collector",
+    "count": 1
+  }
+}

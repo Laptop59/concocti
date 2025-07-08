@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "concocti:block/concocti_electron_collector_top",
+    "front": "concocti:block/concocti_electron_collector_front_on",
+    "side": "concocti:block/concocti_solidifier_side"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "type": "concocti:concocti_solidifier",
+  "base_item": [],
+  "input_fluid": {
+    "amount": 1296,
+    "fluid": "concocti:molten_conductivium"
+  },
+  "mold": {
+    "item": "minecraft:cauldron"
+  },
+  "output_item": {
+    "count": 1,
+    "id": "concocti:conductivium_block"
+  },
+  "ticks": 1280
+}

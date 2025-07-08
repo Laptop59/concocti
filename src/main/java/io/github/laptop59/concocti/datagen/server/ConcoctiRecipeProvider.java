@@ -1,10 +1,14 @@
 package io.github.laptop59.concocti.datagen.server;
 
+import io.github.laptop59.concocti.common.Concocti;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.item.MoldItem;
+import io.github.laptop59.concocti.common.recipe.ConcoctiElectronCollectorRecipe;
 import io.github.laptop59.concocti.common.recipe.ConcoctiMelterRecipe;
+import io.github.laptop59.concocti.common.recipe.ConcoctiMixerRecipe;
 import io.github.laptop59.concocti.common.recipe.ConcoctiSolidifierRecipe;
+import io.github.laptop59.concocti.common.util.ConcoctiConstants;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -17,6 +21,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.material.Fluids;
+import net.neoforged.neoforge.common.crafting.SizedIngredient;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 import org.jetbrains.annotations.NotNull;
@@ -41,31 +46,47 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
         threeStageStorageRecipes(output, ConcoctiItems.DIRTY_CONCOCTI_NUGGET, ConcoctiItems.DIRTY_CONCOCTI_INGOT, ConcoctiItems.DIRTY_CONCOCTI_BLOCK);
         threeStageStorageRecipes(output, ConcoctiItems.PURIFIED_CONCOCTI_NUGGET, ConcoctiItems.PURIFIED_CONCOCTI_INGOT, ConcoctiItems.PURIFIED_CONCOCTI_BLOCK);
         threeStageStorageRecipes(output, ConcoctiItems.TOUGH_CONCOCTI_NUGGET, ConcoctiItems.TOUGH_CONCOCTI_INGOT, ConcoctiItems.TOUGH_CONCOCTI_BLOCK);
+        threeStageStorageRecipes(output, ConcoctiItems.CONDUCTIVIUM_NUGGET, ConcoctiItems.CONDUCTIVIUM_INGOT, ConcoctiItems.CONDUCTIVIUM_BLOCK);
 
         moldBaseRecipes(output, Items.IRON_NUGGET, Items.COPPER_INGOT, MoldItem.Material.COPPER);
         moldBaseRecipes(output, ConcoctiItems.PURIFIED_CONCOCTI_NUGGET, Items.DIAMOND, MoldItem.Material.DIAMOND);
 
         // Concocti Melter Recipes
         concoctiMelterRecipe(output, ConcoctiItems.DIRTY_CONCOCTI_NUGGET, 10,
-                new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, 12),
+                new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_NUGGET_PURIFIED),
                 new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT, 3)
         );
         concoctiMelterRecipe(output, ConcoctiItems.DIRTY_CONCOCTI_INGOT, 10 * 8, // discount
-                new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, 12 * 9),
+                new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_INGOT_PURIFIED),
                 new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT, 3 * 9)
         );
         concoctiMelterRecipe(output, ConcoctiItems.DIRTY_CONCOCTI_BLOCK, 10 * 64,
-                new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, 12 * 81),
+                new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_BLOCK_PURIFIED),
                 new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT, 3 * 81)
         );
         concoctiMelterRecipe(output, ConcoctiItems.PURIFIED_CONCOCTI_NUGGET, 5,
-                new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, 15)
+                new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_NUGGET)
         );
         concoctiMelterRecipe(output, ConcoctiItems.PURIFIED_CONCOCTI_INGOT, 5 * 8, // discount
-                new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, 15 * 9)
+                new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_INGOT)
         );
         concoctiMelterRecipe(output, ConcoctiItems.PURIFIED_CONCOCTI_BLOCK, 5 * 64,
-                new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, 15 * 81)
+                new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_BLOCK)
+        );
+        concoctiMelterRecipe(output, Items.COPPER_INGOT, 5 * 8, // discount
+                new FluidStack(ConcoctiFluids.MOLTEN_COPPER, ConcoctiConstants.MOLTEN_INGOT)
+        );
+        concoctiMelterRecipe(output, Items.COPPER_BLOCK, 5 * 64,
+                new FluidStack(ConcoctiFluids.MOLTEN_COPPER, ConcoctiConstants.MOLTEN_BLOCK)
+        );
+        concoctiMelterRecipe(output, ConcoctiItems.CONDUCTIVIUM_NUGGET, 10,
+                new FluidStack(ConcoctiFluids.MOLTEN_CONDUCTIVIUM, ConcoctiConstants.MOLTEN_NUGGET)
+        );
+        concoctiMelterRecipe(output, ConcoctiItems.CONDUCTIVIUM_INGOT, 10 * 8,
+                new FluidStack(ConcoctiFluids.MOLTEN_CONDUCTIVIUM, ConcoctiConstants.MOLTEN_INGOT)
+        );
+        concoctiMelterRecipe(output, ConcoctiItems.CONDUCTIVIUM_BLOCK, 10 * 64,
+                new FluidStack(ConcoctiFluids.MOLTEN_CONDUCTIVIUM, ConcoctiConstants.MOLTEN_BLOCK)
         );
         concoctiMelterRecipe(output, Items.ICE, 40, new FluidStack(Fluids.WATER, 1000));
         concoctiMelterRecipe(output, Items.PACKED_ICE, 80, new FluidStack(Fluids.WATER, 9000));
@@ -75,26 +96,77 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
         concoctiSolidifierRecipe(output, null, Items.CAULDRON, new FluidStack(Fluids.WATER, 1000),
                 40, new ItemStack(Items.ICE));
         concoctiSolidifierRecipe(output, null, Items.CAULDRON,
-                new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, 12 * 9 * 9), 5 * 8 * 8,
+                new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_BLOCK), 5 * 8 * 8,
                 new ItemStack(ConcoctiItems.PURIFIED_CONCOCTI_BLOCK.get()));
+        concoctiSolidifierRecipe(output, null, Items.CAULDRON,
+                new FluidStack(ConcoctiFluids.MOLTEN_COPPER, ConcoctiConstants.MOLTEN_BLOCK), 5 * 8 * 8,
+                new ItemStack(Items.COPPER_BLOCK));
+        concoctiSolidifierRecipe(output, null, Items.CAULDRON,
+                new FluidStack(ConcoctiFluids.MOLTEN_CONDUCTIVIUM, ConcoctiConstants.MOLTEN_BLOCK), 20 * 8 * 8,
+                new ItemStack(ConcoctiItems.CONDUCTIVIUM_BLOCK.get()));
+
+        // Using a convenient method for registering multiple recipes with same mold type:
+
         concoctiSolidifierRecipe(output, MoldItem.Type.NUGGET, List.of(
                 new ConcoctiMoldingSolidifierRecipe(
                         new ItemStack(ConcoctiItems.PURIFIED_CONCOCTI_NUGGET.get(), 1),
                         null,
-                        new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, 12),
+                        new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_NUGGET),
                         5
+                ),
+                new ConcoctiMoldingSolidifierRecipe(
+                        new ItemStack(ConcoctiItems.CONDUCTIVIUM_NUGGET.get(), 1),
+                        null,
+                        new FluidStack(ConcoctiFluids.MOLTEN_CONDUCTIVIUM, ConcoctiConstants.MOLTEN_NUGGET),
+                        20
                 )
         ));
-
-        // Convenient method for registering multiple recipes with same mold type.
         concoctiSolidifierRecipe(output, MoldItem.Type.INGOT, List.of(
                 new ConcoctiMoldingSolidifierRecipe(
                         new ItemStack(ConcoctiItems.PURIFIED_CONCOCTI_INGOT.get(), 1),
                         null,
-                        new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, 12 * 9),
+                        new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_INGOT),
                         5 * 8
+                ),
+                new ConcoctiMoldingSolidifierRecipe(
+                        new ItemStack(Items.COPPER_INGOT, 1),
+                        null,
+                        new FluidStack(ConcoctiFluids.MOLTEN_COPPER, ConcoctiConstants.MOLTEN_INGOT),
+                        5
+                ),
+                new ConcoctiMoldingSolidifierRecipe(
+                        new ItemStack(ConcoctiItems.CONDUCTIVIUM_INGOT.get(), 1),
+                        null,
+                        new FluidStack(ConcoctiFluids.MOLTEN_CONDUCTIVIUM, ConcoctiConstants.MOLTEN_INGOT),
+                        20 * 8
                 )
         ));
+
+        // Concocti Mixer Recipes
+        concoctiMixerRecipe(output, "molten_conductivium", 10, List.of(), List.of(
+                SizedFluidIngredient.of(new FluidStack(ConcoctiFluids.MOLTEN_COPPER, 27)),
+                SizedFluidIngredient.of(new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, 9))
+        ), null, new FluidStack(ConcoctiFluids.MOLTEN_CONDUCTIVIUM, 18));
+        concoctiMixerRecipe(output, "electrostatic_conductivium_nugget_mixing", 20 * 20, List.of(
+                SizedIngredient.of(ConcoctiItems.CONDUCTIVIUM_NUGGET.get(), 3),
+                SizedIngredient.of(Items.REDSTONE, 16)
+        ), List.of(
+                SizedFluidIngredient.of(new FluidStack(ConcoctiFluids.MOLTEN_LIGHTNING, 1)),
+                SizedFluidIngredient.of(new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_NUGGET))
+        ), new ItemStack(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_NUGGET.get()), null);
+        concoctiMixerRecipe(output, "electrostatic_conductivium_ingot_mixing", 4 * 20 * 20, List.of(
+                SizedIngredient.of(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_NUGGET.get(), 9),
+                SizedIngredient.of(Items.REDSTONE, 64),
+                SizedIngredient.of(ConcoctiItems.PURIFIED_CONCOCTI_INGOT.get(), 1)
+        ), List.of(
+                SizedFluidIngredient.of(new FluidStack(ConcoctiFluids.MOLTEN_COPPER, ConcoctiConstants.MOLTEN_BLOCK))
+        ), new ItemStack(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_INGOT.get()), null);
+        concoctiMixerRecipe(output, "electrostatic_conductivium_nugget_from_ingot", 60 * 20, List.of(
+                SizedIngredient.of(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_INGOT.get(), 1)
+        ), List.of(), new ItemStack(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_NUGGET.get(), 9), null);
+
+        // Concocti Electron Collector Recipe
+        concoctiElectronCollectorRecipe(output, 30 * 20, 0.5f, new FluidStack(ConcoctiFluids.MOLTEN_LIGHTNING, 1));
     }
 
     private static void concoctiSolidifierRecipe(RecipeOutput output, MoldItem.Type type, List<ConcoctiMoldingSolidifierRecipe> recipeList) {
@@ -204,6 +276,44 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 mold,
                 SizedFluidIngredient.of(inputFluid),
                 outputItem,
+                ticks
+        ).save(output);
+    }
+
+    /**
+     * Generates a Concocti Mixer Recipe.
+     */
+    private static void concoctiMixerRecipe(
+            RecipeOutput output,
+            String name,
+            int ticks,
+            List<SizedIngredient> inputItems,
+            List<SizedFluidIngredient> inputFluids,
+            ItemStack outputItem,
+            FluidStack outputFluid
+    ) {
+        new ConcoctiMixerRecipe.Builder(
+                ResourceLocation.fromNamespaceAndPath(MODID, "mixing/" + name),
+                inputItems,
+                outputItem,
+                inputFluids,
+                outputFluid,
+                ticks
+        ).save(output);
+    }
+
+    /**
+     * Generates a Concocti Electron Collector Recipe.
+     */
+    private static void concoctiElectronCollectorRecipe(
+            RecipeOutput output,
+            int ticks,
+            float chance,
+            FluidStack outputFluid
+    ) {
+        new ConcoctiElectronCollectorRecipe.Builder(
+                chance,
+                outputFluid,
                 ticks
         ).save(output);
     }

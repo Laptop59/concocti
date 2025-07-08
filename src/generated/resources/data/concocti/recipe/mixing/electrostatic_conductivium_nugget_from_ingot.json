@@ -1,0 +1,16 @@
+{
+  "type": "concocti:concocti_mixer",
+  "input_fluids": [],
+  "input_items": [
+    {
+      "count": 1,
+      "item": "concocti:electrostatic_conductivium_ingot"
+    }
+  ],
+  "output_fluid": {},
+  "output_item": {
+    "count": 9,
+    "id": "concocti:electrostatic_conductivium_nugget"
+  },
+  "ticks": 1200
+}

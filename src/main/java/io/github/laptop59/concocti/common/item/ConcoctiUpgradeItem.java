@@ -1,5 +1,6 @@
 package io.github.laptop59.concocti.common.item;
 
+import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
 import io.github.laptop59.concocti.common.menu.ConcoctiUpgradeSlot;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -27,6 +28,10 @@ public class ConcoctiUpgradeItem extends Item {
         );
         tooltipComponents.add(Component.translatable("screen.concocti.single_upgrade_info", Component.literal(Integer.toString(units)).withColor(0xC6ADFF))
                 .withStyle(ChatFormatting.DARK_GRAY)
+        );
+        int ticks = AbstractConcoctiMachineBlockEntity.getTickMultiplier(totalUnits);
+        tooltipComponents.add(Component.translatable("screen.concocti.rate", Component.literal(Integer.toString(ticks)).withColor(0xF5B8E7))
+                .withColor(0xF58EDD)
         );
     }
 }
