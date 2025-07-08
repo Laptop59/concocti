@@ -1,0 +1,16 @@
+{
+  "type": "concocti:concocti_solidifier",
+  "base_item": [],
+  "input_fluid": {
+    "amount": 144,
+    "fluid": "concocti:molten_copper"
+  },
+  "mold": {
+    "tag": "concocti:molds/ingot"
+  },
+  "output_item": {
+    "count": 1,
+    "id": "minecraft:copper_ingot"
+  },
+  "ticks": 5
+}

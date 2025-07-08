@@ -1,7 +1,6 @@
 package io.github.laptop59.concocti.common.block;
 
-import io.github.laptop59.concocti.common.block.entity.ConcoctiMelterBlockEntity;
-import io.github.laptop59.concocti.common.block.entity.ConcoctiSolidifierBlockEntity;
+import io.github.laptop59.concocti.common.block.entity.*;
 import io.github.laptop59.concocti.common.block.frame.FrameBlock;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.DyeColor;
@@ -53,6 +52,14 @@ public class ConcoctiBlocks {
             BlockBehaviour.Properties.of().mapColor(DyeColor.PURPLE).requiresCorrectToolForDrops().explosionResistance(30).strength(15f),
             new BlockData(BlockToolRank.NETHERITE, BlockToolType.PICKAXE));
 
+    public static final DeferredBlock<Block> CONDUCTIVIUM_BLOCK = registerBlock("conductivium_block", Block::new,
+            BlockBehaviour.Properties.of().mapColor(DyeColor.CYAN).requiresCorrectToolForDrops().explosionResistance(20).strength(10f),
+            new BlockData(BlockToolRank.IRON, BlockToolType.PICKAXE));
+
+    public static final DeferredBlock<Block> CONDUCTIVIUM_LIGHTNING_ROD = registerBlock("conductivium_lightning_rod", ConductiviumLightningRodBlock::new,
+            BlockBehaviour.Properties.of().mapColor(DyeColor.CYAN).requiresCorrectToolForDrops().explosionResistance(2).strength(2f),
+            new BlockData(BlockToolRank.IRON, BlockToolType.PICKAXE));
+
     public static final DeferredBlock<Block> CONCOCTI_MELTER = registerBlock("concocti_melter", ConcoctiMelterBlock::new,
             BlockBehaviour.Properties.of().mapColor(DyeColor.MAGENTA).requiresCorrectToolForDrops().explosionResistance(4.5f).strength(4f)
                     .lightLevel(s -> s.getValue(BlockStateProperties.LIT) ? 13 : 0),
@@ -99,6 +106,38 @@ public class ConcoctiBlocks {
             "concocti_solidifier", () -> BlockEntityType.Builder.of(ConcoctiSolidifierBlockEntity::new, ConcoctiBlocks.CONCOCTI_SOLIDIFIER.get())
                     .build(null)
     );
+
+    public static final DeferredBlock<Block> CONCOCTI_ENERGY_GENERATOR = registerBlock("concocti_energy_generator", ConcoctiEnergyGeneratorBlock::new,
+            BlockBehaviour.Properties.of().mapColor(DyeColor.MAGENTA).requiresCorrectToolForDrops().explosionResistance(4.5f).strength(4f)
+                    .lightLevel(s -> s.getValue(BlockStateProperties.LIT) ? 13 : 0),
+            new BlockData(BlockToolRank.STONE, BlockToolType.PICKAXE));
+    public static final Supplier<BlockEntityType<ConcoctiEnergyGeneratorBlockEntity>> CONCOCTI_ENERGY_GENERATOR_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register(
+            "concocti_energy_generator", () -> BlockEntityType.Builder.of(ConcoctiEnergyGeneratorBlockEntity::new, ConcoctiBlocks.CONCOCTI_ENERGY_GENERATOR.get())
+                    .build(null)
+    );
+
+    public static final DeferredBlock<Block> CONCOCTI_MIXER = registerBlock("concocti_mixer", ConcoctiMixerBlock::new,
+            BlockBehaviour.Properties.of().mapColor(DyeColor.MAGENTA).requiresCorrectToolForDrops().explosionResistance(4.5f).strength(4f)
+                    .lightLevel(s -> s.getValue(BlockStateProperties.LIT) ? 13 : 0),
+            new BlockData(BlockToolRank.STONE, BlockToolType.PICKAXE));
+    public static final Supplier<BlockEntityType<ConcoctiMixerBlockEntity>> CONCOCTI_MIXER_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register(
+            "concocti_mixer", () -> BlockEntityType.Builder.of(ConcoctiMixerBlockEntity::new, ConcoctiBlocks.CONCOCTI_MIXER.get())
+                    .build(null)
+    );
+
+    public static final DeferredBlock<Block> CONCOCTI_ELECTRON_COLLECTOR = registerBlock("concocti_electron_collector", ConcoctiElectronCollectorBlock::new,
+            BlockBehaviour.Properties.of().mapColor(DyeColor.MAGENTA).requiresCorrectToolForDrops().explosionResistance(1000f).strength(20f)
+                    .lightLevel(s -> s.getValue(BlockStateProperties.LIT) ? 15 : 0),
+            new BlockData(BlockToolRank.IRON, BlockToolType.PICKAXE));
+
+    public static final Supplier<BlockEntityType<ConcoctiElectronCollectorBlockEntity>> CONCOCTI_ELECTRON_COLLECTOR_BLOCK_ENTITY = BLOCK_ENTITY_TYPES.register(
+            "concocti_electron_collector", () -> BlockEntityType.Builder.of(ConcoctiElectronCollectorBlockEntity::new, ConcoctiBlocks.CONCOCTI_ELECTRON_COLLECTOR.get())
+                    .build(null)
+    );
+
+    public static final DeferredBlock<Block> CONCOCTI_BRICKS = registerBlock("concocti_bricks", Block::new,
+            BlockBehaviour.Properties.of().mapColor(DyeColor.MAGENTA).requiresCorrectToolForDrops().explosionResistance(100).strength(3f),
+            new BlockData(BlockToolRank.IRON, BlockToolType.PICKAXE));
 
     // REGISTERING METHODS
 

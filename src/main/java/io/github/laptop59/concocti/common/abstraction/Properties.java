@@ -20,5 +20,11 @@ public final class Properties {
 
     public static final Property<FluidStack> FLUID_INPUT = ComplexionCodec.FLUID_STACK.unique();
 
+    public static final Property<FluidStack> FLUID_INPUT_1 = ComplexionCodec.FLUID_STACK.unique();
+    public static final Property<FluidStack> FLUID_INPUT_2 = ComplexionCodec.FLUID_STACK.unique();
+    public static final Property<FluidStack> FLUID_INPUT_3 = ComplexionCodec.FLUID_STACK.unique();
+    public static final Property<FluidStack> FLUID_INPUT_4 = ComplexionCodec.FLUID_STACK.unique();
+    public static final Property<FluidStack> FLUID_OUTPUT = ComplexionCodec.FLUID_STACK.unique();
+
     private Properties() {}
 }

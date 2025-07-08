@@ -3,7 +3,7 @@ package io.github.laptop59.concocti.common.machine;
 import io.github.laptop59.concocti.client.gui.components.SlotType;
 import io.github.laptop59.concocti.common.abstraction.ConcoctiMachineComplexion;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
-import io.github.laptop59.concocti.common.block.entity.ConcoctiMelterBlockEntity;
+import io.github.laptop59.concocti.common.block.entity.AbstractPoweredBlockEntity;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -12,7 +12,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.neoforge.fluids.IFluidTank;
 
 import java.lang.reflect.Field;
@@ -40,6 +39,8 @@ public class ConcoctiMachineDetailsBuilder<
     protected Supplier<ConcoctiMachineComplexion> complexion;
     protected EnumMap<SlotType, List<Integer>> itemSlotsMap;
     protected EnumMap<SlotType, List<Supplier<IFluidTank>>> fluidSlotsMap;
+
+    protected Supplier<AbstractPoweredBlockEntity.DynamicEnergyStorage.Mode> energyMode;
 
     public ConcoctiMachineDetailsBuilder() {
         // Let the programmer use methods to set values.
@@ -73,7 +74,7 @@ public class ConcoctiMachineDetailsBuilder<
 
             if (!nullFields.isEmpty()) {
                 CrashReport crashReport = new CrashReport("Incomplete building of ConcoctiMachineDetails", new IllegalStateException(
-                        "Please report this exception to the Concocti Devs!"
+                        "ConcoctiMachineDetails object was not built properly; please report this exception to the Concocti Devs!"
                 ));
                 CrashReportCategory category1 = crashReport.addCategory("Null properties");
                 for (Field unset : nullFields) category1.setDetail(unset.getName(), "null");
@@ -93,6 +94,7 @@ public class ConcoctiMachineDetailsBuilder<
                 maxEnergyTransfer,
                 slots,
                 rateConsumption,
+                energyMode,
                 recipeType,
                 defaultName,
                 allowedSlotTypes,
@@ -123,6 +125,11 @@ public class ConcoctiMachineDetailsBuilder<
         return this;
     }
 
+    public ConcoctiMachineDetailsBuilder<T, M, V, I, R> withEnergyMode(Supplier<AbstractPoweredBlockEntity.DynamicEnergyStorage.Mode> energyMode) {
+        this.energyMode = energyMode;
+        return this;
+    }
+
     public ConcoctiMachineDetailsBuilder<T, M, V, I, R> withRecipeType(Supplier<RecipeType<R>> recipeType) {
         this.recipeType = recipeType;
         return this;
@@ -134,7 +141,9 @@ public class ConcoctiMachineDetailsBuilder<
     }
 
     public ConcoctiMachineDetailsBuilder<T, M, V, I, R> withAllowedSlotTypes(SlotType... types) {
-        this.allowedSlotTypes = List.of(types);
+        this.allowedSlotTypes = new ArrayList<>(types.length + 1);
+        this.allowedSlotTypes.add(SlotType.NONE);
+        this.allowedSlotTypes.addAll(List.of(types));
         return this;
     }
 

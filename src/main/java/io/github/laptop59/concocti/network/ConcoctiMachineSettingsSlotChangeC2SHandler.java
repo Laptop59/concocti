@@ -18,7 +18,7 @@ public class ConcoctiMachineSettingsSlotChangeC2SHandler {
                     if (machineMenu.containerId != data.containerId()) return; // just in case
                     AbstractConcoctiMachineBlockEntity<?, ?, ?, ?, ?> blockEntity
                         = (AbstractConcoctiMachineBlockEntity<?, ?, ?, ?, ?>) machineMenu.getContainer();
-                    blockEntity.machineSettings.cycleSlot(data.direction(), data.wasRightClicked());
+                    blockEntity.machineSettings.cycleSlot(data.direction(), !data.wasRightClicked());
                     blockEntity.getLevel().invalidateCapabilities(blockEntity.getBlockPos());
                 }
             }

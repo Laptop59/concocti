@@ -5,14 +5,16 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.energy.EnergyStorage;
-import org.checkerframework.checker.units.qual.N;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.function.Supplier;
 
 /**
  * A class to form a basic block entity, whose block already has energy and item storage available.
@@ -27,18 +29,22 @@ public abstract class AbstractPoweredBlockEntity extends BaseContainerBlockEntit
 
     protected ConcoctiItemStackHandler itemHandler;
 
-    protected AbstractPoweredBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState blockState, int maxEnergy, int maxEnergyTransfer, int slotSize) {
+    protected AbstractPoweredBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState blockState, int maxEnergy, int maxEnergyTransfer, int slotSize, Supplier<DynamicEnergyStorage.Mode> mode) {
         super(type, pos, blockState);
         this.slotSize = slotSize;
         this.itemHandler = createItemHandler(slotSize);
         this.maxEnergy = maxEnergy;
         this.maxEnergyTransfer = maxEnergyTransfer;
-        this.energy = new DynamicEnergyStorage(this.maxEnergy, maxEnergyTransfer, maxEnergyTransfer, 0);
+        this.energy = new DynamicEnergyStorage(this.maxEnergy, maxEnergyTransfer, maxEnergyTransfer, 0, mode);
     }
 
     public void resetItemHandler(int newSlotsAmount) {
         this.slotSize = newSlotsAmount;
         this.itemHandler.setDirectList(NonNullList.withSize(newSlotsAmount, ItemStack.EMPTY));
+    }
+
+    public void setEnergyModeSupplier(Supplier<DynamicEnergyStorage.Mode> supplier) {
+        this.energy.mode = supplier;
     }
 
     private @NotNull ConcoctiItemStackHandler createItemHandler(int slotSize) {
@@ -87,8 +93,29 @@ public abstract class AbstractPoweredBlockEntity extends BaseContainerBlockEntit
 
     /** An {@link net.neoforged.neoforge.energy.EnergyStorage} with a variable capacity. */
     public static class DynamicEnergyStorage extends EnergyStorage {
-        public DynamicEnergyStorage(int capacity, int maxReceive, int maxExtract, int energy) {
+        Supplier<Mode> mode;
+
+        public static int NONE_FLAG = 0x00;
+        public static int INPUT_FLAG = 0x01;
+        public static int OUTPUT_FLAG = 0x02;
+
+        public enum Mode {
+
+            NONE(NONE_FLAG),
+            INPUT_ONLY(INPUT_FLAG),
+            OUTPUT_ONLY(OUTPUT_FLAG),
+            INPUT_OUTPUT(INPUT_FLAG | OUTPUT_FLAG);
+
+            public final int flags;
+
+            Mode(int flags) {
+                this.flags = flags;
+            }
+        }
+
+        public DynamicEnergyStorage(int capacity, int maxReceive, int maxExtract, int energy, Supplier<Mode> isOutput) {
             super(capacity, maxReceive, maxExtract, energy);
+            this.mode = isOutput;
         }
 
         public void setMaxEnergy(int capacity) {
@@ -99,6 +126,42 @@ public abstract class AbstractPoweredBlockEntity extends BaseContainerBlockEntit
         public void setMaxEnergyTransfer(int transfer) {
             this.maxReceive = transfer;
             this.maxExtract = transfer;
+        }
+
+        @Override
+        public boolean canExtract() {
+            int flags = mode.get().flags;
+            if ((flags & OUTPUT_FLAG) == 0) return false;
+            return this.maxExtract > 0;
+        }
+
+        @Override
+        public boolean canReceive() {
+            int flags = mode.get().flags;
+            if ((flags & INPUT_FLAG) == 0) return false;
+            return this.maxReceive > 0;
+        }
+
+        public int forceReceiveEnergy(int toReceive, boolean simulate) {
+            if (toReceive <= 0) {
+                return 0;
+            }
+
+            int energyReceived = Mth.clamp(this.capacity - this.energy, 0, Math.min(this.maxReceive, toReceive));
+            if (!simulate)
+                this.energy += energyReceived;
+            return energyReceived;
+        }
+
+        public int forceExtractEnergy(int toExtract, boolean simulate) {
+            if (toExtract <= 0) {
+                return 0;
+            }
+
+            int energyExtracted = Math.min(this.energy, Math.min(this.maxExtract, toExtract));
+            if (!simulate)
+                this.energy -= energyExtracted;
+            return energyExtracted;
         }
     }
 }

@@ -28,18 +28,21 @@ import net.neoforged.neoforge.registries.DeferredItem;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static io.github.laptop59.concocti.common.Concocti.MODID;
+
 /**
  * A base class to implement common parts of all Concocti recipes.
  * @param <T> The type of recipe represented by this category.
  */
 public abstract class AbstractConcoctiRecipeCategory<T extends Recipe<? extends RecipeInput>> implements IRecipeCategory<T> {
     private final IDrawable icon;
+    protected final ResourceLocation slot = ResourceLocation.fromNamespaceAndPath(MODID, "textures/gui/jei/slot.png");
 
     private final ArrowProgress arrowProgress;
 
     public AbstractConcoctiRecipeCategory(IGuiHelper guiHelper, ItemStack icon) {
         this.icon = guiHelper.createDrawableIngredient(VanillaTypes.ITEM_STACK, icon);
-        arrowProgress = new ArrowProgress(getTotalArrowLeft(), 10 - 4);
+        arrowProgress = new ArrowProgress(-1_000_000_000, 10 - 4);
     }
 
     public AbstractConcoctiRecipeCategory(IGuiHelper guiHelper, DeferredItem<Item> item) {
@@ -65,9 +68,9 @@ public abstract class AbstractConcoctiRecipeCategory<T extends Recipe<? extends 
         return 36 - 8;
     }
 
-    protected int getHorizontalArrowOffset() { return 0; }
+    protected int getHorizontalArrowOffset(@NotNull T recipe) { return 0; }
 
-    protected int getTotalArrowLeft() { return 75 - 4 + getHorizontalArrowOffset(); }
+    protected int getTotalArrowLeft(@NotNull T recipe) { return 75 - 4 + getHorizontalArrowOffset(recipe); }
 
     protected abstract ResourceLocation getTexture();
 
@@ -83,7 +86,7 @@ public abstract class AbstractConcoctiRecipeCategory<T extends Recipe<? extends 
         int tickDuration = getTicks(recipe);
         long passedTicks = absoluteTicks % tickDuration;
         double progress = (double) passedTicks / tickDuration;
-        arrowProgress.setGuiLeft(getTotalArrowLeft());
+        arrowProgress.setGuiLeft(getTotalArrowLeft(recipe));
         arrowProgress.update((float) (progress * 23) / 22);
         Renderable.renderChildAbsolute(guiGraphics, RenderInfo.withNullifiedOffset(null), arrowProgress);
     }
@@ -98,8 +101,8 @@ public abstract class AbstractConcoctiRecipeCategory<T extends Recipe<? extends 
     }
 
     /** Returns whether the cursor is touching the animating arrow. */
-    protected boolean isCursorTouchingArrow(double mouseX, double mouseY) {
-        double dx = mouseX - getTotalArrowLeft();
+    protected boolean isCursorTouchingArrow(double mouseX, double mouseY, @NotNull T recipe) {
+        double dx = mouseX - getTotalArrowLeft(recipe);
         double dy = mouseY - (10 - 4);
         return dx >= 0 && dx <= 22 && dy >= 0 && dy <= 16;
     }
@@ -108,7 +111,7 @@ public abstract class AbstractConcoctiRecipeCategory<T extends Recipe<? extends 
     public void getTooltip(@NotNull ITooltipBuilder tooltip, @NotNull T recipe,
                            @NotNull IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
         // Show the duration, if needed.
-        if (isCursorTouchingArrow(mouseX, mouseY))
+        if (isCursorTouchingArrow(mouseX, mouseY, recipe))
             tooltip.add(Component.translatable("screen.concocti.duration", (double) getTicks(recipe) / 20));
     }
 

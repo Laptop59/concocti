@@ -12,7 +12,18 @@ public enum SlotType {
     BYPRODUCT_FLUID_OUTPUT(302, 0x6b81b3, SlotFlag.FLUID | SlotFlag.OUTPUT),
     BOTH_FLUIDS_OUTPUT(303, 0xdb5eb0, SlotFlag.FLUID | SlotFlag.OUTPUT),
     BASE_ITEM_INPUT(401, 0xd95571, SlotFlag.ITEM | SlotFlag.INPUT),
-    MOLD_ITEM_INPUT(402, 0xadff8c, SlotFlag.ITEM | SlotFlag.INPUT);
+    MOLD_ITEM_INPUT(402, 0xadff8c, SlotFlag.ITEM | SlotFlag.INPUT),
+    ENERGY_OUTPUT(501, 0xffdddd, SlotFlag.ENERGY | SlotFlag.OUTPUT),
+    ITEM_INPUT_1(601, 0xff7d7d, SlotFlag.ITEM | SlotFlag.INPUT),
+    ITEM_INPUT_2(602, 0xff8a80, SlotFlag.ITEM | SlotFlag.INPUT),
+    ITEM_INPUT_3(603, 0xff9580, SlotFlag.ITEM | SlotFlag.INPUT),
+    ITEM_INPUT_4(604, 0xffa080, SlotFlag.ITEM | SlotFlag.INPUT),
+    FLUID_INPUT_1(701, 0x78aaff, SlotFlag.FLUID | SlotFlag.INPUT),
+    FLUID_INPUT_2(702, 0x7aa0ff, SlotFlag.FLUID | SlotFlag.INPUT),
+    FLUID_INPUT_3(703, 0x7a95ff, SlotFlag.FLUID | SlotFlag.INPUT),
+    FLUID_INPUT_4(704, 0x7a8aff, SlotFlag.FLUID | SlotFlag.INPUT),
+    ALL_ITEM_INPUTS(801, 0xffcccc, SlotFlag.ITEM | SlotFlag.INPUT),
+    ALL_FLUID_INPUTS(802, 0xaad7ff, SlotFlag.FLUID | SlotFlag.INPUT);
 
     public static final Codec<SlotType> CODEC = Codec.INT.xmap(
             SlotType::byId,

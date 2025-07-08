@@ -38,4 +38,34 @@ public class ConcoctiRecipes {
             );
     public static final Supplier<RecipeSerializer<ConcoctiSolidifierRecipe>> CONCOCTI_SOLIDIFIER_RECIPE_SERIALIZER =
             RECIPE_SERIALIZERS.register("concocti_solidifier", ConcoctiSolidifierRecipe.Serializer::new);
+
+    // CONCOCTI ENERGY GENERATOR
+
+    public static final Supplier<RecipeType<ConcoctiEnergyGeneratorRecipe>> CONCOCTI_ENERGY_GENERATOR_RECIPE_TYPE =
+            RECIPE_TYPES.register(
+                    "concocti_energy_generator",
+                    () -> RecipeType.simple(ResourceLocation.fromNamespaceAndPath(Concocti.MODID, "concocti_solidifier"))
+            );
+    public static final Supplier<RecipeSerializer<ConcoctiEnergyGeneratorRecipe>> CONCOCTI_ENERGY_GENERATOR_RECIPE_SERIALIZER =
+            RECIPE_SERIALIZERS.register("concocti_energy_generator", ConcoctiEnergyGeneratorRecipe.Serializer::new);
+
+    // CONCOCTI MIXER
+
+    public static final Supplier<RecipeType<ConcoctiMixerRecipe>> CONCOCTI_MIXER_RECIPE_TYPE =
+            RECIPE_TYPES.register(
+                    "concocti_mixer",
+                    () -> RecipeType.simple(ResourceLocation.fromNamespaceAndPath(Concocti.MODID, "concocti_mixer"))
+            );
+    public static final Supplier<RecipeSerializer<ConcoctiMixerRecipe>> CONCOCTI_MIXER_RECIPE_SERIALIZER =
+            RECIPE_SERIALIZERS.register("concocti_mixer", ConcoctiMixerRecipe.Serializer::new);
+
+    // CONCOCTI ELECTRON COLLECTOR
+
+    public static final Supplier<RecipeType<ConcoctiElectronCollectorRecipe>> CONCOCTI_ELECTRON_COLLECTOR_RECIPE_TYPE =
+            RECIPE_TYPES.register(
+                    "concocti_electron_collector",
+                    () -> RecipeType.simple(ResourceLocation.fromNamespaceAndPath(Concocti.MODID, "concocti_electron_collector"))
+            );
+    public static final Supplier<RecipeSerializer<ConcoctiElectronCollectorRecipe>> CONCOCTI_ELECTRON_COLLECTOR_RECIPE_SERIALIZER =
+            RECIPE_SERIALIZERS.register("concocti_electron_collector", ConcoctiElectronCollectorRecipe.Serializer::new);
 }

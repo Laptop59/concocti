@@ -1,9 +1,15 @@
-// 1.21.1	2025-06-26T16:25:16.117202221	Loot Tables
+// 1.21.1	2025-07-08T13:26:29.854353691	Loot Tables
 c660776b4318f7556941e775afdebfb14bf9b1b8 data/concocti/loot_table/blocks/advanced_concocti_frame.json
 ca1d48468d93f063e8803200b4b3e47092cc41cb data/concocti/loot_table/blocks/basic_concocti_frame.json
 d269190ffb34e3f147e0d817e49f31b96d72c27a data/concocti/loot_table/blocks/compressed_concocti_block.json
+0963bd6f6d3e79d4006e80377ed5cf6fc71623d5 data/concocti/loot_table/blocks/concocti_bricks.json
+5543989892c38f30f655adf1447dfb982d1f96d0 data/concocti/loot_table/blocks/concocti_electron_collector.json
+c2ee4290a06108a85a4fba9def348437efd61e70 data/concocti/loot_table/blocks/concocti_energy_generator.json
 48e985aab8e958bb918393cb6c60e37f9d19dc4b data/concocti/loot_table/blocks/concocti_melter.json
+eae64f25b2bd252892c682bda2ddda48a4037281 data/concocti/loot_table/blocks/concocti_mixer.json
 4b950831aee9817cb8cd392c9092dc1fb3b49fa1 data/concocti/loot_table/blocks/concocti_solidifier.json
+f5baeed61954fc03b8231a999abd5ed6ea72bbcb data/concocti/loot_table/blocks/conductivium_block.json
+41243365d437e0ac006b2a827d716f3aa8b62ce8 data/concocti/loot_table/blocks/conductivium_lightning_rod.json
 64d2e4778abb5d9433827e1131f07a5230465776 data/concocti/loot_table/blocks/diamethyst_block.json
 d7f3b39962eb7131dfd7e64fc2402cbf1a4c31d5 data/concocti/loot_table/blocks/dirty_concocti_block.json
 9dccf16722d8053daa09c57b9593a2cb264cc761 data/concocti/loot_table/blocks/purified_concocti_block.json

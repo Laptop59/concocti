@@ -1,0 +1,16 @@
+{
+  "type": "concocti:concocti_solidifier",
+  "base_item": [],
+  "input_fluid": {
+    "amount": 1296,
+    "fluid": "concocti:molten_copper"
+  },
+  "mold": {
+    "item": "minecraft:cauldron"
+  },
+  "output_item": {
+    "count": 1,
+    "id": "minecraft:copper_block"
+  },
+  "ticks": 320
+}

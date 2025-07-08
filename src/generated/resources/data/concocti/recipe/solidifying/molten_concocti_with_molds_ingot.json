@@ -2,7 +2,7 @@
   "type": "concocti:concocti_solidifier",
   "base_item": [],
   "input_fluid": {
-    "amount": 108,
+    "amount": 144,
     "fluid": "concocti:molten_concocti"
   },
   "mold": {

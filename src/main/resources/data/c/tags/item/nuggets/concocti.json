@@ -3,6 +3,8 @@
     "concocti:dirty_concocti_nugget",
     "concocti:purified_concocti_nugget",
     "concocti:tough_concocti_nugget",
-    "concocti:compressed_concocti_nugget"
+    "concocti:compressed_concocti_nugget",
+    "concocti:conductivium_nugget",
+    "concocti:electrostatic_conductivium_nugget"
   ]
 }

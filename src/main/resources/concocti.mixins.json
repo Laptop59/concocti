@@ -4,8 +4,10 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "DisableDurabilityTooltipMixin",
+    "LightningBoltMixin",
     "LivingEntityMixin",
     "PlayerMixin",
+    "ServerLevelMixin",
     "server.ServerGamePacketListenerImplMixin"
   ],
   "client": [

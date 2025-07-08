@@ -17,4 +17,13 @@ public class ConcoctiMenus {
 
     public static final Supplier<MenuType<ConcoctiSolidifierMenu>> CONCOCTI_SOLIDIFIER_MENU =
             MENUS.register("concocti_solidifier_menu", () -> new MenuType<>(ConcoctiSolidifierMenu::new, FeatureFlags.DEFAULT_FLAGS));
+
+    public static final Supplier<MenuType<ConcoctiEnergyGeneratorMenu>> CONCOCTI_ENERGY_GENERATOR_MENU =
+            MENUS.register("concocti_energy_generator_menu", () -> new MenuType<>(ConcoctiEnergyGeneratorMenu::new, FeatureFlags.DEFAULT_FLAGS));
+
+    public static final Supplier<MenuType<ConcoctiMixerMenu>> CONCOCTI_MIXER_MENU =
+            MENUS.register("concocti_mixer_menu", () -> new MenuType<>(ConcoctiMixerMenu::new, FeatureFlags.DEFAULT_FLAGS));
+
+    public static final Supplier<MenuType<ConcoctiElectronCollectorMenu>> CONCOCTI_ELECTRON_COLLECTOR_MENU =
+            MENUS.register("concocti_electron_collector_menu", () -> new MenuType<>(ConcoctiElectronCollectorMenu::new, FeatureFlags.DEFAULT_FLAGS));
 }
