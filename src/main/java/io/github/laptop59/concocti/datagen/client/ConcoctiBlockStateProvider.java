@@ -18,6 +18,7 @@ public class ConcoctiBlockStateProvider extends BlockStateProvider {
         this.simpleBlock(ConcoctiBlocks.TOUGH_CONCOCTI_BLOCK.get());
         this.simpleBlock(ConcoctiBlocks.COMPRESSED_CONCOCTI_BLOCK.get());
         this.simpleBlock(ConcoctiBlocks.CONDUCTIVIUM_BLOCK.get());
+        this.simpleBlock(ConcoctiBlocks.CRYSTALIUM_ORE.get());
 
         this.simpleBlock(ConcoctiBlocks.BASIC_CONCOCTI_FRAME.get());
         this.simpleBlock(ConcoctiBlocks.ADVANCED_CONCOCTI_FRAME.get());

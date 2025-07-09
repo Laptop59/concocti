@@ -47,6 +47,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
         threeStageStorageRecipes(output, ConcoctiItems.PURIFIED_CONCOCTI_NUGGET, ConcoctiItems.PURIFIED_CONCOCTI_INGOT, ConcoctiItems.PURIFIED_CONCOCTI_BLOCK);
         threeStageStorageRecipes(output, ConcoctiItems.TOUGH_CONCOCTI_NUGGET, ConcoctiItems.TOUGH_CONCOCTI_INGOT, ConcoctiItems.TOUGH_CONCOCTI_BLOCK);
         threeStageStorageRecipes(output, ConcoctiItems.CONDUCTIVIUM_NUGGET, ConcoctiItems.CONDUCTIVIUM_INGOT, ConcoctiItems.CONDUCTIVIUM_BLOCK);
+        threeStageStorageRecipes(output, ConcoctiItems.CRYSTALIUM_NUGGET, ConcoctiItems.CRYSTALIUM_INGOT, ConcoctiItems.CRYSTALIUM_BLOCK);
 
         moldBaseRecipes(output, Items.IRON_NUGGET, Items.COPPER_INGOT, MoldItem.Material.COPPER);
         moldBaseRecipes(output, ConcoctiItems.PURIFIED_CONCOCTI_NUGGET, Items.DIAMOND, MoldItem.Material.DIAMOND);

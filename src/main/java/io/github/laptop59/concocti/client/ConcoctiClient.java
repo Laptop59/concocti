@@ -77,5 +77,6 @@ public class ConcoctiClient {
                 return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_lightning_flow");
             }
         }, ConcoctiFluids.MOLTEN_LIGHTNING_FLUID_TYPE);
+
     }
 }

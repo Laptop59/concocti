@@ -3,8 +3,6 @@
     "concocti:dirty_concocti_ingot",
     "concocti:purified_concocti_ingot",
     "concocti:tough_concocti_ingot",
-    "concocti:compressed_concocti_ingot",
-    "concocti:conductivium_ingot",
-    "concocti:electrostatic_conductivium_ingot"
+    "concocti:compressed_concocti_ingot"
   ]
 }

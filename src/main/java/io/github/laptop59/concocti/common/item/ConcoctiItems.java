@@ -58,6 +58,12 @@ public class ConcoctiItems {
     public static final DeferredItem<BlockItem> CONDUCTIVIUM_BLOCK = registerBlockItem(ConcoctiBlocks.CONDUCTIVIUM_BLOCK);
     public static final DeferredItem<BlockItem> CONDUCTIVIUM_LIGHTNING_ROD = registerBlockItem(ConcoctiBlocks.CONDUCTIVIUM_LIGHTNING_ROD);
 
+    public static final DeferredItem<Item> CRYSTALIUM_NUGGET = registerItem("crystalium_nugget", new Item.Properties());
+    public static final DeferredItem<Item> CRYSTALIUM_INGOT = registerItem("crystalium_ingot", new Item.Properties());
+    public static final DeferredItem<BlockItem> CRYSTALIUM_BLOCK = registerBlockItem(ConcoctiBlocks.CRYSTALIUM_BLOCK);
+    public static final DeferredItem<Item> RAW_CRYSTALIUM_ORE = registerItem("raw_crystalium_ore", new Item.Properties());
+    public static final DeferredItem<BlockItem> CRYSTALIUM_ORE = registerBlockItem(ConcoctiBlocks.CRYSTALIUM_ORE);
+
     public static final DeferredItem<Item> ELECTROSTATIC_CONDUCTIVIUM_NUGGET = registerItem("electrostatic_conductivium_nugget", new Item.Properties());
     public static final DeferredItem<Item> ELECTROSTATIC_CONDUCTIVIUM_INGOT = registerItem("electrostatic_conductivium_ingot", new Item.Properties());
 
@@ -228,6 +234,12 @@ public class ConcoctiItems {
         acceptStack(output, CONDUCTIVIUM_INGOT);
         acceptStack(output, CONDUCTIVIUM_BLOCK);
         acceptStack(output, CONDUCTIVIUM_LIGHTNING_ROD);
+
+        acceptStack(output, RAW_CRYSTALIUM_ORE);
+        acceptStack(output, CRYSTALIUM_ORE);
+        acceptStack(output, CRYSTALIUM_NUGGET);
+        acceptStack(output, CRYSTALIUM_INGOT);
+        acceptStack(output, CRYSTALIUM_BLOCK);
 
         acceptStack(output, ELECTROSTATIC_CONDUCTIVIUM_NUGGET);
         acceptStack(output, ELECTROSTATIC_CONDUCTIVIUM_INGOT);

@@ -52,6 +52,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiBlocks.CONCOCTI_MIXER, "Concocti Mixer");
         add(ConcoctiBlocks.CONDUCTIVIUM_LIGHTNING_ROD, "Conductivium Lightning Rod");
         add(ConcoctiBlocks.CONCOCTI_ELECTRON_COLLECTOR, "Concocti Electron Collector");
+        add(ConcoctiBlocks.CRYSTALIUM_BLOCK, "Block of Crystalium");
 
         // Items go here.
         add(ConcoctiItems.DIAMETHYST_CRYSTAL, "Diamethyst Crystal");
@@ -75,6 +76,8 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiItems.COMPACTEST_CONCOCTI_UPGRADE, "Compactest Concocti Upgrade");
         add(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_NUGGET, "Electrostatic Conductivium Nugget");
         add(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_INGOT, "Electrostatic Conductivium Ingot");
+        add(ConcoctiItems.CRYSTALIUM_NUGGET, "Crystalium Nugget");
+        add(ConcoctiItems.CRYSTALIUM_INGOT, "Crystalium Ingot");
 
         add(ConcoctiItems.Tags.CONCOCTI_UPGRADES, "Concocti Upgrades");
         for (Map.Entry<MoldItem.Type, TagKey<Item>> moldType : ConcoctiItems.Tags.MOLDS.entrySet()) {
