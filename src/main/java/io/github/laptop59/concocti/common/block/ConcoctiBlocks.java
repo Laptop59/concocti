@@ -4,8 +4,7 @@ import io.github.laptop59.concocti.common.block.entity.*;
 import io.github.laptop59.concocti.common.block.frame.FrameBlock;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -55,6 +54,20 @@ public class ConcoctiBlocks {
     public static final DeferredBlock<Block> CONDUCTIVIUM_BLOCK = registerBlock("conductivium_block", Block::new,
             BlockBehaviour.Properties.of().mapColor(DyeColor.CYAN).requiresCorrectToolForDrops().explosionResistance(20).strength(10f),
             new BlockData(BlockToolRank.IRON, BlockToolType.PICKAXE));
+
+    public static final DeferredBlock<Block> CRYSTALIUM_BLOCK = registerBlock("crystalium_block", TransparentBlock::new,
+            BlockBehaviour.Properties.of()
+                    .mapColor(DyeColor.MAGENTA)
+                    .requiresCorrectToolForDrops()
+                    .explosionResistance(200)
+                    .strength(40f)
+                    .noOcclusion()
+                    .isViewBlocking((blockState, blockGetter, blockPos) -> false),
+            new BlockData(BlockToolRank.DIAMOND, BlockToolType.PICKAXE));
+
+    public static final DeferredBlock<Block> CRYSTALIUM_ORE = registerBlock("crystalium_ore", Block::new,
+            BlockBehaviour.Properties.of().mapColor(DyeColor.MAGENTA).requiresCorrectToolForDrops().explosionResistance(10).strength(6f),
+            new BlockData(BlockToolRank.DIAMOND, BlockToolType.PICKAXE));
 
     public static final DeferredBlock<Block> CONDUCTIVIUM_LIGHTNING_ROD = registerBlock("conductivium_lightning_rod", ConductiviumLightningRodBlock::new,
             BlockBehaviour.Properties.of().mapColor(DyeColor.CYAN).requiresCorrectToolForDrops().explosionResistance(2).strength(2f),

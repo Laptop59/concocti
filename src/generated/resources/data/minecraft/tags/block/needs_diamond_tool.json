@@ -1,6 +1,8 @@
 {
   "values": [
-    "concocti:advanced_concocti_frame",
-    "concocti:tough_concocti_block"
+    "concocti:crystalium_block",
+    "concocti:tough_concocti_block",
+    "concocti:crystalium_ore",
+    "concocti:advanced_concocti_frame"
   ]
 }

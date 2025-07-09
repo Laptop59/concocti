@@ -1,9 +1,10 @@
-// 1.21.1	2025-07-06T17:58:11.011393049	Block States: concocti
+// 1.21.1	2025-07-08T21:54:19.874200918	Block States: concocti
 d0583e74c13a2c493c34a69d5f362a5a8e4b2152 assets/concocti/blockstates/advanced_concocti_frame.json
 37b74c2996cafb43f8822f986dbd95a342c22820 assets/concocti/blockstates/basic_concocti_frame.json
 a6a222993b2d85df62fd7ea1a0e20811a54c940c assets/concocti/blockstates/compressed_concocti_block.json
 10e1e556d9248c9c95f63f32026d95a8890ec410 assets/concocti/blockstates/concocti_bricks.json
 d17e15a4b521218871a5dd0892ab159d3b6d5bb7 assets/concocti/blockstates/conductivium_block.json
+ad50df34f8824ad29232cc748cef9922a3f026d2 assets/concocti/blockstates/crystalium_ore.json
 b3e0324bfc403131a31ca2757016a0cfcc66dd18 assets/concocti/blockstates/diamethyst_block.json
 0faa2dbd728f124d6648fd97cf44037e17d96596 assets/concocti/blockstates/dirty_concocti_block.json
 51e7e348efe89588d5944ebbf0c830c174503d67 assets/concocti/blockstates/purified_concocti_block.json
@@ -13,6 +14,7 @@ de7a4ddb2077a33889184e9622cbdc560a0c9fdd assets/concocti/models/block/advanced_c
 e734b91f1df64e381d770d8a5053362ce461c20b assets/concocti/models/block/compressed_concocti_block.json
 fcc3ab7cb7db99f47c5e38da18d97c8b25bc3c7f assets/concocti/models/block/concocti_bricks.json
 9b5755f89f60863d28b59e07126f338cea6bc64c assets/concocti/models/block/conductivium_block.json
+bcbab565c23fa954a3e88ca6bd2586059faf5228 assets/concocti/models/block/crystalium_ore.json
 6b424401b96d26f19716aac0e694ecc4f8aa65c4 assets/concocti/models/block/diamethyst_block.json
 093634c24f959ef106018a1d870f1b74aaf8b0e5 assets/concocti/models/block/dirty_concocti_block.json
 65f686be3a6d2022f12cfff74f78f2909b8a73dc assets/concocti/models/block/purified_concocti_block.json
