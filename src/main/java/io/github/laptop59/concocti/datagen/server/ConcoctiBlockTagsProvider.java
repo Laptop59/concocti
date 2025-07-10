@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class ConcoctiBlockTagsProvider extends BlockTagsProvider {
@@ -42,12 +43,12 @@ public class ConcoctiBlockTagsProvider extends BlockTagsProvider {
             );
         }
         // Then, sort blocks into these tags.
-        for (DeferredBlock<? extends Block> block : ConcoctiBlocks.BLOCK_MAP.keySet()) {
-            ConcoctiBlocks.BlockData data = ConcoctiBlocks.BLOCK_MAP.get(block);
+        for (Map.Entry<DeferredBlock<? extends Block>, ConcoctiBlocks.BlockData> block : ConcoctiBlocks.BLOCK_MAP.entrySet()) {
+            ConcoctiBlocks.BlockData data = block.getValue();
             IntrinsicTagAppender<Block> rankTag = toolRankTags.get(data.toolRank());
             IntrinsicTagAppender<Block> typeTag = toolTypeTags.get(data.toolType());
-            rankTag.add(block.get());
-            typeTag.add(block.get());
+            rankTag.add(block.getKey().get());
+            typeTag.add(block.getKey().get());
         }
     }
 }

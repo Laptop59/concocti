@@ -1,7 +1,7 @@
 package io.github.laptop59.concocti.common.fluid;
 
+import io.github.laptop59.concocti.common.ConcoctiRegisters;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
@@ -11,19 +11,12 @@ import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
-
-import static io.github.laptop59.concocti.common.Concocti.MODID;
 
 public class ConcoctiFluids {
-    public static final DeferredRegister<Fluid> FLUIDS = DeferredRegister.create(BuiltInRegistries.FLUID, MODID);
-    public static final DeferredRegister<FluidType> FLUID_TYPES = DeferredRegister.create(NeoForgeRegistries.FLUID_TYPES, MODID);
+    public static final DeferredHolder<Fluid, FlowingFluid> MOLTEN_CONCOCTI = ConcoctiRegisters.FLUIDS.register("molten_concocti", (loc) -> new MoltenConcoctiFluid.Source());
+    public static final DeferredHolder<Fluid, FlowingFluid> FLOWING_MOLTEN_CONCOCTI = ConcoctiRegisters.FLUIDS.register("flowing_molten_concocti", (loc) -> new MoltenConcoctiFluid.Flowing());
 
-    public static final DeferredHolder<Fluid, FlowingFluid> MOLTEN_CONCOCTI = FLUIDS.register("molten_concocti", (loc) -> new MoltenConcoctiFluid.Source());
-    public static final DeferredHolder<Fluid, FlowingFluid> FLOWING_MOLTEN_CONCOCTI = FLUIDS.register("flowing_molten_concocti", (loc) -> new MoltenConcoctiFluid.Flowing());
-
-    public static final DeferredHolder<FluidType, FluidType> MOLTEN_CONCOCTI_FLUID_TYPE = FLUID_TYPES.register("molten_concocti",
+    public static final DeferredHolder<FluidType, FluidType> MOLTEN_CONCOCTI_FLUID_TYPE = ConcoctiRegisters.FLUID_TYPES.register("molten_concocti",
             (loc) -> new FluidType(
                     FluidType.Properties.create()
                     .temperature(300)
@@ -40,10 +33,10 @@ public class ConcoctiFluids {
             BlockBehaviour.Properties.ofFullCopy(Blocks.LAVA).mapColor(DyeColor.PURPLE)
     );
 
-    public static final DeferredHolder<Fluid, FlowingFluid> MOLTEN_CONCOCTIZED_DIRT = FLUIDS.register("molten_concoctized_dirt", (loc) -> new MoltenConcoctizedDirtFluid.Source());
-    public static final DeferredHolder<Fluid, FlowingFluid> FLOWING_MOLTEN_CONCOCTIZED_DIRT = FLUIDS.register("flowing_molten_concoctized_dirt", (loc) -> new MoltenConcoctizedDirtFluid.Flowing());
+    public static final DeferredHolder<Fluid, FlowingFluid> MOLTEN_CONCOCTIZED_DIRT = ConcoctiRegisters.FLUIDS.register("molten_concoctized_dirt", (loc) -> new MoltenConcoctizedDirtFluid.Source());
+    public static final DeferredHolder<Fluid, FlowingFluid> FLOWING_MOLTEN_CONCOCTIZED_DIRT = ConcoctiRegisters.FLUIDS.register("flowing_molten_concoctized_dirt", (loc) -> new MoltenConcoctizedDirtFluid.Flowing());
 
-    public static final DeferredHolder<FluidType, FluidType> MOLTEN_CONCOCTIZED_DIRT_FLUID_TYPE = FLUID_TYPES.register("molten_concoctized_dirt",
+    public static final DeferredHolder<FluidType, FluidType> MOLTEN_CONCOCTIZED_DIRT_FLUID_TYPE = ConcoctiRegisters.FLUID_TYPES.register("molten_concoctized_dirt",
             (loc) -> new FluidType(
                     FluidType.Properties.create()
                             .temperature(200)
@@ -60,10 +53,10 @@ public class ConcoctiFluids {
             BlockBehaviour.Properties.ofFullCopy(Blocks.LAVA).mapColor(DyeColor.PURPLE)
     );
 
-    public static final DeferredHolder<Fluid, FlowingFluid> MOLTEN_COPPER = FLUIDS.register("molten_copper", (loc) -> new MoltenCopperFluid.Source());
-    public static final DeferredHolder<Fluid, FlowingFluid> FLOWING_MOLTEN_COPPER = FLUIDS.register("flowing_molten_copper", (loc) -> new MoltenCopperFluid.Flowing());
+    public static final DeferredHolder<Fluid, FlowingFluid> MOLTEN_COPPER = ConcoctiRegisters.FLUIDS.register("molten_copper", (loc) -> new MoltenCopperFluid.Source());
+    public static final DeferredHolder<Fluid, FlowingFluid> FLOWING_MOLTEN_COPPER = ConcoctiRegisters.FLUIDS.register("flowing_molten_copper", (loc) -> new MoltenCopperFluid.Flowing());
 
-    public static final DeferredHolder<FluidType, FluidType> MOLTEN_COPPER_FLUID_TYPE = FLUID_TYPES.register("molten_copper",
+    public static final DeferredHolder<FluidType, FluidType> MOLTEN_COPPER_FLUID_TYPE = ConcoctiRegisters.FLUID_TYPES.register("molten_copper",
             (loc) -> new FluidType(
                     FluidType.Properties.create()
                             .temperature(1084)
@@ -80,10 +73,10 @@ public class ConcoctiFluids {
             BlockBehaviour.Properties.ofFullCopy(Blocks.LAVA).mapColor(DyeColor.RED)
     );
 
-    public static final DeferredHolder<Fluid, FlowingFluid> MOLTEN_CONDUCTIVIUM = FLUIDS.register("molten_conductivium", (loc) -> new MoltenConductiviumFluid.Source());
-    public static final DeferredHolder<Fluid, FlowingFluid> FLOWING_MOLTEN_CONDUCTIVIUM = FLUIDS.register("flowing_molten_conductivium", (loc) -> new MoltenConductiviumFluid.Flowing());
+    public static final DeferredHolder<Fluid, FlowingFluid> MOLTEN_CONDUCTIVIUM = ConcoctiRegisters.FLUIDS.register("molten_conductivium", (loc) -> new MoltenConductiviumFluid.Source());
+    public static final DeferredHolder<Fluid, FlowingFluid> FLOWING_MOLTEN_CONDUCTIVIUM = ConcoctiRegisters.FLUIDS.register("flowing_molten_conductivium", (loc) -> new MoltenConductiviumFluid.Flowing());
 
-    public static final DeferredHolder<FluidType, FluidType> MOLTEN_CONDUCTIVIUM_FLUID_TYPE = FLUID_TYPES.register("molten_conductivium",
+    public static final DeferredHolder<FluidType, FluidType> MOLTEN_CONDUCTIVIUM_FLUID_TYPE = ConcoctiRegisters.FLUID_TYPES.register("molten_conductivium",
             (loc) -> new FluidType(
                     FluidType.Properties.create()
                             .temperature(2000)
@@ -96,10 +89,10 @@ public class ConcoctiFluids {
             )
     );
 
-    public static final DeferredHolder<Fluid, FlowingFluid> MOLTEN_LIGHTNING = FLUIDS.register("molten_lightning", (loc) -> new MoltenLightningFluid.Source());
-    public static final DeferredHolder<Fluid, FlowingFluid> FLOWING_MOLTEN_LIGHTNING = FLUIDS.register("flowing_molten_lightning", (loc) -> new MoltenLightningFluid.Flowing());
+    public static final DeferredHolder<Fluid, FlowingFluid> MOLTEN_LIGHTNING = ConcoctiRegisters.FLUIDS.register("molten_lightning", (loc) -> new MoltenLightningFluid.Source());
+    public static final DeferredHolder<Fluid, FlowingFluid> FLOWING_MOLTEN_LIGHTNING = ConcoctiRegisters.FLUIDS.register("flowing_molten_lightning", (loc) -> new MoltenLightningFluid.Flowing());
 
-    public static final DeferredHolder<FluidType, FluidType> MOLTEN_LIGHTNING_FLUID_TYPE = FLUID_TYPES.register("molten_lightning",
+    public static final DeferredHolder<FluidType, FluidType> MOLTEN_LIGHTNING_FLUID_TYPE = ConcoctiRegisters.FLUID_TYPES.register("molten_lightning",
             (loc) -> new FluidType(
                     FluidType.Properties.create()
                             .temperature(1000000000)

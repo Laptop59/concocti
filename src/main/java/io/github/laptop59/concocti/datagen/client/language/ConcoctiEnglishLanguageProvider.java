@@ -5,6 +5,7 @@ import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.item.MoldItem;
+import io.github.laptop59.concocti.common.machine.ConcoctiMachines;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.TagKey;
@@ -36,6 +37,13 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         // Normal translation keys go here.
         add("itemGroup.concocti", "Concocti");
 
+        // Machines go here.
+        add(ConcoctiMachines.MELTER.BLOCK, "Concocti Melter");
+        add(ConcoctiMachines.SOLIDIFIER.BLOCK, "Concocti Solidifier");
+        add(ConcoctiMachines.ENERGY_GENERATOR.BLOCK, "Concocti Energy Generator");
+        add(ConcoctiMachines.MIXER.BLOCK, "Concocti Mixer");
+        add(ConcoctiMachines.ELECTRON_COLLECTOR.BLOCK, "Concocti Electron Collector");
+
         // Blocks go here.
         add(ConcoctiBlocks.DIAMETHYST_BLOCK, "Block of Diamethyst");
         add(ConcoctiBlocks.PURIFIED_CONCOCTI_BLOCK, "Block of Purified Concocti");
@@ -43,16 +51,12 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiBlocks.TOUGH_CONCOCTI_BLOCK, "Block of Tough Concocti");
         add(ConcoctiBlocks.COMPRESSED_CONCOCTI_BLOCK, "Block of Compressed Concocti");
         add(ConcoctiBlocks.CONDUCTIVIUM_BLOCK, "Block of Conductivium");
-        add(ConcoctiBlocks.CONCOCTI_MELTER, "Concocti Melter");
-        add(ConcoctiBlocks.CONCOCTI_SOLIDIFIER, "Concocti Solidifier");
-        add(ConcoctiBlocks.CONCOCTI_ENERGY_GENERATOR, "Concocti Energy Generator");
         add(ConcoctiBlocks.BASIC_CONCOCTI_FRAME, "Basic Concocti Frame");
         add(ConcoctiBlocks.ADVANCED_CONCOCTI_FRAME, "Advanced Concocti Frame");
         add(ConcoctiBlocks.CONCOCTI_BRICKS, "Concocti Bricks");
-        add(ConcoctiBlocks.CONCOCTI_MIXER, "Concocti Mixer");
         add(ConcoctiBlocks.CONDUCTIVIUM_LIGHTNING_ROD, "Conductivium Lightning Rod");
-        add(ConcoctiBlocks.CONCOCTI_ELECTRON_COLLECTOR, "Concocti Electron Collector");
         add(ConcoctiBlocks.CRYSTALIUM_BLOCK, "Block of Crystalium");
+        add(ConcoctiBlocks.CRYSTALIUM_ORE, "Crystalium Ore");
 
         // Items go here.
         add(ConcoctiItems.DIAMETHYST_CRYSTAL, "Diamethyst Crystal");
@@ -78,6 +82,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_INGOT, "Electrostatic Conductivium Ingot");
         add(ConcoctiItems.CRYSTALIUM_NUGGET, "Crystalium Nugget");
         add(ConcoctiItems.CRYSTALIUM_INGOT, "Crystalium Ingot");
+        add(ConcoctiItems.RAW_CRYSTALIUM, "Raw Crystalium");
 
         add(ConcoctiItems.Tags.CONCOCTI_UPGRADES, "Concocti Upgrades");
         for (Map.Entry<MoldItem.Type, TagKey<Item>> moldType : ConcoctiItems.Tags.MOLDS.entrySet()) {

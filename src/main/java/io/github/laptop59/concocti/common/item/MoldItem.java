@@ -1,7 +1,10 @@
 package io.github.laptop59.concocti.common.item;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -34,13 +37,21 @@ public class MoldItem extends Item {
 
     /** Type of mold. */
     public enum Type implements Comparable<Type> {
-        NUGGET("nugget"),
-        INGOT("ingot");
+        NUGGET("nugget", ResourceLocation.fromNamespaceAndPath("c", "nuggets")),
+        INGOT("ingot", ResourceLocation.fromNamespaceAndPath("c", "ingots"));
 
         public final String id;
+        public final ResourceLocation tag;
+        private TagKey<Item> tagKey;
 
-        Type(String id) {
+        Type(String id, ResourceLocation tag) {
             this.id = id;
+            this.tag = tag;
+        }
+
+        public TagKey<Item> getTag() {
+            if (tagKey != null) return tagKey;
+            return tagKey = TagKey.create(Registries.ITEM, tag);
         }
     }
 

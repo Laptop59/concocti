@@ -15,6 +15,8 @@ import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
@@ -29,6 +31,7 @@ import static io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMa
  */
 public abstract class AbstractConcoctiMachineBlock extends BaseEntityBlock implements EntityBlock {
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+    public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
     protected AbstractConcoctiMachineBlock(Properties properties) {
         super(properties);
@@ -84,6 +87,6 @@ public abstract class AbstractConcoctiMachineBlock extends BaseEntityBlock imple
     }
 
     /** Called when a machine should do its own specific logic for when an item is right-clicked on it. */
-    abstract ItemInteractionResult useItemOnMachine(@NotNull ItemStack stack, @NotNull BlockState state, Level level, @NotNull BlockPos pos,
-                                                    @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hitResult);
+    protected abstract ItemInteractionResult useItemOnMachine(@NotNull ItemStack stack, @NotNull BlockState state, Level level, @NotNull BlockPos pos,
+                                                              @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hitResult);
 }
