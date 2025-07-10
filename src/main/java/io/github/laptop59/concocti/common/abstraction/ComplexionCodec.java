@@ -32,36 +32,28 @@ public record ComplexionCodec<T>(
 
     public static final ComplexionCodec<Boolean> BOOLEAN = new ComplexionCodec<>(
             1,
-            (object, instance) -> {
-                instance.encode(object ? 1 : 0);
-            },
+            (object, instance) -> instance.encode(object ? 1 : 0),
             instance -> instance.decode() != 0,
             "BOOLEAN"
     );
 
     public static final ComplexionCodec<Byte> BYTE = new ComplexionCodec<>(
             1,
-            (object, instance) -> {
-                instance.encode((byte) (int) object);
-            },
+            (object, instance) -> instance.encode((byte) (int) object),
             instance -> (byte) instance.decode(),
             "BYTE"
     );
 
     public static final ComplexionCodec<Short> SHORT = new ComplexionCodec<>(
             1,
-            (object, instance) -> {
-                instance.encode((short) (int) object);
-            },
+            (object, instance) -> instance.encode((short) (int) object),
             instance -> (short) instance.decode(),
             "SHORT"
     );
 
     public static final ComplexionCodec<Integer> INTEGER = new ComplexionCodec<>(
         1,
-            (object, instance) -> {
-                instance.encode(object);
-            },
+            (object, instance) -> instance.encode(object),
             Complexion::decode,
             "INTEGER"
     );
@@ -84,9 +76,7 @@ public record ComplexionCodec<T>(
 
     public static final ComplexionCodec<Float> FLOAT = new ComplexionCodec<>(
             1,
-            (object, instance) -> {
-                instance.encode(Float.floatToRawIntBits(object));
-            },
+            (object, instance) -> instance.encode(Float.floatToRawIntBits(object)),
             instance -> Float.intBitsToFloat(instance.decode()),
             "FLOAT"
     );
@@ -106,9 +96,7 @@ public record ComplexionCodec<T>(
 
     public static final ComplexionCodec<Character> CHARACTER = new ComplexionCodec<>(
             1,
-            (object, instance) -> {
-                instance.encode((char) (int) object);
-            },
+            (object, instance) -> instance.encode((char) (int) object),
             instance -> (char) instance.decode(),
             "CHARACTER"
     );
@@ -133,9 +121,7 @@ public record ComplexionCodec<T>(
 
     public static final ComplexionCodec<SlotType> SLOT_TYPE = new ComplexionCodec<>(
             1,
-            (object, instance) -> {
-                instance.encode(object.getId());
-            },
+            (object, instance) -> instance.encode(object.getId()),
             instance -> SlotType.byId(instance.decode()),
             "SLOT_TYPE"
     );
@@ -162,9 +148,7 @@ public record ComplexionCodec<T>(
 
     public static final ComplexionCodec<Direction> DIRECTION = new ComplexionCodec<>(
             1,
-            (object, instance) -> {
-                instance.encode(object.ordinal());
-            },
+            (object, instance) -> instance.encode(object.ordinal()),
             instance -> Direction.values()[instance.decode()],
             "DIRECTION"
     );
@@ -191,7 +175,7 @@ public record ComplexionCodec<T>(
 
     /** Creates a unique complexion codec, now called a {@code Property}, whose identity cannot be recreated. This
      * also loosely links to an object. */
-    public <O> Property<T> link(Linker<T> linker) {
+    public Property<T> link(Linker<T> linker) {
         return new Property<>(this, linker);
     }
 

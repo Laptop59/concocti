@@ -14,7 +14,7 @@ public class ResultSlot extends Slot {
     private final @Nullable Player player;
     private int removeCount;
 
-    public ResultSlot(Player player, Container container, int slot, int xPosition, int yPosition) {
+    public ResultSlot(@Nullable Player player, Container container, int slot, int xPosition, int yPosition) {
         super(container, slot, xPosition, yPosition);
         this.player = player;
     }

@@ -126,7 +126,7 @@ public class ConcoctiFluidTankHandler implements IFluidHandler {
             }
 
             @Override
-            public @NotNull FluidStack drain(FluidStack resource, FluidAction action) {
+            public @NotNull FluidStack drain(@NotNull FluidStack resource, @NotNull FluidAction action) {
                 FluidStack totalUndrained = resource.copy();
                 for (IFluidTank tank : tanks) {
                     if (!whitelisted.contains(tank)) continue;

@@ -1,6 +1,5 @@
 package io.github.laptop59.concocti.datagen.client;
 
-import io.github.laptop59.concocti.common.Concocti;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.item.MoldItem;
 import net.minecraft.core.registries.BuiltInRegistries;

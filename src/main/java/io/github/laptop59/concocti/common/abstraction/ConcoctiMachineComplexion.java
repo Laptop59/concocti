@@ -5,7 +5,6 @@ import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBl
 import net.minecraft.core.Direction;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /** This complexion automatically puts the base machine codecs first. */

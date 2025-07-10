@@ -61,7 +61,7 @@ public abstract class AbstractConcoctiMachineScreen<M extends AbstractConcoctiMa
     }
 
     @Override
-    protected void renderSlotHighlight(GuiGraphics guiGraphics, Slot slot, int mouseX, int mouseY, float partialTick) {
+    protected void renderSlotHighlight(@NotNull GuiGraphics guiGraphics, Slot slot, int mouseX, int mouseY, float partialTick) {
         RenderInfo renderInfo = new RenderInfo(mouseX, mouseY, leftPos, topPos, font);
         if (slot.isHighlightable() && isMinecraftAbstractContainerUsableHere(renderInfo)) {
             renderSlotHighlight(guiGraphics, slot.x, slot.y, 0, getSlotColor(slot.index));

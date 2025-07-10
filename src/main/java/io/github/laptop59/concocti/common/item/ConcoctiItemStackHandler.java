@@ -48,7 +48,7 @@ public class ConcoctiItemStackHandler extends ItemStackHandler {
             }
 
             @Override
-            public @NotNull ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+            public @NotNull ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
                 if (whitelisted.contains(slot)) return parentHandler.insertItem(slot, stack, simulate);
                 return stack;
             }
@@ -66,7 +66,7 @@ public class ConcoctiItemStackHandler extends ItemStackHandler {
             }
 
             @Override
-            public boolean isItemValid(int slot, ItemStack stack) {
+            public boolean isItemValid(int slot, @NotNull ItemStack stack) {
                 if (whitelisted.contains(slot)) return parentHandler.isItemValid(slot, stack);
                 return false;
             }
