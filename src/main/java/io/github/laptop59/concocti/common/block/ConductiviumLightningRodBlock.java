@@ -1,6 +1,6 @@
 package io.github.laptop59.concocti.common.block;
 
-import io.github.laptop59.concocti.common.block.entity.ConcoctiElectronCollectorBlockEntity;
+import io.github.laptop59.concocti.common.machine.ConcoctiElectronCollector;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.ParticleUtils;
@@ -19,7 +19,7 @@ public class ConductiviumLightningRodBlock extends LightningRodBlock  {
     }
 
     @Override
-    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+    public void animateTick(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull RandomSource random) {
         if (level.isThundering()
                 && (long)level.random.nextInt(50) <= level.getGameTime() % 200L
                 && pos.getY() == level.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX(), pos.getZ()) - 1) {
@@ -34,7 +34,7 @@ public class ConductiviumLightningRodBlock extends LightningRodBlock  {
         super.onLightningStrike(state, level, pos);
         BlockPos machineBelowPos = pos.below(1);
         BlockEntity blockEntity = level.getBlockEntity(machineBelowPos);
-        if (blockEntity instanceof ConcoctiElectronCollectorBlockEntity concoctiElectronCollectorBlockEntity) {
+        if (blockEntity instanceof ConcoctiElectronCollector.BlockEntity concoctiElectronCollectorBlockEntity) {
             concoctiElectronCollectorBlockEntity.markLightningState();
         }
     }

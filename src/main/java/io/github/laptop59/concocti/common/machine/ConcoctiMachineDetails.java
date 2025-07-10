@@ -3,7 +3,7 @@ package io.github.laptop59.concocti.common.machine;
 import io.github.laptop59.concocti.client.gui.components.SlotType;
 import io.github.laptop59.concocti.common.abstraction.ConcoctiMachineComplexion;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
-import io.github.laptop59.concocti.common.block.entity.AbstractPoweredBlockEntity;
+import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -13,6 +13,7 @@ import net.neoforged.neoforge.fluids.IFluidTank;
 
 import java.util.EnumMap;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public record ConcoctiMachineDetails<
@@ -26,7 +27,7 @@ public record ConcoctiMachineDetails<
     int maxEnergyTransfer,
     int slots,
     float rateConsumption,
-    Supplier<AbstractPoweredBlockEntity.DynamicEnergyStorage.Mode> energyMode,
+    Supplier<DynamicEnergyStorage.Mode> energyMode,
 
     Supplier<RecipeType<R>> recipeType,
 
@@ -34,7 +35,10 @@ public record ConcoctiMachineDetails<
     List<SlotType> allowedSlotTypes,
     Class<M> menuClass,
 
-    Supplier<ConcoctiMachineComplexion> complexion,
+    Function<T, ConcoctiMachineComplexion> complexion,
     EnumMap<SlotType, List<Integer>> itemSlotsMap,
-    EnumMap<SlotType, List<Supplier<IFluidTank>>> fluidSlotsMap
+    EnumMap<SlotType, List<Function<T, IFluidTank>>> fluidSlotsMap,
+
+    InputOutput<Function<T, List<Integer>>> inputOutputSlots,
+    InputOutput<Function<T, List<IFluidTank>>> inputOutputFluids
 ) {}

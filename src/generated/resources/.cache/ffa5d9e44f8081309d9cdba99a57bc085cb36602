@@ -1,4 +1,4 @@
-// 1.21.1	2025-07-08T21:54:19.873467559	Item Models: concocti
+// 1.21.1	2025-07-10T11:46:22.302889558	Item Models: concocti
 9860ec1d2840f2feb3028da96207cecc0c5e3f62 assets/concocti/models/item/advanced_concocti_frame.json
 dd158e01c0d63b3f0b51a1b83e0a0dd4bb49c1c5 assets/concocti/models/item/basic_concocti_frame.json
 cf580921ecb218d04b6901c60c3a8ac60a25b83e assets/concocti/models/item/compact_concocti_upgrade.json
@@ -42,7 +42,7 @@ f6b20d387573b20b7afa079194ecd7177f69d662 assets/concocti/models/item/molten_conc
 2ae32a256d3b05256a574728c79daa0840632fe3 assets/concocti/models/item/purified_concocti_block.json
 85888f0e2f0f4e55983fe4e423befcf8c7b844dc assets/concocti/models/item/purified_concocti_ingot.json
 76583167b2da295d11057c296416a880da0c6a29 assets/concocti/models/item/purified_concocti_nugget.json
-3d8d8002df51303195e42ab48ba2ed16911986e3 assets/concocti/models/item/raw_crystalium_ore.json
+f058a3c49e06509daf59825c02f373788df79e27 assets/concocti/models/item/raw_crystalium.json
 de17fd836f56f75124c07097931c6fa5224a21ca assets/concocti/models/item/tough_concocti_block.json
 557d9396ee38366fcb009625bc4aeb999a3a5c3c assets/concocti/models/item/tough_concocti_ingot.json
 04fbb892a1253259914e63b05b87fd23edc80b9c assets/concocti/models/item/tough_concocti_nugget.json

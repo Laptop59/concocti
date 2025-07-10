@@ -1,7 +1,9 @@
 package io.github.laptop59.concocti.common.item;
 
+import io.github.laptop59.concocti.common.ConcoctiRegisters;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
+import io.github.laptop59.concocti.common.machine.ConcoctiMachines;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -12,7 +14,6 @@ import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
-import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.*;
 import java.util.function.Function;
@@ -22,9 +23,8 @@ import static io.github.laptop59.concocti.common.Concocti.MODID;
 public class ConcoctiItems {
     public static final Collection<DeferredItem<? extends Item>> ITEM_LIST = new HashSet<>();
 
-    // Create a Deferred Register to hold Items which will all be registered under the "concocti" namespace
-    /// ITEMS
-    public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
+    // Create a Deferred Register to hold Items which will all be registered under the "concocti" namespace (done in ConcoctiRegisters).
+    // Now, we can register!
 
     public static final DeferredItem<Item> DIAMETHYST_CRYSTAL = registerItem("diamethyst_crystal", new Item.Properties());
     public static final DeferredItem<BlockItem> DIAMETHYST_CRYSTAL_BLOCK = registerBlockItem(ConcoctiBlocks.DIAMETHYST_BLOCK);
@@ -47,12 +47,6 @@ public class ConcoctiItems {
     public static final DeferredItem<Item> COMPRESSED_CONCOCTI_INGOT = registerItem("compressed_concocti_ingot", new Item.Properties());
     public static final DeferredItem<BlockItem> COMPRESSED_CONCOCTI_BLOCK = registerBlockItem(ConcoctiBlocks.COMPRESSED_CONCOCTI_BLOCK);
 
-    public static final DeferredItem<BlockItem> CONCOCTI_MELTER = registerBlockItem(ConcoctiBlocks.CONCOCTI_MELTER);
-    public static final DeferredItem<BlockItem> CONCOCTI_SOLIDIFIER = registerBlockItem(ConcoctiBlocks.CONCOCTI_SOLIDIFIER);
-    public static final DeferredItem<BlockItem> CONCOCTI_ENERGY_GENERATOR = registerBlockItem(ConcoctiBlocks.CONCOCTI_ENERGY_GENERATOR);
-    public static final DeferredItem<BlockItem> CONCOCTI_MIXER = registerBlockItem(ConcoctiBlocks.CONCOCTI_MIXER);
-    public static final DeferredItem<BlockItem> CONCOCTI_ELECTRON_COLLECTOR = registerBlockItem(ConcoctiBlocks.CONCOCTI_ELECTRON_COLLECTOR);
-
     public static final DeferredItem<Item> CONDUCTIVIUM_NUGGET = registerItem("conductivium_nugget", new Item.Properties());
     public static final DeferredItem<Item> CONDUCTIVIUM_INGOT = registerItem("conductivium_ingot", new Item.Properties());
     public static final DeferredItem<BlockItem> CONDUCTIVIUM_BLOCK = registerBlockItem(ConcoctiBlocks.CONDUCTIVIUM_BLOCK);
@@ -61,7 +55,7 @@ public class ConcoctiItems {
     public static final DeferredItem<Item> CRYSTALIUM_NUGGET = registerItem("crystalium_nugget", new Item.Properties());
     public static final DeferredItem<Item> CRYSTALIUM_INGOT = registerItem("crystalium_ingot", new Item.Properties());
     public static final DeferredItem<BlockItem> CRYSTALIUM_BLOCK = registerBlockItem(ConcoctiBlocks.CRYSTALIUM_BLOCK);
-    public static final DeferredItem<Item> RAW_CRYSTALIUM_ORE = registerItem("raw_crystalium_ore", new Item.Properties());
+    public static final DeferredItem<Item> RAW_CRYSTALIUM = registerItem("raw_crystalium", new Item.Properties());
     public static final DeferredItem<BlockItem> CRYSTALIUM_ORE = registerBlockItem(ConcoctiBlocks.CRYSTALIUM_ORE);
 
     public static final DeferredItem<Item> ELECTROSTATIC_CONDUCTIVIUM_NUGGET = registerItem("electrostatic_conductivium_nugget", new Item.Properties());
@@ -107,7 +101,7 @@ public class ConcoctiItems {
     private static Map<MoldItem.Material, DeferredItem<? extends Item>> registerAllMoldBases() {
         Map<MoldItem.Material, DeferredItem<? extends Item>> molds = new EnumMap<>(MoldItem.Material.class);
         for (MoldItem.Material material : MoldItem.Material.values()) {
-            DeferredItem<Item> item = ITEMS.registerItem(MoldItem.getBaseIdentifier(material),
+            DeferredItem<Item> item = ConcoctiRegisters.ITEMS.registerItem(MoldItem.getBaseIdentifier(material),
                     properties -> new MoldBaseItem(properties, material), new Item.Properties());
             molds.put(material, item);
             addToItemList(item);
@@ -144,7 +138,7 @@ public class ConcoctiItems {
      * @return A map of the registered {@link DeferredItem}.
      */
     public static DeferredItem<? extends Item> registerMold(MoldItem.Material material, MoldItem.Type type) {
-        DeferredItem<Item> item = ITEMS.registerItem(
+        DeferredItem<Item> item = ConcoctiRegisters.ITEMS.registerItem(
                 MoldItem.getIdentifier(material, type),
                 (properties -> new MoldItem(properties, material, type)),
                 new Item.Properties().durability(material.durability)
@@ -160,7 +154,7 @@ public class ConcoctiItems {
      * @return A {@link DeferredItem} for the registered item.
      */
     public static DeferredItem<BlockItem> registerBlockItem(DeferredBlock<Block> block) {
-        DeferredItem<BlockItem> item = ITEMS.registerSimpleBlockItem(block.getId().getPath(), block);
+        DeferredItem<BlockItem> item = ConcoctiRegisters.ITEMS.registerSimpleBlockItem(block.getId().getPath(), block);
         addToItemList(item);
         return item;
     }
@@ -172,7 +166,7 @@ public class ConcoctiItems {
      * @return A {@link DeferredItem} for the registered item.
      */
     public static DeferredItem<Item> registerItem(String name, Item.Properties props) {
-        DeferredItem<Item> item = ITEMS.registerSimpleItem(name, props);
+        DeferredItem<Item> item = ConcoctiRegisters.ITEMS.registerSimpleItem(name, props);
         addToItemList(item);
         return item;
     }
@@ -185,7 +179,7 @@ public class ConcoctiItems {
      * @return A {@link DeferredItem} for the registered item.
      */
     public static DeferredItem<? extends Item> registerItem(String name, Function<Item.Properties, ? extends Item> func, Item.Properties props) {
-        DeferredItem<Item> item = ITEMS.registerItem(name, func, props);
+        DeferredItem<Item> item = ConcoctiRegisters.ITEMS.registerItem(name, func, props);
         addToItemList(item);
         return item;
     }
@@ -196,7 +190,7 @@ public class ConcoctiItems {
      * @return A {@link DeferredItem} for the registered item.
      */
     public static DeferredItem<BucketItem> registerBucketItem(String name, DeferredHolder<Fluid, FlowingFluid> fluid) {
-        DeferredItem<BucketItem> item = ITEMS.registerItem(name, (props) -> new BucketItem(fluid.get(), props),
+        DeferredItem<BucketItem> item = ConcoctiRegisters.ITEMS.registerItem(name, (props) -> new BucketItem(fluid.get(), props),
                 new Item.Properties().stacksTo(1).craftRemainder(Items.BUCKET)
         );
         addToItemList(item);
@@ -235,7 +229,7 @@ public class ConcoctiItems {
         acceptStack(output, CONDUCTIVIUM_BLOCK);
         acceptStack(output, CONDUCTIVIUM_LIGHTNING_ROD);
 
-        acceptStack(output, RAW_CRYSTALIUM_ORE);
+        acceptStack(output, RAW_CRYSTALIUM);
         acceptStack(output, CRYSTALIUM_ORE);
         acceptStack(output, CRYSTALIUM_NUGGET);
         acceptStack(output, CRYSTALIUM_INGOT);
@@ -244,11 +238,7 @@ public class ConcoctiItems {
         acceptStack(output, ELECTROSTATIC_CONDUCTIVIUM_NUGGET);
         acceptStack(output, ELECTROSTATIC_CONDUCTIVIUM_INGOT);
 
-        acceptStack(output, CONCOCTI_MELTER);
-        acceptStack(output, CONCOCTI_SOLIDIFIER);
-        acceptStack(output, CONCOCTI_ENERGY_GENERATOR);
-        acceptStack(output, CONCOCTI_MIXER);
-        acceptStack(output, CONCOCTI_ELECTRON_COLLECTOR);
+        ConcoctiMachines.forEach(concoctiMachine -> acceptStack(output, concoctiMachine.ITEM));
 
         acceptStack(output, COMPACT_CONCOCTI_UPGRADE);
         acceptStack(output, COMPACTER_CONCOCTI_UPGRADE);

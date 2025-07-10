@@ -2,6 +2,7 @@ package io.github.laptop59.concocti.common;
 
 import com.mojang.logging.LogUtils;
 import io.github.laptop59.concocti.client.gui.*;
+import io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
 import io.github.laptop59.concocti.common.block.entity.AbstractPoweredBlockEntity;
@@ -10,20 +11,22 @@ import io.github.laptop59.concocti.common.block.entity.ItemHandlerBlockEntity;
 import io.github.laptop59.concocti.common.effect.ConcoctizedMobEffect;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
-import io.github.laptop59.concocti.common.menu.ConcoctiElectronCollectorMenu;
-import io.github.laptop59.concocti.common.menu.ConcoctiMenus;
+import io.github.laptop59.concocti.common.machine.*;
+import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.poi.ConcoctiPoiTypes;
-import io.github.laptop59.concocti.common.recipe.ConcoctiRecipes;
+import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
+import io.github.laptop59.concocti.integration.jei.AbstractConcoctiRecipeCategory;
 import io.github.laptop59.concocti.network.*;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.crafting.RecipeInput;
+import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -35,11 +38,12 @@ import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import net.neoforged.neoforge.network.handling.DirectionalPayloadHandler;
-import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
 import org.slf4j.Logger;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(Concocti.MODID)
@@ -50,19 +54,15 @@ public class Concocti {
     // Directly reference a slf4j logger
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    // Create a Deferred Register to hold CreativeModeTabs which will all be registered under the "concocti" namespace
-    public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
-
     // Creates a creative tab with the id "concocti:concocti" for the example item, that is placed after the combat tab
-    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CONCOCTI_TAB = CREATIVE_MODE_TABS.register("concocti", () -> CreativeModeTab.builder()
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CONCOCTI_TAB = ConcoctiRegisters.CREATIVE_MODE_TABS.register("concocti", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.concocti")) // The language key for the title of your CreativeModeTab
             .withTabsBefore(CreativeModeTabs.COMBAT)
             .icon(() -> ConcoctiItems.PURIFIED_CONCOCTI_INGOT.get().getDefaultInstance())
             .displayItems((parameters, output) -> ConcoctiItems.addItemsToCreativeTab(output)).build()
     );
 
-    public static final DeferredRegister<MobEffect> MOB_EFFECTS = DeferredRegister.create(Registries.MOB_EFFECT, MODID);
-    public static final DeferredHolder<MobEffect, MobEffect> CONCOCTIZED = MOB_EFFECTS.register("concoctized",
+    public static final DeferredHolder<MobEffect, MobEffect> CONCOCTIZED = ConcoctiRegisters.MOB_EFFECTS.register("concoctized",
             () -> new ConcoctizedMobEffect(MobEffectCategory.NEUTRAL, 0x9d57db)
     );
 
@@ -73,11 +73,24 @@ public class Concocti {
 
     @SubscribeEvent
     private static void registerScreens(RegisterMenuScreensEvent event) {
-        event.register(ConcoctiMenus.CONCOCTI_MELTER_MENU.get(), ConcoctiMelterScreen::new);
-        event.register(ConcoctiMenus.CONCOCTI_SOLIDIFIER_MENU.get(), ConcoctiSolidifierScreen::new);
-        event.register(ConcoctiMenus.CONCOCTI_ENERGY_GENERATOR_MENU.get(), ConcoctiEnergyGeneratorScreen::new);
-        event.register(ConcoctiMenus.CONCOCTI_MIXER_MENU.get(), ConcoctiMixerScreen::new);
-        event.register(ConcoctiMenus.CONCOCTI_ELECTRON_COLLECTOR_MENU.get(), ConcoctiElectronCollectorScreen::new);
+        for (var machine : ConcoctiMachines.MACHINES) {
+            registerScreen(event, machine);
+        }
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    private static <
+            T extends AbstractConcoctiMachineBlockEntity<T, M, V, I, R>,
+            M extends AbstractConcoctiMachineMenu<M>,
+            V,
+            I extends RecipeInput,
+            R extends ProcessingRecipe<R, I>,
+            Z extends RecipeSerializer<R>,
+            B extends AbstractConcoctiMachineBlock,
+            S extends AbstractConcoctiMachineScreen<M>,
+            C extends AbstractConcoctiRecipeCategory<R>
+    > void registerScreen(RegisterMenuScreensEvent event, ConcoctiMachine<T, M, V, I, R, Z, B, S, C> machine) {
+        event.register(machine.MENU.get(), machine.getScreenConstructor());
     }
 
     @SubscribeEvent
@@ -94,19 +107,28 @@ public class Concocti {
         // Register the commonSetup method for modloading
         NeoForge.EVENT_BUS.register(ConcoctiEventHandler.class);
 
-        ConcoctiItems.ITEMS.register(modEventBus);
-        ConcoctiBlocks.BLOCKS.register(modEventBus);
-        ConcoctiBlocks.BLOCK_ENTITY_TYPES.register(modEventBus);
-        ConcoctiSounds.SOUND_EVENTS.register(modEventBus);
-        ConcoctiMenus.MENUS.register(modEventBus);
-        ConcoctiFluids.FLUIDS.register(modEventBus);
-        ConcoctiFluids.FLUID_TYPES.register(modEventBus);
-        ConcoctiRecipes.RECIPE_SERIALIZERS.register(modEventBus);
-        ConcoctiRecipes.RECIPE_TYPES.register(modEventBus);
-        ConcoctiPoiTypes.POI_TYPES.register(modEventBus);
+        ConcoctiRegisters.BLOCKS.register(modEventBus);
+        ConcoctiRegisters.ITEMS.register(modEventBus);
+        ConcoctiRegisters.BLOCK_ENTITY_TYPES.register(modEventBus);
+        ConcoctiMachines.register();
+        ConcoctiRegisters.SOUND_EVENTS.register(modEventBus);
+        ConcoctiRegisters.MENUS.register(modEventBus);
+        ConcoctiRegisters.FLUIDS.register(modEventBus);
+        ConcoctiRegisters.FLUID_TYPES.register(modEventBus);
+        ConcoctiRegisters.RECIPE_SERIALIZERS.register(modEventBus);
+        ConcoctiRegisters.RECIPE_TYPES.register(modEventBus);
+        ConcoctiRegisters.POI_TYPES.register(modEventBus);
 
-        MOB_EFFECTS.register(modEventBus);
-        CREATIVE_MODE_TABS.register(modEventBus);
+        ConcoctiRegisters.MOB_EFFECTS.register(modEventBus);
+        ConcoctiRegisters.CREATIVE_MODE_TABS.register(modEventBus);
+
+        initializeUninitializedStaticVariables(
+                ConcoctiBlocks.class,
+                ConcoctiItems.class,
+                ConcoctiSounds.class,
+                ConcoctiFluids.class,
+                ConcoctiPoiTypes.class
+        );
 
         // Register ourselves for server and other game events we are interested in.
         // Note that this is necessary if and only if we want *this* class (Concocti) to respond directly to events.
@@ -117,9 +139,27 @@ public class Concocti {
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 
+    /** As a hack for initializing static variables of a class, we can use this method. */
+    private static void initializeUninitializedStaticVariables(Class<?>... classes) {
+        for (Class<?> clazz : classes) {
+            Constructor<?>[] constructors = clazz.getConstructors();
+            Constructor<?> constructor = Arrays.stream(constructors)
+                    .filter(c -> c.getParameterCount() == 0)
+                    .findFirst()
+                    .orElse(null);
+            if (constructor == null) throw new IllegalStateException(clazz + " has no non-parameterized constructor (should be created by the virtual machine by default).");
+            try {
+                // By doing this should also initialize static variables.
+                constructor.newInstance();
+            } catch (InstantiationException | InvocationTargetException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
     @SubscribeEvent
     private static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        ConcoctiBlocks.BLOCK_ENTITY_TYPES.getEntries().forEach(blockEntityTypeDeferredHolder -> {
+        ConcoctiRegisters.BLOCK_ENTITY_TYPES.getEntries().forEach(blockEntityTypeDeferredHolder -> {
             BlockEntityType<?> type = blockEntityTypeDeferredHolder.get();
             event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, type,
                     (o, direction) -> ((AbstractPoweredBlockEntity) o).energy);

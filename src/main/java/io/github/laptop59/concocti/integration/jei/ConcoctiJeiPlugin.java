@@ -1,7 +1,7 @@
 package io.github.laptop59.concocti.integration.jei;
 
 import io.github.laptop59.concocti.common.Concocti;
-import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
+import io.github.laptop59.concocti.common.machine.*;
 import io.github.laptop59.concocti.common.recipe.*;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
@@ -27,6 +27,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 @JeiPlugin
 public class ConcoctiJeiPlugin implements IModPlugin {
@@ -36,21 +37,9 @@ public class ConcoctiJeiPlugin implements IModPlugin {
         return ResourceLocation.fromNamespaceAndPath(Concocti.MODID, "main");
     }
 
-    public static final RecipeType<ConcoctiMelterRecipe> CONCOCTI_MELTER_TYPE = RecipeType.create(
-            Concocti.MODID, "concocti_melter", ConcoctiMelterRecipe.class);
-    public static final RecipeType<ConcoctiSolidifierRecipe> CONCOCTI_SOLIDIFIER_TYPE = RecipeType.create(
-            Concocti.MODID, "concocti_solidifier", ConcoctiSolidifierRecipe.class);
-    public static final RecipeType<ConcoctiMixerRecipe> CONCOCTI_MIXER_TYPE = RecipeType.create(
-            Concocti.MODID, "concocti_mixer", ConcoctiMixerRecipe.class);
-    public static final RecipeType<ConcoctiElectronCollectorRecipe> CONCOCTI_ELECTRON_COLLECTOR_TYPE = RecipeType.create(
-            Concocti.MODID, "concocti_electron_collector", ConcoctiElectronCollectorRecipe.class);
-
     @Override
-    public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
-        registration.addRecipeCatalyst(new ItemStack(ConcoctiBlocks.CONCOCTI_MELTER), CONCOCTI_MELTER_TYPE);
-        registration.addRecipeCatalyst(new ItemStack(ConcoctiBlocks.CONCOCTI_SOLIDIFIER), CONCOCTI_SOLIDIFIER_TYPE);
-        registration.addRecipeCatalyst(new ItemStack(ConcoctiBlocks.CONCOCTI_MIXER), CONCOCTI_MIXER_TYPE);
-        registration.addRecipeCatalyst(new ItemStack(ConcoctiBlocks.CONCOCTI_ELECTRON_COLLECTOR), CONCOCTI_ELECTRON_COLLECTOR_TYPE);
+    public void registerRecipeCatalysts(@NotNull IRecipeCatalystRegistration registration) {
+        registerForAllMachines(machine -> registerRecipeCatalystFor(registration, machine));
     }
 
     @Override
@@ -58,14 +47,48 @@ public class ConcoctiJeiPlugin implements IModPlugin {
         IJeiHelpers jeiHelpers = registration.getJeiHelpers();
         IGuiHelper guiHelper = jeiHelpers.getGuiHelper();
 
-        registration.addRecipeCategories(new ConcoctiMelterRecipeCategory(guiHelper));
-        registration.addRecipeCategories(new ConcoctiSolidifierRecipeCategory(guiHelper));
-        registration.addRecipeCategories(new ConcoctiMixerRecipeCategory(guiHelper));
-        registration.addRecipeCategories(new ConcoctiElectronCollectorRecipeCategory(guiHelper));
+        registerForAllMachines(machine -> registerRecipeCategoryFor(registration, guiHelper, machine));
     }
 
-    private <R extends Recipe<I>, I extends RecipeInput> void registerRecipesFor(IRecipeRegistration registration,
-             RecipeManager manager, net.minecraft.world.item.crafting.RecipeType<R> type, RecipeType<R> jeiType) {
+    @Override
+    public void registerRecipes(@NotNull IRecipeRegistration registration) {
+        if (Minecraft.getInstance().level == null) return;
+        RecipeManager recipeManager = Minecraft.getInstance().level.getRecipeManager();
+
+        registerForAllMachines(machine -> registerRecipesFor(registration, recipeManager, machine));
+
+        registerInfos(registration);
+    }
+
+    private <R extends ProcessingRecipe<R, I>, I extends RecipeInput> void registerRecipesFor(
+            IRecipeRegistration registration,
+            RecipeManager manager,
+            ConcoctiMachine<?, ?, ?, I, R, ?, ?, ?, ?> machine
+    ) {
+        registerRecipesFor(registration, manager, machine.RECIPE_TYPE.get(), machine.JEI_RECIPE_TYPE);
+    }
+
+    private <R extends ProcessingRecipe<R, I>, I extends RecipeInput> void registerRecipeCatalystFor(
+            IRecipeCatalystRegistration registration,
+            ConcoctiMachine<?, ?, ?, I, R, ?, ?, ?, ?> machine
+    ) {
+        registration.addRecipeCatalyst(new ItemStack(machine.BLOCK.get()), machine.JEI_RECIPE_TYPE);
+    }
+
+    private <C extends AbstractConcoctiRecipeCategory<R>,R extends ProcessingRecipe<R, I>, I extends RecipeInput> void registerRecipeCategoryFor(
+            IRecipeCategoryRegistration registration,
+            IGuiHelper guiHelper,
+            ConcoctiMachine<?, ?, ?, I, R, ?, ?, ?, C> machine
+    ) {
+        registration.addRecipeCategories(machine.newRecipeCategory(guiHelper));
+    }
+
+    private <R extends Recipe<I>, I extends RecipeInput> void registerRecipesFor(
+            IRecipeRegistration registration,
+            RecipeManager manager,
+            net.minecraft.world.item.crafting.RecipeType<R> type,
+            RecipeType<R> jeiType
+    ) {
         List<R> recipes = manager
                 .getAllRecipesFor(type)
                 .stream()
@@ -75,16 +98,9 @@ public class ConcoctiJeiPlugin implements IModPlugin {
         registration.addRecipes(jeiType, recipes);
     }
 
-    @Override
-    public void registerRecipes(@NotNull IRecipeRegistration registration) {
-        if (Minecraft.getInstance().level == null) return;
-        RecipeManager recipeManager = Minecraft.getInstance().level.getRecipeManager();
-        registerRecipesFor(registration, recipeManager, ConcoctiRecipes.CONCOCTI_MELTER_RECIPE_TYPE.get(), CONCOCTI_MELTER_TYPE);
-        registerRecipesFor(registration, recipeManager, ConcoctiRecipes.CONCOCTI_SOLIDIFIER_RECIPE_TYPE.get(), CONCOCTI_SOLIDIFIER_TYPE);
-        registerRecipesFor(registration, recipeManager, ConcoctiRecipes.CONCOCTI_MIXER_RECIPE_TYPE.get(), CONCOCTI_MIXER_TYPE);
-        registerRecipesFor(registration, recipeManager, ConcoctiRecipes.CONCOCTI_ELECTRON_COLLECTOR_RECIPE_TYPE.get(), CONCOCTI_ELECTRON_COLLECTOR_TYPE);
-
-        registerInfos(registration);
+    private void registerForAllMachines(Consumer<ConcoctiMachine<?, ?, ?, ?, ?, ?, ?, ?, ?>> machineConsumer) {
+        for (var machine : ConcoctiMachines.MACHINES)
+            machineConsumer.accept(machine);
     }
 
     private void registerInfos(@NotNull IRecipeRegistration registration) {

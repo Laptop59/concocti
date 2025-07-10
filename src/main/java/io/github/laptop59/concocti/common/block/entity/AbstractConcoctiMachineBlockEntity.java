@@ -8,7 +8,6 @@ import io.github.laptop59.concocti.common.Concocti;
 import io.github.laptop59.concocti.common.abstraction.Properties;
 import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.frame.FrameAttributes;
-import io.github.laptop59.concocti.common.block.frame.FrameBlock;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTankHandler;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTankSlotTypedHandler;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
@@ -50,11 +49,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import static io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock.FACING;
-import static io.github.laptop59.concocti.common.block.ConcoctiMelterBlock.LIT;
+import static io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock.LIT;
 
 /**
  * A class that serves as a base for Concocti Machines. <p>
@@ -72,16 +71,16 @@ public abstract class AbstractConcoctiMachineBlockEntity
         extends AbstractPoweredBlockEntity
         implements ItemHandlerBlockEntity, FluidHandlerBlockEntity {
 
-    int ticksLeft = 0;
-    int totalTicks = 0;
-    int lastUpgradeUnits = -1;
-    float rateConsumption;
-    boolean ejectOn;
-    boolean pullOn;
-    ResourceLocation lastRecipeId = null;
-    protected ConcoctiFluidTankHandler fluidHandler;
+    public int ticksLeft = 0;
+    public int totalTicks = 0;
+    public int lastUpgradeUnits = -1;
+    public float rateConsumption;
+    public boolean ejectOn;
+    public boolean pullOn;
+    public ResourceLocation lastRecipeId = null;
+    public ConcoctiFluidTankHandler fluidHandler;
 
-    int autoCooldown = 0;
+    public int autoCooldown = 0;
 
     public ConcoctiMachineDetails<T, M, V, I, R> machineDetails;
     public final MachineSettings machineSettings = new MachineSettings(List.of());
@@ -142,7 +141,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
             }
 
             @Override
-            public @NotNull ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+            public @NotNull ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
                 if (slots.contains(slot) && (slotType == null || slotType.isSet(SlotFlag.INPUT))) return itemHandler.insertItem(slot, stack, simulate);
                 return stack;
             }
@@ -436,11 +435,12 @@ public abstract class AbstractConcoctiMachineBlockEntity
 
     /** Creates a menu for this block entity. */
     @Override
+    @SuppressWarnings("unchecked")
     protected @NotNull M createMenu(int containerId, @NotNull Inventory inventory) {
         try {
             Class<M> menuClass = getMachineDetails().menuClass();
             return menuClass.getConstructor(int.class, Inventory.class, Container.class, ContainerData.class).newInstance(
-                    containerId, inventory, this, getMachineDetails().complexion().get()
+                    containerId, inventory, this, getMachineDetails().complexion().apply((T) this)
             );
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new RuntimeException(e);
@@ -493,8 +493,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
         return 0.0f;
     }
 
-    /** Gives this block entity's recipe type. This should usually be from
-     * {@link io.github.laptop59.concocti.common.recipe.ConcoctiRecipes}. */
+    /** Gives this block entity's recipe type. */
     public Supplier<RecipeType<R>> getRecipeType() {
         return getMachineDetails().recipeType();
     }
@@ -656,7 +655,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
     }
 
     @Override
-    public boolean canPlaceItem(int index, ItemStack stack) {
+    public boolean canPlaceItem(int index, @NotNull ItemStack stack) {
         return isItemValid(index, stack);
     }
 
@@ -682,16 +681,17 @@ public abstract class AbstractConcoctiMachineBlockEntity
     }
 
     @Contract(pure = true)
+    @SuppressWarnings("unchecked")
     public List<IFluidTank> getFluidTanks(SlotType type) {
         Set<IFluidTank> tanks = new HashSet<>();
-        for (Supplier<IFluidTank> listedTanks : getFluidTanksMap().getOrDefault(type, List.of())) {
-            tanks.add(listedTanks.get());
+        for (Function<T, IFluidTank> listedTanks : getFluidTanksMap().getOrDefault(type, List.of())) {
+            tanks.add(listedTanks.apply((T) this));
         }
         return tanks.stream().toList();
     }
 
 
-    public EnumMap<SlotType, List<Supplier<IFluidTank>>> getFluidTanksMap() {
+    public EnumMap<SlotType, List<Function<T, IFluidTank>>> getFluidTanksMap() {
         return getMachineDetails().fluidSlotsMap();
     }
 

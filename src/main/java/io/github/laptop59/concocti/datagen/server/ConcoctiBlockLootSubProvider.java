@@ -1,5 +1,6 @@
 package io.github.laptop59.concocti.datagen.server;
 
+import io.github.laptop59.concocti.common.ConcoctiRegisters;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.loot.BlockLootSubProvider;
@@ -21,7 +22,7 @@ public class ConcoctiBlockLootSubProvider extends BlockLootSubProvider {
     @Override
     protected @NotNull Iterable<Block> getKnownBlocks() {
         // The contents of our DeferredRegister.
-        return ConcoctiBlocks.BLOCK_MAP.keySet()
+        return ConcoctiRegisters.BLOCKS.getEntries()
                 .stream()
                 .map(DeferredHolder::get)
                 .collect(Collectors.toSet());
