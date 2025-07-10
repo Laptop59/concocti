@@ -1,4 +1,4 @@
-package io.github.laptop59.concocti.common.machine;
+package io.github.laptop59.concocti.common.machine.impl;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -11,9 +11,15 @@ import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
+import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineOnlyItemsFluidsBlockEntity;
 import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
 import io.github.laptop59.concocti.common.block.entity.FluidHandlerBlockEntity;
+import io.github.laptop59.concocti.common.machine.ConcoctiMachineDetails;
+import io.github.laptop59.concocti.common.machine.ConcoctiMachineOnlyItemsFluids;
+import io.github.laptop59.concocti.common.machine.InputOutput;
+import io.github.laptop59.concocti.common.machine.ItemsFluidsInputValue;
 import io.github.laptop59.concocti.common.menu.*;
+import io.github.laptop59.concocti.common.recipe.ItemsFluidsRecipeInput;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
 import io.github.laptop59.concocti.integration.jei.AbstractConcoctiRecipeCategory;
 import mezz.jei.api.constants.VanillaTypes;
@@ -36,6 +42,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.*;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -47,7 +54,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -70,17 +79,15 @@ import java.util.function.Supplier;
 
 import static io.github.laptop59.concocti.common.Concocti.MODID;
 
-public class ConcoctiSolidifier extends ConcoctiMachine <
+public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
         ConcoctiSolidifier.BlockEntity,
         ConcoctiSolidifier.Menu,
-        ConcoctiSolidifier.BlockEntity.InputValue,
-        ConcoctiSolidifier.Recipe.Input,
         ConcoctiSolidifier.Recipe,
         ConcoctiSolidifier.Recipe.Serializer,
         ConcoctiSolidifier.Block,
         ConcoctiSolidifier.Screen,
         ConcoctiSolidifier.RecipeCategory
->  {
+> {
     static ConcoctiSolidifier INSTANCE;
 
     // Details
@@ -91,8 +98,8 @@ public class ConcoctiSolidifier extends ConcoctiMachine <
     private static final int BASE_ITEM_SLOT = 3;
     private static final int OUTPUT_SLOT = 4;
 
-    public Supplier<ConcoctiMachineDetails<BlockEntity, Menu, BlockEntity.InputValue, Recipe.Input, Recipe>> getDetails() {
-        return () -> new ConcoctiMachineDetails<BlockEntity, Menu, BlockEntity.InputValue, Recipe.Input, Recipe>(
+    public Supplier<ConcoctiMachineDetails<BlockEntity, Menu, ItemsFluidsInputValue, ItemsFluidsRecipeInput, Recipe>> getDetails() {
+        return () -> new ConcoctiMachineDetails<BlockEntity, Menu, ItemsFluidsInputValue, ItemsFluidsRecipeInput, Recipe>(
                 10_000,
                 10_000,
                 5,
@@ -106,7 +113,7 @@ public class ConcoctiSolidifier extends ConcoctiMachine <
                         SlotType.BASE_ITEM_INPUT,
                         SlotType.ITEM_OUTPUT
                 ),
-                Menu.class,
+                Menu::new,
                 blockEntity -> blockEntity.dataAccess,
                 new EnumMap<>(
                         Map.of(
@@ -137,7 +144,7 @@ public class ConcoctiSolidifier extends ConcoctiMachine <
         );
     }
 
-    ConcoctiSolidifier() {
+    public ConcoctiSolidifier() {
         super(
                 ID,
                 BlockBehaviour.Properties
@@ -160,7 +167,7 @@ public class ConcoctiSolidifier extends ConcoctiMachine <
         return Block::new;
     }
 
-    public MenuConstructor<Menu> getMenuConstructor() {
+    public MenuClientConstructor<Menu> getMenuClientConstructor() {
         return Menu::new;
     }
 
@@ -168,11 +175,11 @@ public class ConcoctiSolidifier extends ConcoctiMachine <
         return Screen::new;
     }
 
-    public RecipeCategoryConstructor<RecipeCategory, Recipe, ConcoctiSolidifier.Recipe.Input> getRecipeCategoryConstructor() {
+    public RecipeCategoryConstructor<RecipeCategory, Recipe, ItemsFluidsRecipeInput> getRecipeCategoryConstructor() {
         return RecipeCategory::new;
     }
 
-    public RecipeSerializerConstructor<Recipe.Serializer, Recipe, ConcoctiSolidifier.Recipe.Input> getRecipeSerializerConstructor() {
+    public RecipeSerializerConstructor<Recipe.Serializer, Recipe, ItemsFluidsRecipeInput> getRecipeSerializerConstructor() {
         return Recipe.Serializer::new;
     }
 
@@ -180,9 +187,8 @@ public class ConcoctiSolidifier extends ConcoctiMachine <
         return Recipe.class;
     }
 
-    public static class BlockEntity extends AbstractConcoctiMachineBlockEntity
-            <BlockEntity, Menu, BlockEntity.InputValue,
-                    Recipe.Input, Recipe>
+    public static class BlockEntity extends AbstractConcoctiMachineOnlyItemsFluidsBlockEntity
+            <BlockEntity, Menu, Recipe>
         implements FluidHandlerBlockEntity {
 
         public record InputValue(ItemStack mold, FluidStack fluid, ItemStack baseItem) {}
@@ -197,8 +203,9 @@ public class ConcoctiSolidifier extends ConcoctiMachine <
                 FLUID_INPUT.of(FluidStack.EMPTY)
         );
 
-        public Supplier<ConcoctiMachineDetails<BlockEntity, Menu, InputValue, Recipe.Input, Recipe>> getUncachedMachineDetails() {
-            return INSTANCE.getDetails();
+        @Override
+        protected ConcoctiSolidifier getMachineInstance() {
+            return INSTANCE;
         }
 
         public BlockEntity(BlockPos pos, BlockState blockState) {
@@ -213,24 +220,18 @@ public class ConcoctiSolidifier extends ConcoctiMachine <
         }
 
         @Override
-        protected Recipe.Input recipeInputFrom(InputValue input) {
-            return new Recipe.Input(input.mold, input.baseItem, input.fluid);
-        }
-
-        @Override
-        protected InputValue getInput() {
-            return new InputValue(getItem(MOLD_SLOT), tank.getFluid(), getItem(BASE_ITEM_SLOT));
-        }
-
-        @Override
-        protected ResourceLocation getRecipeIdFrom(InputValue input) {
-            return Recipe.makeResourceLocation(input.baseItem, input.mold, input.fluid);
+        protected Recipe getRecipe(ItemsFluidsInputValue input) {
+            RecipeManager recipeManager = getLevel().getRecipeManager();
+            return recipeManager
+                    .getRecipeFor(INSTANCE.RECIPE_TYPE.get(), recipeInputFrom(input), getLevel())
+                    .map(RecipeHolder::value)
+                    .orElse(null);
         }
 
         @Override
         public boolean canProcess() {
             if (!super.canProcess()) return false;
-            Recipe recipe = getCurrentRecipe(getInput());
+            Recipe recipe = getRecipe(getInput());
             // Check whether the resulting item can be placed in the slot.
             ItemStack output = getItem(OUTPUT_SLOT);
             if (!output.isEmpty()) {
@@ -299,7 +300,7 @@ public class ConcoctiSolidifier extends ConcoctiMachine <
         public @NotNull MapCodec<Block> codec() {
             return CODEC;
         }
-    
+
         // Return a new instance of our block entity here.
         @Override
         public net.minecraft.world.level.block.entity.BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
@@ -353,7 +354,7 @@ public class ConcoctiSolidifier extends ConcoctiMachine <
         }
     }
 
-    public static class Recipe implements ProcessingRecipe<Recipe, Recipe.Input> {
+    public static class Recipe implements ProcessingRecipe<Recipe, ItemsFluidsRecipeInput> {
         private final Ingredient mold;
         private final Ingredient baseItem;
         private final SizedFluidIngredient inputFluid;
@@ -405,7 +406,7 @@ public class ConcoctiSolidifier extends ConcoctiMachine <
 
         static String getId(Ingredient ingredient) {
             Ingredient.Value[] values = ingredient.getValues();
-            if (values[0] instanceof Ingredient.TagValue(net.minecraft.tags.TagKey<Item> tag)) {
+            if (values[0] instanceof Ingredient.TagValue(TagKey<Item> tag)) {
                 return tag.location().getPath().replace('/', '_');
             } else {
                 ItemStack firstStack = Arrays.stream(ingredient.getItems()).findFirst().orElseThrow();
@@ -447,9 +448,10 @@ public class ConcoctiSolidifier extends ConcoctiMachine <
         }
 
         @Override
-        public boolean matches(Input input, @NotNull Level level) {
-            return this.mold.test(input.mold()) && this.baseItem.test(input.base())
-                    && this.inputFluid.test(input.inputFluid);
+        public boolean matches(ItemsFluidsRecipeInput input, @NotNull Level level) {
+            return this.mold.test(input.getItem(MOLD_SLOT)) &&
+                    this.baseItem.test(input.getItem(BASE_ITEM_SLOT)) &&
+                    this.inputFluid.test(input.getFluid(0));
         }
 
         @Override
@@ -458,7 +460,7 @@ public class ConcoctiSolidifier extends ConcoctiMachine <
         }
 
         @Override
-        public @NotNull ItemStack assemble(@NotNull ConcoctiSolidifier.Recipe.Input input, HolderLookup.@NotNull Provider registries) {
+        public @NotNull ItemStack assemble(@NotNull ItemsFluidsRecipeInput input, HolderLookup.@NotNull Provider registries) {
             return this.outputItem.copy();
         }
 

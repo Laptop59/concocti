@@ -6,6 +6,7 @@ public enum SlotType {
     NONE(0, 0xe8e8e8),
     ITEM_INPUT(100, 0xff7d7d, SlotFlag.ITEM | SlotFlag.INPUT),
     ITEM_OUTPUT(101, 0xde6859, SlotFlag.ITEM | SlotFlag.OUTPUT),
+    ITEM_INPUT_OUTPUT(102, 0xde9359, SlotFlag.ITEM | SlotFlag.INPUT | SlotFlag.OUTPUT),
     FLUID_INPUT(201, 0x78aaff, SlotFlag.FLUID | SlotFlag.INPUT),
     FLUID_OUTPUT(202, 0xff80ff, SlotFlag.FLUID | SlotFlag.OUTPUT),
     PURE_FLUID_OUTPUT(301, 0x8262cc, SlotFlag.FLUID | SlotFlag.OUTPUT),

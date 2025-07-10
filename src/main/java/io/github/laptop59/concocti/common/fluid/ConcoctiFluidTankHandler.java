@@ -82,9 +82,9 @@ public class ConcoctiFluidTankHandler implements IFluidHandler {
         return totalDrained;
     }
 
-    public IFluidHandler whitelistTanks(IFluidTank... tanks) {
-        Set<IFluidTank> whitelisted = new HashSet<>(tanks.length);
-        whitelisted.addAll(Arrays.asList(tanks));
+    public IFluidHandler whitelistTanks(List<IFluidTank> tanks) {
+        Set<IFluidTank> whitelisted = new HashSet<>(tanks.size());
+        whitelisted.addAll(tanks);
         ConcoctiFluidTankHandler parentHandler = this;
         return new IFluidHandler() {
             private boolean isBlacklisted(int tank) {

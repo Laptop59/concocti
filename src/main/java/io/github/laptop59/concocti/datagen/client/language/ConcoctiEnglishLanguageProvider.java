@@ -125,7 +125,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add("screen.concocti.mold_base_durability_info", "Available Durability: %s");
         add("screen.concocti.rate", "Rate: ×%s");
         add("screen.concocti.requirements", "Requirements:");
-        add("screen.concocti.on_top_of_machine", "On top of machine");
+        add("screen.concocti.directly_on_top_of_machine", "Directly on top of machine");
         add("screen.concocti.struck_by_lightning", "Struck by lightning");
 
         add("screen.concocti.slot_compound", "%s (%s)");
