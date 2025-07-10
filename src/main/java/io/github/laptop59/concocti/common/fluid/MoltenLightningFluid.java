@@ -1,7 +1,5 @@
 package io.github.laptop59.concocti.common.fluid;
 
-import io.github.laptop59.concocti.common.item.ConcoctiItems;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
