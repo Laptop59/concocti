@@ -66,7 +66,7 @@ public abstract class ConcoctiMachine<
 
     public interface BlockConstructor<B extends AbstractConcoctiMachineBlock> { B create(BlockBehaviour.Properties properties); }
 
-    public interface MenuConstructor<M extends AbstractConcoctiMachineMenu<M>> extends MenuType.MenuSupplier<M> {}
+    public interface MenuClientConstructor<M extends AbstractConcoctiMachineMenu<M>> extends MenuType.MenuSupplier<M> {}
 
     @OnlyIn(Dist.CLIENT)
     public interface ScreenConstructor<M extends AbstractContainerMenu, S extends Screen & MenuAccess<M>> extends MenuScreens.ScreenConstructor<M, S> {}
@@ -96,7 +96,7 @@ public abstract class ConcoctiMachine<
                 () -> RecipeType.simple(ResourceLocation.fromNamespaceAndPath(Concocti.MODID, id))
         );
         RECIPE_SERIALIZER = ConcoctiRegisters.RECIPE_SERIALIZERS.register(id, getRecipeSerializerConstructor());
-        MENU = MENUS.register(id + "_menu", () -> new MenuType<>(getMenuConstructor(), FeatureFlags.DEFAULT_FLAGS));
+        MENU = MENUS.register(id + "_menu", () -> new MenuType<>(getMenuClientConstructor(), FeatureFlags.DEFAULT_FLAGS));
         JEI_RECIPE_TYPE = mezz.jei.api.recipe.RecipeType.create(Concocti.MODID, id, getRecipeClass());
         BLOCK_BEHAVIOUR_PROPERTIES = properties;
         BLOCK_DATA = blockData;
@@ -130,7 +130,7 @@ public abstract class ConcoctiMachine<
     public abstract BlockConstructor<B> getBlockConstructor();
 
     /** Get the constructor of this machine's menu class. */
-    public abstract MenuConstructor<M> getMenuConstructor();
+    public abstract MenuClientConstructor<M> getMenuClientConstructor();
 
     /** Get the constructor of this machine's screen class. */
     public abstract ScreenConstructor<M, S> getScreenConstructor();

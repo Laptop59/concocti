@@ -1,4 +1,4 @@
-package io.github.laptop59.concocti.common.machine;
+package io.github.laptop59.concocti.common.machine.impl;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -13,6 +13,9 @@ import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
 import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
+import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
+import io.github.laptop59.concocti.common.machine.ConcoctiMachineDetails;
+import io.github.laptop59.concocti.common.machine.InputOutput;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.recipe.*;
 import io.github.laptop59.concocti.integration.jei.AbstractConcoctiRecipeCategory;
@@ -75,7 +78,7 @@ import java.util.function.Supplier;
 
 import static io.github.laptop59.concocti.common.Concocti.MODID;
 
-public class ConcoctiElectronCollector extends ConcoctiMachine <
+public class ConcoctiElectronCollector extends ConcoctiMachine<
         ConcoctiElectronCollector.BlockEntity,
         ConcoctiElectronCollector.Menu,
         LightningState,
@@ -101,7 +104,7 @@ public class ConcoctiElectronCollector extends ConcoctiMachine <
                 INSTANCE.RECIPE_TYPE,
                 Component.translatable("block.concocti.concocti_electron_collector"),
                 List.of(SlotType.FLUID_OUTPUT),
-                Menu.class,
+                Menu::new,
                 blockEntity -> blockEntity.dataAccess,
                 new EnumMap<>(SlotType.class),
                 new EnumMap<>(
@@ -137,7 +140,7 @@ public class ConcoctiElectronCollector extends ConcoctiMachine <
         return Block::new;
     }
 
-    public MenuConstructor<Menu> getMenuConstructor() {
+    public MenuClientConstructor<Menu> getMenuClientConstructor() {
         return Menu::new;
     }
 
@@ -169,6 +172,11 @@ public class ConcoctiElectronCollector extends ConcoctiMachine <
         public final Property<FluidStack> FLUID_OUTPUT = Properties.FLUID_OUTPUT.newWithLinker(fluidOutput::getFluid);
 
         @Override
+        protected ConcoctiElectronCollector getMachineInstance() {
+            return INSTANCE;
+        }
+
+        @Override
         public List<IFluidHandler> getIndexedFluidHandlers() {
             return List.of(fluidOutput);
         }
@@ -197,7 +205,7 @@ public class ConcoctiElectronCollector extends ConcoctiMachine <
         @Override
         public boolean canProcess() {
             if (!super.canProcess()) return false;
-            Recipe recipe = getCurrentRecipe(lightningState);
+            Recipe recipe = getRecipe(lightningState);
             // Check whether the fluids obtained from this item will not exceed our fluid limit.
             FluidStack result = recipe.getOutputFluid().copy();
             return fluidOutput.fill(result, IFluidHandler.FluidAction.SIMULATE) == result.getAmount();
@@ -214,10 +222,6 @@ public class ConcoctiElectronCollector extends ConcoctiMachine <
         }
 
         @Override
-        protected ResourceLocation getRecipeIdFrom(LightningState input) {
-            return getRecipe(input).getId();
-        }
-
         protected Recipe getRecipe(LightningState input) {
             Optional<RecipeHolder<Recipe>> optional = level.getRecipeManager().getRecipeFor(
                     // The recipe type.
@@ -625,7 +629,7 @@ public class ConcoctiElectronCollector extends ConcoctiMachine <
             ArrayList<MutableComponent> mutableComponents = new ArrayList<>();
 
             mutableComponents.add(Component.translatable("screen.concocti.requirements").withColor(0xC7C7C7));
-            mutableComponents.add(Component.translatable("screen.concocti.on_top_of_machine").withColor(0xEEEEEE));
+            mutableComponents.add(Component.translatable("screen.concocti.directly_on_top_of_machine").withColor(0xEEEEEE));
             mutableComponents.add(Component.translatable("screen.concocti.struck_by_lightning").withColor(0xEEEEEE));
 
             mutableComponents.replaceAll(mutableComponent -> mutableComponent.withStyle(

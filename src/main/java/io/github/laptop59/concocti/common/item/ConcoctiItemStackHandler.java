@@ -31,9 +31,9 @@ public class ConcoctiItemStackHandler extends ItemStackHandler {
     }
 
     /** Creates an item handler around this handler that only shows the provided slots and hides everything else. */
-    public IItemHandler whitelistWrapper(int... slots) {
-        Set<Integer> whitelisted = new HashSet<>(slots.length);
-        for (int slot : slots) whitelisted.add(slot);
+    public IItemHandler whitelistSlots(List<Integer> slots) {
+        Set<Integer> whitelisted = new HashSet<>(slots.size());
+        whitelisted.addAll(slots);
         IItemHandler parentHandler = this;
         return new IItemHandler() {
             @Override

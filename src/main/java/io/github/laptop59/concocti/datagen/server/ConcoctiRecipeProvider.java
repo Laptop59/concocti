@@ -3,10 +3,10 @@ package io.github.laptop59.concocti.datagen.server;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.item.MoldItem;
-import io.github.laptop59.concocti.common.machine.ConcoctiElectronCollector;
-import io.github.laptop59.concocti.common.machine.ConcoctiMelter;
-import io.github.laptop59.concocti.common.machine.ConcoctiMixer;
-import io.github.laptop59.concocti.common.machine.ConcoctiSolidifier;
+import io.github.laptop59.concocti.common.machine.impl.ConcoctiElectronCollector;
+import io.github.laptop59.concocti.common.machine.impl.ConcoctiMelter;
+import io.github.laptop59.concocti.common.machine.impl.ConcoctiMixer;
+import io.github.laptop59.concocti.common.machine.impl.ConcoctiSolidifier;
 import io.github.laptop59.concocti.common.util.ConcoctiConstants;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -269,7 +269,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
     private static void concoctiMelterRecipe(RecipeOutput output, ItemLike input, int ticks,
                                              FluidStack pureResult, FluidStack byproductResult) {
         new ConcoctiMelter.Recipe.Builder(
-                Ingredient.of(input.asItem()),
+                SizedIngredient.of(input.asItem(), 1),
                 pureResult,
                 byproductResult,
                 ticks
@@ -281,7 +281,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
      */
     private static void concoctiMelterRecipe(RecipeOutput output, ItemLike input, int ticks, FluidStack pureResult) {
         new ConcoctiMelter.Recipe.Builder(
-                Ingredient.of(input.asItem()),
+                SizedIngredient.of(input.asItem(), 1),
                 pureResult,
                 FluidStack.EMPTY,
                 ticks

@@ -2,6 +2,7 @@
   "type": "concocti:concocti_melter",
   "byproduct_result": {},
   "ingredient": {
+    "count": 1,
     "item": "concocti:purified_concocti_nugget"
   },
   "pure_result": {

@@ -1,4 +1,4 @@
-package io.github.laptop59.concocti.common.machine;
+package io.github.laptop59.concocti.common.machine.impl;
 
 import com.google.common.primitives.UnsignedLong;
 import com.mojang.serialization.Codec;
@@ -13,7 +13,12 @@ import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
+import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineOnlyItemsFluidsBlockEntity;
 import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
+import io.github.laptop59.concocti.common.machine.ConcoctiMachineDetails;
+import io.github.laptop59.concocti.common.machine.ConcoctiMachineOnlyItemsFluids;
+import io.github.laptop59.concocti.common.machine.InputOutput;
+import io.github.laptop59.concocti.common.machine.ItemsFluidsInputValue;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.menu.ResultSlot;
 import io.github.laptop59.concocti.common.recipe.ItemsFluidsRecipeInput;
@@ -70,7 +75,6 @@ import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
-import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -80,11 +84,9 @@ import java.util.function.Supplier;
 
 import static io.github.laptop59.concocti.common.Concocti.MODID;
 
-public class ConcoctiMixer extends ConcoctiMachine <
+public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
         ConcoctiMixer.BlockEntity,
         ConcoctiMixer.Menu,
-        ConcoctiMixer.BlockEntity.InputValue,
-        ItemsFluidsRecipeInput,
         ConcoctiMixer.Recipe,
         ConcoctiMixer.Recipe.Serializer,
         ConcoctiMixer.Block,
@@ -103,8 +105,8 @@ public class ConcoctiMixer extends ConcoctiMachine <
     private static final int INPUT_SLOT_3 = 4;
     private static final int INPUT_SLOT_4 = 5;
 
-    public Supplier<ConcoctiMachineDetails<BlockEntity, Menu, BlockEntity.InputValue, ItemsFluidsRecipeInput, Recipe>> getDetails() {
-        return () -> new ConcoctiMachineDetails<BlockEntity, Menu, BlockEntity.InputValue, ItemsFluidsRecipeInput, Recipe>(
+    public Supplier<ConcoctiMachineDetails<BlockEntity, Menu, ItemsFluidsInputValue, ItemsFluidsRecipeInput, Recipe>> getDetails() {
+        return () -> new ConcoctiMachineDetails<BlockEntity, Menu, ItemsFluidsInputValue, ItemsFluidsRecipeInput, Recipe>(
                 5_000,
                 5_000,
                 7,
@@ -126,7 +128,7 @@ public class ConcoctiMixer extends ConcoctiMachine <
                         SlotType.ALL_ITEM_INPUTS,
                         SlotType.ALL_FLUID_INPUTS
                 ),
-                Menu.class,
+                Menu::new,
                 blockEntity -> blockEntity.dataAccess,
                 new EnumMap<>(
                         Map.of(
@@ -178,7 +180,7 @@ public class ConcoctiMixer extends ConcoctiMachine <
         );
     }
 
-    ConcoctiMixer() {
+    public ConcoctiMixer() {
         super(
                 ID,
                 BlockBehaviour.Properties
@@ -201,7 +203,7 @@ public class ConcoctiMixer extends ConcoctiMachine <
         return Block::new;
     }
 
-    public MenuConstructor<Menu> getMenuConstructor() {
+    public MenuClientConstructor<Menu> getMenuClientConstructor() {
         return Menu::new;
     }
 
@@ -221,13 +223,8 @@ public class ConcoctiMixer extends ConcoctiMachine <
         return Recipe.class;
     }
 
-    public static class BlockEntity extends AbstractConcoctiMachineBlockEntity
-            <BlockEntity, Menu, BlockEntity.InputValue, ItemsFluidsRecipeInput, Recipe> {
-
-        public record InputValue(
-                IItemHandler itemHandler,
-                IFluidHandler fluidHandler
-        ) {}
+    public static class BlockEntity extends AbstractConcoctiMachineOnlyItemsFluidsBlockEntity
+            <BlockEntity, Menu, Recipe> {
 
         // Tanks
         private final FluidTank fluidInput1 = new FluidTank(TANK_CAPACITY);
@@ -235,14 +232,6 @@ public class ConcoctiMixer extends ConcoctiMachine <
         private final FluidTank fluidInput3 = new FluidTank(TANK_CAPACITY);
         private final FluidTank fluidInput4 = new FluidTank(TANK_CAPACITY);
         private final FluidTank fluidOutput = new FluidTank(TANK_CAPACITY * 2);
-
-        private final IItemHandler inputItemHandler = itemHandler.whitelistWrapper(
-                INPUT_SLOT_1, INPUT_SLOT_2, INPUT_SLOT_3, INPUT_SLOT_4
-        );
-
-        private final IFluidHandler inputFluidHandler = fluidHandler.whitelistTanks(
-                fluidInput1, fluidInput2, fluidInput3, fluidInput4
-        );
 
         // Properties
         public final Property<FluidStack> FLUID_INPUT_1 = Properties.FLUID_INPUT_1.newWithLinker(fluidInput1::getFluid);
@@ -252,12 +241,13 @@ public class ConcoctiMixer extends ConcoctiMachine <
         public final Property<FluidStack> FLUID_OUTPUT = Properties.FLUID_OUTPUT.newWithLinker(fluidOutput::getFluid);
 
         @Override
-        public List<IFluidHandler> getIndexedFluidHandlers() {
-            return List.of(fluidInput1, fluidInput2, fluidInput3, fluidInput4, fluidOutput);
+        protected ConcoctiMixer getMachineInstance() {
+            return INSTANCE;
         }
 
-        public Supplier<ConcoctiMachineDetails<BlockEntity, Menu, InputValue, ItemsFluidsRecipeInput, Recipe>> getUncachedMachineDetails() {
-            return INSTANCE.getDetails();
+        @Override
+        public List<IFluidHandler> getIndexedFluidHandlers() {
+            return List.of(fluidInput1, fluidInput2, fluidInput3, fluidInput4, fluidOutput);
         }
 
         @Override
@@ -281,18 +271,10 @@ public class ConcoctiMixer extends ConcoctiMachine <
         }
 
         @Override
-        protected InputValue getInput() {
-            return new InputValue(
-                    inputItemHandler,
-                    inputFluidHandler
-            );
-        }
-
-        @Override
         public boolean canProcess() {
             if (!super.canProcess()) return false;
-            Recipe recipe = getCurrentRecipe(getInput());
-            if (!recipe.matches(new ItemsFluidsRecipeInput(inputItemHandler, inputFluidHandler))) return false;
+            Recipe recipe = getRecipe(getInput());
+            if (!recipe.matches(new ItemsFluidsRecipeInput(inputItemHandler.get(), inputFluidHandler.get()))) return false;
             // Check whether the fluids obtained from this item will not exceed our fluid limit.
             ItemStack outputSlotItems = getItem(OUTPUT_SLOT);
             ItemStack resultItems = recipe.getOutputItem();
@@ -307,16 +289,11 @@ public class ConcoctiMixer extends ConcoctiMachine <
         }
 
         @Override
-        protected ItemsFluidsRecipeInput recipeInputFrom(InputValue input) {
-            return new ItemsFluidsRecipeInput(input.itemHandler, input.fluidHandler);
-        }
-
-        @Override
-        protected ResourceLocation getRecipeIdFrom(InputValue inputValue) {
+        protected Recipe getRecipe(ItemsFluidsInputValue inputValue) {
             RecipeManager recipeManager = getLevel().getRecipeManager();
             return recipeManager
                     .getRecipeFor(INSTANCE.RECIPE_TYPE.get(), recipeInputFrom(inputValue), getLevel())
-                    .map(RecipeHolder::id)
+                    .map(RecipeHolder::value)
                     .orElse(null);
         }
 

@@ -4,6 +4,8 @@ import io.github.laptop59.concocti.client.gui.components.SlotType;
 import io.github.laptop59.concocti.common.abstraction.ConcoctiMachineComplexion;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
 import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
+import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
+import io.github.laptop59.concocti.common.menu.MenuServerConstructor;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -18,7 +20,7 @@ import java.util.function.Supplier;
 
 public record ConcoctiMachineDetails<
         T extends AbstractConcoctiMachineBlockEntity<T, M, V, I, R>,
-        M extends AbstractContainerMenu,
+        M extends AbstractConcoctiMachineMenu<M>,
         V,
         I extends RecipeInput,
         R extends ProcessingRecipe<R, I>
@@ -33,7 +35,7 @@ public record ConcoctiMachineDetails<
 
     Component defaultName,
     List<SlotType> allowedSlotTypes,
-    Class<M> menuClass,
+    MenuServerConstructor<M> menuServerConstructor,
 
     Function<T, ConcoctiMachineComplexion> complexion,
     EnumMap<SlotType, List<Integer>> itemSlotsMap,

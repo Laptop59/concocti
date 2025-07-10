@@ -11,10 +11,14 @@ import io.github.laptop59.concocti.common.block.frame.FrameAttributes;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTankHandler;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTankSlotTypedHandler;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
+import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachineDetails;
+import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.menu.ConcoctiFrameSlot;
 import io.github.laptop59.concocti.common.menu.ConcoctiUpgradeSlot;
+import io.github.laptop59.concocti.common.menu.MenuServerConstructor;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
+import io.github.laptop59.concocti.common.util.LazyVariable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -26,9 +30,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -47,7 +51,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -67,7 +70,7 @@ import static io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBl
  */
 public abstract class AbstractConcoctiMachineBlockEntity
         <T extends AbstractConcoctiMachineBlockEntity<T, M, V, I, R>,
-                M extends AbstractContainerMenu, V, I extends RecipeInput, R extends ProcessingRecipe<R, I>>
+                M extends AbstractConcoctiMachineMenu<M>, V, I extends RecipeInput, R extends ProcessingRecipe<R, I>>
         extends AbstractPoweredBlockEntity
         implements ItemHandlerBlockEntity, FluidHandlerBlockEntity {
 
@@ -77,7 +80,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
     public float rateConsumption;
     public boolean ejectOn;
     public boolean pullOn;
-    public ResourceLocation lastRecipeId = null;
+    public R lastRecipe = null;
     public ConcoctiFluidTankHandler fluidHandler;
 
     public int autoCooldown = 0;
@@ -110,6 +113,10 @@ public abstract class AbstractConcoctiMachineBlockEntity
             Properties.FACING_DIRECTION.newWithLinker(() -> getBlockState().getValue(FACING));
     public final Property<MachineSettingsSlots> MACHINE_SETTINGS_SLOTS =
             Properties.MACHINE_SETTINGS_SLOTS.newWithLinker(() -> machineSettings.slots);
+
+    protected final LazyVariable<IItemHandler> inputItemHandler;
+
+    protected final LazyVariable<IFluidHandler> inputFluidHandler;
 
     /** Get the machine-specific details of this machine, uncached. Do not use this function for normal use. */
     protected abstract Supplier<ConcoctiMachineDetails<T, M, V, I, R>> getUncachedMachineDetails();
@@ -311,7 +318,14 @@ public abstract class AbstractConcoctiMachineBlockEntity
      * @param to Handler to put fluids to.
      */
     protected static void transfer(@NotNull IFluidHandler from, @NotNull IFluidHandler to) {
-        while (!transfer(from, to, Integer.MAX_VALUE, false).isEmpty());
+        int iterations = 0;
+        final int MAX_FLUID_ITERATIONS = 8192;
+        while (!transfer(from, to, Integer.MAX_VALUE, false).isEmpty()) {
+            if (++iterations > MAX_FLUID_ITERATIONS) {
+                Concocti.LOGGER.warn("Iterating fluid transfer took more than {} iterations!", MAX_FLUID_ITERATIONS);
+                break;
+            }
+        }
     }
 
     /**
@@ -388,6 +402,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
      */
     abstract protected boolean isItemValidInMachine(int slot, @NotNull ItemStack stack);
 
+    @SuppressWarnings("unchecked")
     public AbstractConcoctiMachineBlockEntity(Supplier<BlockEntityType<T>> blockEntityType, BlockPos pos, BlockState blockState) {
         super(
                 blockEntityType.get(),
@@ -411,6 +426,20 @@ public abstract class AbstractConcoctiMachineBlockEntity
         this.setEnergyModeSupplier(details.energyMode());
 
         this.fluidHandler = new ConcoctiFluidTankHandler(blockEntity::getFluidTanks);
+
+        T blockEntityT = (T) blockEntity;
+
+        inputItemHandler = new LazyVariable<>(
+                () -> itemHandler.whitelistSlots(
+                        details.inputOutputSlots().getInputs().apply(blockEntityT)
+                )
+        );
+
+        inputFluidHandler = new LazyVariable<>(
+                () -> fluidHandler.whitelistTanks(
+                        details.inputOutputFluids().getInputs().apply(blockEntityT)
+                )
+        );
 
         if (details.slots() < 2) throw new IllegalArgumentException("Expected at least two slots for upgrades and frame.");
     }
@@ -437,14 +466,8 @@ public abstract class AbstractConcoctiMachineBlockEntity
     @Override
     @SuppressWarnings("unchecked")
     protected @NotNull M createMenu(int containerId, @NotNull Inventory inventory) {
-        try {
-            Class<M> menuClass = getMachineDetails().menuClass();
-            return menuClass.getConstructor(int.class, Inventory.class, Container.class, ContainerData.class).newInstance(
-                    containerId, inventory, this, getMachineDetails().complexion().apply((T) this)
-            );
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
+        MenuServerConstructor<M> menuClass = getMachineDetails().menuServerConstructor();
+        return menuClass.create(containerId, inventory, this, getMachineDetails().complexion().apply((T) this));
     }
 
     /** Gives the amount of energy (in FE) that this block entity consumes per tick. */
@@ -509,11 +532,9 @@ public abstract class AbstractConcoctiMachineBlockEntity
         if (energy.getEnergyStored() < getTickEnergyIntake()) return false;
         // Query the recipe.
         V input = getInput();
-        R recipe = getCurrentRecipe(input);
+        R recipe = getRecipe(input);
         if (recipe == null) return false;
-        // Check for a match between the ID of the stack and the last known one (via an ID).
-        ResourceLocation toBeProcessed = getRecipeIdFrom(input);
-        return lastRecipeId == null || lastRecipeId.equals(toBeProcessed);
+        return lastRecipe == null || lastRecipe == recipe;
     }
 
     @Override
@@ -524,8 +545,11 @@ public abstract class AbstractConcoctiMachineBlockEntity
     /** Creates a {@link RecipeInput} for an input. */
     protected abstract I recipeInputFrom(V input);
 
-    /** Gets the current recipe with an input. */
-    protected R getCurrentRecipe(V input) {
+    /**
+     * Gets a recipe from an input
+     * @param input The input to get a recipe from.
+     */
+    protected R getRecipe(V input) {
         I recipeInput = recipeInputFrom(input);
         Level level = getLevel();
         if (level == null) return null;
@@ -540,11 +564,6 @@ public abstract class AbstractConcoctiMachineBlockEntity
 
     /** Gets an input (e.g. item) from this block entity. This can rely on a slot, fluid stack or something else. */
     abstract protected V getInput();
-    /**
-     * Gets a recipe ID from an input (e.g. item). This ID should be unique for each recipe.
-     * @param input The input to get a recipe ID from.
-     */
-    abstract protected ResourceLocation getRecipeIdFrom(V input);
 
     /**
      * Called when a recipe has finished. This should account for any products being made.
@@ -569,20 +588,21 @@ public abstract class AbstractConcoctiMachineBlockEntity
             entity.lastUpgradeUnits = currentUpgradeUnits;
             entity.setNewEnergyMultiplier(entity.getInefficientEnergyMultiplier());
         }
-        if (entity.ticksLeft >= entity.totalTicks) entity.lastRecipeId = null;
+        if (entity.ticksLeft >= entity.totalTicks) entity.lastRecipe = null;
         if (--entity.autoCooldown <= 0) {
             entity.autoCooldown = AUTO_COOLDOWN;
             entity.attemptToPull();
             entity.attemptToEject();
         }
         int consumableTicks = getTickMultiplier();
+        int subticks = 0;
         while (consumableTicks > 0) {
             if (entity.canProcess()) {
                 V input = entity.getInput();
-                ResourceLocation toBeProcessed = entity.getRecipeIdFrom(input);
-                R recipe = entity.getCurrentRecipe(input);
-                if (recipe != null && (entity.lastRecipeId == null || !entity.lastRecipeId.equals(toBeProcessed))) {
-                    entity.lastRecipeId = toBeProcessed;
+                R toBeProcessed = entity.getRecipe(input);
+                R recipe = entity.getRecipe(input);
+                if (recipe != null && (entity.lastRecipe == null || !entity.lastRecipe.equals(toBeProcessed))) {
+                    entity.lastRecipe = toBeProcessed;
                     entity.totalTicks = recipe.getTicks();
                     entity.ticksLeft = entity.totalTicks;
                 }
@@ -593,8 +613,11 @@ public abstract class AbstractConcoctiMachineBlockEntity
                 if (recipe != null && entity.ticksLeft <= 0) {
                     // Produce the result.
                     entity.onRecipeCompleted(recipe);
-                    entity.attemptToEject();
-                    entity.attemptToPull();
+                    subticks++;
+                    if (subticks % 16 == 0 || consumableTicks <= 0) {
+                        entity.attemptToEject();
+                        entity.attemptToPull();
+                    }
                     entity.totalTicks = recipe.getTicks();
                     entity.ticksLeft = entity.totalTicks;
                 }
@@ -609,7 +632,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
     }
 
     public static <T extends AbstractConcoctiMachineBlockEntity<T, M, V, I, R>,
-            M extends AbstractContainerMenu, V, I extends RecipeInput, R extends ProcessingRecipe<R, I>>
+            M extends AbstractConcoctiMachineMenu<M>, V, I extends RecipeInput, R extends ProcessingRecipe<R, I>>
         void serverTick(Level level, BlockPos pos, BlockState state, AbstractConcoctiMachineBlockEntity<T, M, V, I, R> entity) {
         entity.tick(level, pos, state);
     }
@@ -623,9 +646,21 @@ public abstract class AbstractConcoctiMachineBlockEntity
     protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
         super.loadAdditional(tag, registries);
         this.ticksLeft = tag.getInt("ticks_left");
+        this.lastRecipe = null;
         if (tag.contains("last_recipe_id", Tag.STRING_SIZE)) {
-            this.lastRecipeId = ResourceLocation.tryParse(tag.getString("last_recipe_id"));
-        } else this.lastRecipeId = null;
+            ResourceLocation id = ResourceLocation.tryParse(tag.getString("last_recipe_id"));
+            if (id != null) {
+                Recipe<?> ungenericRecipe = getLevel()
+                        .getRecipeManager()
+                        .byKey(id)
+                        .map(holder -> holder.value())
+                        .orElse(null);
+                Class<R> recipeClass = getMachineInstance().getRecipeClass();
+                if (recipeClass.isInstance(ungenericRecipe)) {
+                    this.lastRecipe = recipeClass.cast(ungenericRecipe);
+                }
+            }
+        } else this.lastRecipe = null;
         // Fill in the total ticks.
         this.totalTicks = tag.getInt("total_ticks");
         this.machineSettings.slots = MachineSettingsSlots.CODEC
@@ -645,7 +680,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
         super.saveAdditional(tag, registries);
         tag.putInt("ticks_left", this.ticksLeft);
         // Fetch the appropriate item ID.
-        if (this.lastRecipeId != null) tag.putString("last_recipe_id", this.lastRecipeId.toString());
+        if (this.lastRecipe != null) tag.putString("last_recipe_id", this.lastRecipe.toString());
         tag.putInt("total_ticks", this.totalTicks);
         tag.put("machine_settings_slots",
                 MachineSettingsSlots.CODEC.encodeStart(NbtOps.INSTANCE, machineSettings.slots).getOrThrow()
@@ -708,4 +743,6 @@ public abstract class AbstractConcoctiMachineBlockEntity
         if (tank.isEmpty()) return;
         tag.put(key, tank.getFluid().save(registries));
     }
+
+    abstract protected ConcoctiMachine<T, M, V, I, R, ?, ?, ?, ?> getMachineInstance();
 }
