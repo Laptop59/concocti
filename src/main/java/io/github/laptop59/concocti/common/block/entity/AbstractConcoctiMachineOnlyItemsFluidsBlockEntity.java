@@ -15,7 +15,7 @@ public abstract class AbstractConcoctiMachineOnlyItemsFluidsBlockEntity<
         T extends AbstractConcoctiMachineBlockEntity<T, M, ItemsFluidsInputValue, ItemsFluidsRecipeInput, R>,
         M extends AbstractConcoctiMachineMenu<M>,
         R extends ProcessingRecipe<R, ItemsFluidsRecipeInput>
-> extends AbstractConcoctiMachineBlockEntity<T, M, ItemsFluidsInputValue, ItemsFluidsRecipeInput, R> {
+        > extends AbstractConcoctiMachineBlockEntity<T, M, ItemsFluidsInputValue, ItemsFluidsRecipeInput, R> {
     public AbstractConcoctiMachineOnlyItemsFluidsBlockEntity(Supplier<BlockEntityType<T>> blockEntityType, BlockPos pos, BlockState blockState) {
         super(blockEntityType, pos, blockState);
     }

@@ -9,10 +9,11 @@ import org.jetbrains.annotations.NotNull;
 
 import static io.github.laptop59.concocti.common.Concocti.MODID;
 
-/** A payload called when a player attempts to change a slot of a {@code MachineSettings}.
+/**
+ * A payload called when a player attempts to change a slot of a {@code MachineSettings}.
  * <p></p>
  * For the direction, false indicates previous while true indicates next.
- * */
+ */
 public record ConcoctiMachineSettingsEjectOnChangeC2S(int containerId) implements CustomPacketPayload {
 
     public static final Type<ConcoctiMachineSettingsEjectOnChangeC2S> TYPE =

@@ -18,7 +18,7 @@ public abstract class MoltenConductiviumFluid extends BaseFlowingFluid {
                         ConcoctiFluids.MOLTEN_CONDUCTIVIUM,
                         ConcoctiFluids.FLOWING_MOLTEN_CONDUCTIVIUM
                 ).block(ConcoctiFluids.MOLTEN_CONDUCTIVIUM_BLOCK)
-                .bucket(ConcoctiItems.MOLTEN_CONDUCTIVIUM_BUCKET)
+                        .bucket(ConcoctiItems.MOLTEN_CONDUCTIVIUM_BUCKET)
         );
     }
 

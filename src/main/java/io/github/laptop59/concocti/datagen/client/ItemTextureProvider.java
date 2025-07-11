@@ -26,7 +26,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-/** A {@link DataProvider} that allows for the datagenning of item textures. */
+/**
+ * A {@link DataProvider} that allows for the datagenning of item textures.
+ */
 public abstract class ItemTextureProvider implements DataProvider {
 
     protected final HashMap<Item, ItemTexture> textureMap = new HashMap<>();
@@ -132,13 +134,17 @@ public abstract class ItemTextureProvider implements DataProvider {
         }, Util.backgroundExecutor());
     }
 
-    /** Adds a single texture. */
+    /**
+     * Adds a single texture.
+     */
     protected void addTexture(Item item, BufferedImage image) {
         ResourceLocation loc = BuiltInRegistries.ITEM.getKey(item);
         textureMap.put(item, new ItemTexture(image, loc));
     }
 
-    /** Adds a mold texture with a hole in it from a mold item material and type. */
+    /**
+     * Adds a mold texture with a hole in it from a mold item material and type.
+     */
     protected void addShapedMoldTexture(MoldItem.Material material, MoldItem.Type type) {
         Item moldItem = ConcoctiItems.MOLDS.get(material).get(type).get();
         addShapedMoldTexture(moldItem, ConcoctiItems.MOLD_BASES.get(material).get(), type);
@@ -171,7 +177,9 @@ public abstract class ItemTextureProvider implements DataProvider {
         }
     }
 
-    /** Gets a {@link File} location from an {@link Item}. */
+    /**
+     * Gets a {@link File} location from an {@link Item}.
+     */
     private File getFileFromItem(Item item, boolean mainFolder) {
         ResourceLocation sourceLoc = getLocFromItem(item);
         return this.output.getOutputFolder(PackOutput.Target.RESOURCE_PACK)
@@ -179,11 +187,16 @@ public abstract class ItemTextureProvider implements DataProvider {
                 .resolve("textures/item").resolve(sourceLoc.getPath() + ".png").toFile();
     }
 
-    /** Gets the <i>item registry location</i> from an {@link Item}. */
+    /**
+     * Gets the <i>item registry location</i> from an {@link Item}.
+     */
     private ResourceLocation getLocFromItem(Item item) {
         return BuiltInRegistries.ITEM.getKey(item);
     }
 
-    public record ItemTexture(BufferedImage image, ResourceLocation path) {}
-    public record XY(int x, int y, boolean outlinePixel) {}
+    public record ItemTexture(BufferedImage image, ResourceLocation path) {
+    }
+
+    public record XY(int x, int y, boolean outlinePixel) {
+    }
 }

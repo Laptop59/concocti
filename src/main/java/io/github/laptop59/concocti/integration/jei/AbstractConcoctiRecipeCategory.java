@@ -3,7 +3,9 @@ package io.github.laptop59.concocti.integration.jei;
 import io.github.laptop59.concocti.client.gui.components.ArrowProgress;
 import io.github.laptop59.concocti.client.gui.components.RenderInfo;
 import io.github.laptop59.concocti.client.gui.components.Renderable;
+import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
+import io.github.laptop59.concocti.common.util.Lazy;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
@@ -20,7 +22,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeInput;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
@@ -32,13 +33,19 @@ import static io.github.laptop59.concocti.common.Concocti.MODID;
 
 /**
  * A base class to implement common parts of all Concocti recipes.
+ *
  * @param <T> The type of recipe represented by this category.
  */
-public abstract class AbstractConcoctiRecipeCategory<T extends Recipe<? extends RecipeInput>> implements IRecipeCategory<T> {
+public abstract class AbstractConcoctiRecipeCategory<T extends ProcessingRecipe<T, ? extends RecipeInput>> implements IRecipeCategory<T> {
     private final IDrawable icon;
     protected final ResourceLocation slot = ResourceLocation.fromNamespaceAndPath(MODID, "textures/gui/jei/slot.png");
 
     private final ArrowProgress arrowProgress;
+    private final Lazy<ResourceLocation> texture =
+            new Lazy<>(() -> ResourceLocation.fromNamespaceAndPath(
+                    MODID,
+                    "textures/gui/jei/" + getMachineInstance().ID + ".png"
+            ));
 
     public AbstractConcoctiRecipeCategory(IGuiHelper guiHelper, ItemStack icon) {
         this.icon = guiHelper.createDrawableIngredient(VanillaTypes.ITEM_STACK, icon);
@@ -49,7 +56,9 @@ public abstract class AbstractConcoctiRecipeCategory<T extends Recipe<? extends 
         this(guiHelper, item.toStack());
     }
 
-    /** Gets this category's recipe type. */
+    /**
+     * Gets this category's recipe type.
+     */
     @Override
     public abstract @NotNull RecipeType<T> getRecipeType();
 
@@ -68,11 +77,17 @@ public abstract class AbstractConcoctiRecipeCategory<T extends Recipe<? extends 
         return 36 - 8;
     }
 
-    protected int getHorizontalArrowOffset(@NotNull T recipe) { return 0; }
+    protected int getHorizontalArrowOffset(@NotNull T recipe) {
+        return 0;
+    }
 
-    protected int getTotalArrowLeft(@NotNull T recipe) { return 75 - 4 + getHorizontalArrowOffset(recipe); }
+    protected int getTotalArrowLeft(@NotNull T recipe) {
+        return 75 - 4 + getHorizontalArrowOffset(recipe);
+    }
 
-    protected abstract ResourceLocation getTexture();
+    protected final ResourceLocation getTexture() {
+        return texture.get();
+    }
 
     @Override
     public void draw(@NotNull T recipe, @NotNull IRecipeSlotsView recipeSlotsView,
@@ -91,16 +106,20 @@ public abstract class AbstractConcoctiRecipeCategory<T extends Recipe<? extends 
         Renderable.renderChildAbsolute(guiGraphics, RenderInfo.withNullifiedOffset(null), arrowProgress);
     }
 
-    /** Gets the duration of a recipe. */
+    /**
+     * Gets the duration of a recipe.
+     */
     protected int getTicks(T recipe) {
         int tickDuration = 40;
-        if (recipe instanceof ProcessingRecipe<?,?> processingRecipe) {
+        if (recipe instanceof ProcessingRecipe<?, ?> processingRecipe) {
             tickDuration = processingRecipe.getTicks();
         }
         return tickDuration;
     }
 
-    /** Returns whether the cursor is touching the animating arrow. */
+    /**
+     * Returns whether the cursor is touching the animating arrow.
+     */
     protected boolean isCursorTouchingArrow(double mouseX, double mouseY, @NotNull T recipe) {
         double dx = mouseX - getTotalArrowLeft(recipe);
         double dy = mouseY - (10 - 4);
@@ -115,13 +134,17 @@ public abstract class AbstractConcoctiRecipeCategory<T extends Recipe<? extends 
             tooltip.add(Component.translatable("screen.concocti.duration", (double) getTicks(recipe) / 20));
     }
 
-    /** Tells JEI how to display this type of recipe. */
+    /**
+     * Tells JEI how to display this type of recipe.
+     */
     @Override
     public abstract void setRecipe(@NotNull IRecipeLayoutBuilder builder, @NotNull T recipe, @NotNull IFocusGroup focuses);
 
-    /** A helper method to create a {@link net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient} slot. */
+    /**
+     * A helper method to create a {@link net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient} slot.
+     */
     protected final IRecipeLayoutBuilder addSizedFluidIngredientSlot(IRecipeLayoutBuilder builder, RecipeIngredientRole role,
-            int x, int y, String name, SizedFluidIngredient ingredient) {
+                                                                     int x, int y, String name, SizedFluidIngredient ingredient) {
         IRecipeSlotBuilder slotBuilder = builder.addSlot(role, x, y);
         for (FluidStack stack : ingredient.getFluids()) {
             slotBuilder.addFluidStack(stack.getFluid(), stack.getAmount());
@@ -129,4 +152,9 @@ public abstract class AbstractConcoctiRecipeCategory<T extends Recipe<? extends 
         slotBuilder.setSlotName(name);
         return builder;
     }
+
+    /**
+     * Gets the machine instance of the machine using this category
+     */
+    protected abstract ConcoctiMachine<?, ?, ?, ?, T, ?, ?, ?, ?> getMachineInstance();
 }

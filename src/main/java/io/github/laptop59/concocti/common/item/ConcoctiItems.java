@@ -97,7 +97,9 @@ public class ConcoctiItems {
 
     /// REGISTERING METHODS
 
-    /** Registers all mold bases of all materials. */
+    /**
+     * Registers all mold bases of all materials.
+     */
     private static Map<MoldItem.Material, DeferredItem<? extends Item>> registerAllMoldBases() {
         Map<MoldItem.Material, DeferredItem<? extends Item>> molds = new EnumMap<>(MoldItem.Material.class);
         for (MoldItem.Material material : MoldItem.Material.values()) {
@@ -111,6 +113,7 @@ public class ConcoctiItems {
 
     /**
      * Registers all molds of all materials.
+     *
      * @return A two-dimensional map of {@link DeferredItem}s.
      */
     public static Map<MoldItem.Material, Map<MoldItem.Type, DeferredItem<? extends Item>>> registerAllMolds() {
@@ -123,6 +126,7 @@ public class ConcoctiItems {
 
     /**
      * Registers all molds of a particular material.
+     *
      * @return A map of already registered {@link DeferredItem}s.
      */
     public static Map<MoldItem.Type, DeferredItem<? extends Item>> registerMolds(MoldItem.Material material) {
@@ -135,6 +139,7 @@ public class ConcoctiItems {
 
     /**
      * Registers a mold of a particular material and type.
+     *
      * @return A map of the registered {@link DeferredItem}.
      */
     public static DeferredItem<? extends Item> registerMold(MoldItem.Material material, MoldItem.Type type) {
@@ -150,6 +155,7 @@ public class ConcoctiItems {
 
     /**
      * Registers a block item.
+     *
      * @param block The block to create an item for.
      * @return A {@link DeferredItem} for the registered item.
      */
@@ -161,7 +167,8 @@ public class ConcoctiItems {
 
     /**
      * Registers a simple item (an item using the base {@link Item} class).
-     * @param name The name of the item.
+     *
+     * @param name  The name of the item.
      * @param props The properties of the item.
      * @return A {@link DeferredItem} for the registered item.
      */
@@ -173,8 +180,9 @@ public class ConcoctiItems {
 
     /**
      * Registers an item (an item using the {@link Item} class or any of its subclasses).
-     * @param name The name of the item.
-     * @param func The factory for this item. For simple items, this is {@code Item::new}.
+     *
+     * @param name  The name of the item.
+     * @param func  The factory for this item. For simple items, this is {@code Item::new}.
      * @param props The properties of the item.
      * @return A {@link DeferredItem} for the registered item.
      */
@@ -186,6 +194,7 @@ public class ConcoctiItems {
 
     /**
      * Registers a bucket item (an item using the {@link BucketItem} class).
+     *
      * @param name The name of the fluid.
      * @return A {@link DeferredItem} for the registered item.
      */

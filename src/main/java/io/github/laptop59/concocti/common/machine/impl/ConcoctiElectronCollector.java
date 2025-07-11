@@ -12,12 +12,16 @@ import io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
 import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
+import io.github.laptop59.concocti.common.detail.DetailCodec;
+import io.github.laptop59.concocti.common.detail.DetailHolder;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachineDetails;
 import io.github.laptop59.concocti.common.machine.InputOutput;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
-import io.github.laptop59.concocti.common.recipe.*;
+import io.github.laptop59.concocti.common.recipe.LightningRecipeInput;
+import io.github.laptop59.concocti.common.recipe.LightningState;
+import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
 import io.github.laptop59.concocti.integration.jei.AbstractConcoctiRecipeCategory;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.ITooltipBuilder;
@@ -29,7 +33,6 @@ import mezz.jei.api.recipe.RecipeIngredientRole;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -42,27 +45,21 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.*;
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemLore;
-import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -72,8 +69,11 @@ import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static io.github.laptop59.concocti.common.Concocti.MODID;
@@ -88,14 +88,15 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
         ConcoctiElectronCollector.Block,
         ConcoctiElectronCollector.Screen,
         ConcoctiElectronCollector.RecipeCategory
-> {
+        > {
     static ConcoctiElectronCollector INSTANCE;
 
     // Details
     public final static String ID = "concocti_electron_collector";
 
     public Supplier<ConcoctiMachineDetails<BlockEntity, Menu, LightningState, LightningRecipeInput, Recipe>> getDetails() {
-        return () -> new ConcoctiMachineDetails<BlockEntity, Menu, LightningState, LightningRecipeInput, Recipe>(
+        return () -> new ConcoctiMachineDetails<>(
+                BlockEntity.class,
                 100_000,
                 100_000,
                 2,
@@ -109,11 +110,12 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
                 new EnumMap<>(SlotType.class),
                 new EnumMap<>(
                         Map.of(
-                                SlotType.FLUID_OUTPUT, List.of(blockEntity -> blockEntity.fluidOutput)
+                                SlotType.FLUID_OUTPUT, List.of(blockEntity -> blockEntity.fluidOutput.get())
                         )
                 ),
                 InputOutput.empty(),
-                InputOutput.onlyOutputs(blockEntity -> List.of(blockEntity.fluidOutput))
+                InputOutput.onlyOutputs(blockEntity -> List.of(blockEntity.fluidOutput.get())),
+                null
         );
     }
 
@@ -132,44 +134,21 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
         INSTANCE = this;
     }
 
-    public BlockEntityConstructor<BlockEntity> getBlockEntityConstructor() {
-        return BlockEntity::new;
-    }
-
-    public BlockConstructor<Block> getBlockConstructor() {
-        return Block::new;
-    }
-
-    public MenuClientConstructor<Menu> getMenuClientConstructor() {
-        return Menu::new;
-    }
-
-    public ScreenConstructor<Menu, Screen> getScreenConstructor() {
-        return Screen::new;
-    }
-
-    public RecipeCategoryConstructor<RecipeCategory, Recipe, LightningRecipeInput> getRecipeCategoryConstructor() {
-        return RecipeCategory::new;
-    }
-
-    public RecipeSerializerConstructor<Recipe.Serializer, Recipe, LightningRecipeInput> getRecipeSerializerConstructor() {
-        return Recipe.Serializer::new;
-    }
-
-    public Class<Recipe> getRecipeClass() {
-        return Recipe.class;
-    }
-
     public static class BlockEntity extends AbstractConcoctiMachineBlockEntity
             <BlockEntity, Menu, LightningState, LightningRecipeInput, Recipe> {
 
-        private final FluidTank fluidOutput = new FluidTank(TANK_CAPACITY);
-        private final LightningState lightningState = new LightningState(false);
+        private final DetailHolder<FluidTank> fluidOutput = new DetailHolder<>(
+                DetailCodec.FLUID_TANK, "fluid_output", new FluidTank(TANK_CAPACITY), this
+        );
+        private final DetailHolder<LightningState> lightningState = new DetailHolder<>(
+                DetailCodec.LIGHTNING_STATE, "lightning_state", new LightningState(false), this
+        );
 
         // Slots: NONE
 
         // Properties
-        public final Property<FluidStack> FLUID_OUTPUT = Properties.FLUID_OUTPUT.newWithLinker(fluidOutput::getFluid);
+        public final Property<FluidStack> FLUID_OUTPUT = Properties.FLUID_OUTPUT.newWithLinker(() -> fluidOutput.get().getFluid());
+        public final Property<LightningState> LIGHTNING_STATE = Properties.LIGHTNING_STATE.newWithLinker(lightningState::get);
 
         @Override
         protected ConcoctiElectronCollector getMachineInstance() {
@@ -178,7 +157,7 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
 
         @Override
         public List<IFluidHandler> getIndexedFluidHandlers() {
-            return List.of(fluidOutput);
+            return List.of(fluidOutput.get());
         }
 
         public Supplier<ConcoctiMachineDetails<BlockEntity, Menu, LightningState, LightningRecipeInput, Recipe>> getUncachedMachineDetails() {
@@ -192,23 +171,23 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
 
         protected final ConcoctiMachineComplexion dataAccess = new ConcoctiMachineComplexion(
                 this,
-                FLUID_OUTPUT.of(FluidStack.EMPTY)
+                FLUID_OUTPUT.of(FluidStack.EMPTY),
+                LIGHTNING_STATE.of(new LightningState(false))
         );
 
         public BlockEntity(BlockPos pos, BlockState blockState) {
             super(
                     INSTANCE.BLOCK_ENTITY, pos, blockState
             );
-            fluidOutput.getFluid().limitSize(TANK_CAPACITY);
         }
 
         @Override
         public boolean canProcess() {
             if (!super.canProcess()) return false;
-            Recipe recipe = getRecipe(lightningState);
+            Recipe recipe = getRecipe(lightningState.get());
             // Check whether the fluids obtained from this item will not exceed our fluid limit.
             FluidStack result = recipe.getOutputFluid().copy();
-            return fluidOutput.fill(result, IFluidHandler.FluidAction.SIMULATE) == result.getAmount();
+            return fluidOutput.get().fill(result, IFluidHandler.FluidAction.SIMULATE) == result.getAmount();
         }
 
         @Override
@@ -218,122 +197,39 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
 
         @Override
         protected LightningState getInput() {
-            return lightningState;
-        }
-
-        @Override
-        protected Recipe getRecipe(LightningState input) {
-            Optional<RecipeHolder<Recipe>> optional = level.getRecipeManager().getRecipeFor(
-                    // The recipe type.
-                    getRecipeType().get(),
-                    recipeInputFrom(input),
-                    level
-            );
-            return optional.map(RecipeHolder::value).orElse(null);
+            return lightningState.get();
         }
 
         @Override
         protected void onRecipeCompleted(Recipe recipe) {
             if (Math.random() < recipe.getChance())
-                fluidOutput.fill(recipe.getOutputFluid(), IFluidHandler.FluidAction.EXECUTE);
-            lightningState.setLightningCollected(false);
-        }
-
-        @Override
-        protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
-            super.loadAdditional(tag, registries);
-            fluidOutput.setFluid(parseFluidStack((CompoundTag) tag.get("fluid_output"), registries));
-            lightningState.setLightningCollected(tag.getBoolean("lightning_collected"));
-        }
-
-        @Override
-        protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
-            super.saveAdditional(tag, registries);
-            saveFluidStack("fluid_output", tag, fluidOutput, registries);
-            tag.putBoolean("lightning_collected", lightningState.getLightningCollected());
+                fluidOutput.get().fill(recipe.getOutputFluid(), IFluidHandler.FluidAction.EXECUTE);
+            lightningState.get().setLightningCollected(false);
         }
 
         @Override
         public List<IFluidTank> getFluidTanks() {
-            return List.of(fluidOutput);
+            return List.of(fluidOutput.get());
         }
 
         public void markLightningState() {
-            lightningState.setLightningCollected(true);
+            lightningState.get().setLightningCollected(true);
         }
     }
 
-    public static class Block extends AbstractConcoctiMachineBlock {
-        public static final BooleanProperty LIT = BlockStateProperties.LIT;
-
-        public static final MapCodec<Block> CODEC = simpleCodec(Block::new);
-
+    public static class Block extends AbstractConcoctiMachineBlock<Block> {
         protected Block(Properties properties) {
             super(properties);
-            this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(LIT, Boolean.FALSE));
         }
 
         @Override
-        public @NotNull MapCodec<Block> codec() {
-            return CODEC;
-        }
-
-        // Return a new instance of our block entity here.
-        @Override
-        public net.minecraft.world.level.block.entity.BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
-            return new BlockEntity(pos, state);
+        protected ConcoctiElectronCollector getMachineInstance() {
+            return INSTANCE;
         }
 
         @Override
-        protected void createBlockStateDefinition(StateDefinition.Builder<net.minecraft.world.level.block.Block, BlockState> builder) {
-            builder.add(FACING, LIT);
-        }
-
-        @Override
-        protected @NotNull RenderShape getRenderShape(@NotNull BlockState state) {
-            return RenderShape.MODEL;
-        }
-
-        @Override
-        public BlockState getStateForPlacement(BlockPlaceContext context) {
-            return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
-        }
-
-        @Override
-        protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hitResult) {
-            if (level.isClientSide()) {
-                return InteractionResult.SUCCESS;
-            } else {
-                MenuProvider provider = this.getMenuProvider(state, level, pos);
-                if (provider != null) {
-                    player.openMenu(provider);
-                }
-
-                return InteractionResult.CONSUME;
-            }
-        }
-
-        @Override
-        protected @NotNull ItemInteractionResult useItemOnMachine(@NotNull ItemStack stack, @NotNull BlockState state, Level level, @NotNull BlockPos pos,
-                                                                  @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hitResult) {
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-        }
-
-        @Override
-        public MenuProvider getMenuProvider(@NotNull BlockState state, Level level, @NotNull BlockPos pos) {
-            net.minecraft.world.level.block.entity.BlockEntity blockEntity = level.getBlockEntity(pos);
-            return blockEntity instanceof BlockEntity entity ? entity : null;
-        }
-
-        @Nullable
-        protected static <T extends net.minecraft.world.level.block.entity.BlockEntity> BlockEntityTicker<T> createTicker(
-                Level level, BlockEntityType<T> serverType, BlockEntityType<? extends BlockEntity> clientType
-        ) {
-            return level.isClientSide ? null : createTickerHelper(serverType, clientType, BlockEntity::serverTick);
-        }
-
-        public <T extends net.minecraft.world.level.block.entity.BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> blockEntityType) {
-            return createTicker(level, blockEntityType, INSTANCE.BLOCK_ENTITY.get());
+        protected Function<Properties, Block> getBlockConstructor() {
+            return Block::new;
         }
     }
 
@@ -505,7 +401,8 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
         @Override
         public List<Property<?>> getMachineSpecificProperties() {
             return List.of(
-                    Properties.FLUID_OUTPUT
+                    Properties.FLUID_OUTPUT,
+                    Properties.LIGHTNING_STATE
             );
         }
 
@@ -522,7 +419,8 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
         }
 
         @Override
-        protected void addOtherSlots() {}
+        protected void addOtherSlots() {
+        }
 
         @Override
         public @org.jetbrains.annotations.Nullable ItemStack handleOtherQuickMoves(ItemStack movedStack) {
@@ -536,14 +434,21 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
         public int getMaxFluidOutput() {
             return AbstractConcoctiMachineBlockEntity.TANK_CAPACITY;
         }
+
+        public LightningState getLightningState() {
+            return viewer.get(Properties.LIGHTNING_STATE);
+        }
     }
 
     @OnlyIn(Dist.CLIENT)
     public static class Screen extends AbstractConcoctiMachineScreen<Menu> {
-        private final FluidBar<Menu> outputFluid = new FluidBar<>((getWidth() + 20) / 2, 23, this, menu, 0);
+        private final FluidBars.Tall<Menu> outputFluid = new FluidBars.Tall<>((getWidth() + 50) / 2, 25, this, menu, 0);
 
         private final EnergyBar<Menu> energyBar = new EnergyBar<>(10, 18, this, menu);
-        private final ArrowProgress arrowProgress = new ArrowProgress(79 - 17, 37);
+        private final ArrowProgress arrowProgress = new ArrowProgress(94 - 17, 37);
+
+        public static final ResourceLocation LIGHTNING_STATE_ON_SPRITE = ResourceLocation.fromNamespaceAndPath(MODID, "container/lightning_state/on");
+        public static final ResourceLocation LIGHTNING_STATE_OFF_SPRITE = ResourceLocation.fromNamespaceAndPath(MODID, "container/lightning_state/off");
 
         public Screen(
                 Menu menu,
@@ -573,6 +478,20 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
             // Don't forget to first render the abstract screen!
             super.render(guiGraphics, renderInfo);
 
+            ResourceLocation lightningStateSprite;
+            if (menu.getLightningState().getLightningCollected()) {
+                lightningStateSprite = LIGHTNING_STATE_ON_SPRITE;
+            } else {
+                lightningStateSprite = LIGHTNING_STATE_OFF_SPRITE;
+            }
+            guiGraphics.blitSprite(
+                    lightningStateSprite,
+                    renderInfo.left() + 55,
+                    renderInfo.top() + 38,
+                    16,
+                    16
+            );
+
             arrowProgress.update(menu.getProgress());
 
             energyBar.update(menu.getNumberEnergyLeft(false), menu.getNumberEnergyLeft(true));
@@ -586,7 +505,10 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
 
     public static class RecipeCategory extends AbstractConcoctiRecipeCategory<Recipe> {
 
-        private final ResourceLocation texture = ResourceLocation.fromNamespaceAndPath(MODID, "textures/gui/jei/concocti_electron_collector.png");
+        @Override
+        protected ConcoctiElectronCollector getMachineInstance() {
+            return INSTANCE;
+        }
 
         public RecipeCategory(IGuiHelper guiHelper) {
             super(guiHelper, new ItemStack(INSTANCE.BLOCK.get()));
@@ -611,11 +533,6 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
                 tooltip.add(Component.translatable("screen.concocti.duration", (double) getTicks(recipe) / 20));
                 tooltip.add(Component.translatable("screen.concocti.chance", chance));
             }
-        }
-
-        @Override
-        protected ResourceLocation getTexture() {
-            return texture;
         }
 
         @Override
@@ -646,5 +563,33 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
                     .setSlotName("lightning_rod")
                     .addIngredients(Ingredient.of(rod));
         }
+    }
+
+    public BlockEntityConstructor<BlockEntity> getBlockEntityConstructor() {
+        return BlockEntity::new;
+    }
+
+    public BlockConstructor<Block> getBlockConstructor() {
+        return Block::new;
+    }
+
+    public MenuClientConstructor<Menu> getMenuClientConstructor() {
+        return Menu::new;
+    }
+
+    public ScreenConstructor<Menu, Screen> getScreenConstructor() {
+        return Screen::new;
+    }
+
+    public RecipeCategoryConstructor<RecipeCategory, Recipe, LightningRecipeInput> getRecipeCategoryConstructor() {
+        return RecipeCategory::new;
+    }
+
+    public RecipeSerializerConstructor<Recipe.Serializer, Recipe, LightningRecipeInput> getRecipeSerializerConstructor() {
+        return Recipe.Serializer::new;
+    }
+
+    public Class<Recipe> getRecipeClass() {
+        return Recipe.class;
     }
 }

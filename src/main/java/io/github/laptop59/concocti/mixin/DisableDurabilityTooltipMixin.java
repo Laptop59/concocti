@@ -25,7 +25,7 @@ public abstract class DisableDurabilityTooltipMixin {
             method = "getTooltipLines", at = @At(value = "INVOKE", target = "Ljava/util/List;add(Ljava/lang/Object;)Z", shift = At.Shift.AFTER, ordinal = 2)
     )
     public void getTooltipLines(Item.TooltipContext tooltipContext, Player player,
-        TooltipFlag tooltipFlag, CallbackInfoReturnable<List<Component>> cir, @Local List<Component> list) {
+                                TooltipFlag tooltipFlag, CallbackInfoReturnable<List<Component>> cir, @Local List<Component> list) {
         if (ConcoctiItems.DISABLED_DURABILITY_TOOLTIP_ITEMS.stream().anyMatch(
                 deferredItem -> deferredItem.get() == getItem()
         )) {

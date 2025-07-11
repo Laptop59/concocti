@@ -8,7 +8,9 @@ import org.jetbrains.annotations.Contract;
 
 import java.util.List;
 
-/** This class provides a read-only view of a {@link Complexion}-like object. */
+/**
+ * This class provides a read-only view of a {@link Complexion}-like object.
+ */
 public abstract class ComplexionViewer implements ContainerData {
     public final int[] data;
 

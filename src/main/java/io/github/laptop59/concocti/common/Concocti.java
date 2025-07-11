@@ -1,7 +1,7 @@
 package io.github.laptop59.concocti.common;
 
 import com.mojang.logging.LogUtils;
-import io.github.laptop59.concocti.client.gui.*;
+import io.github.laptop59.concocti.client.gui.AbstractConcoctiMachineScreen;
 import io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
@@ -11,12 +11,13 @@ import io.github.laptop59.concocti.common.block.entity.ItemHandlerBlockEntity;
 import io.github.laptop59.concocti.common.effect.ConcoctizedMobEffect;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
-import io.github.laptop59.concocti.common.machine.*;
+import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
+import io.github.laptop59.concocti.common.machine.ConcoctiMachines;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.poi.ConcoctiPoiTypes;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
 import io.github.laptop59.concocti.integration.jei.AbstractConcoctiRecipeCategory;
-import io.github.laptop59.concocti.network.*;
+import io.github.laptop59.concocti.network.ConcoctiPayloads;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -86,24 +87,22 @@ public class Concocti {
             I extends RecipeInput,
             R extends ProcessingRecipe<R, I>,
             Z extends RecipeSerializer<R>,
-            B extends AbstractConcoctiMachineBlock,
+            B extends AbstractConcoctiMachineBlock<B>,
             S extends AbstractConcoctiMachineScreen<M>,
             C extends AbstractConcoctiRecipeCategory<R>
-    > void registerScreen(RegisterMenuScreensEvent event, ConcoctiMachine<T, M, V, I, R, Z, B, S, C> machine) {
+            > void registerScreen(RegisterMenuScreensEvent event, ConcoctiMachine<T, M, V, I, R, Z, B, S, C> machine) {
         event.register(machine.MENU.get(), machine.getScreenConstructor());
     }
 
     @SubscribeEvent
-    private static void commonSetup(final FMLCommonSetupEvent event)
-    {
+    private static void commonSetup(final FMLCommonSetupEvent event) {
         // Some common setup code
         Concocti.LOGGER.info("Concocti is loading!");
     }
 
     // The constructor for the mod class is the first code that is run when your mod is loaded.
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
-    public Concocti(IEventBus modEventBus, ModContainer modContainer)
-    {
+    public Concocti(IEventBus modEventBus, ModContainer modContainer) {
         // Register the commonSetup method for modloading
         NeoForge.EVENT_BUS.register(ConcoctiEventHandler.class);
 
@@ -139,7 +138,9 @@ public class Concocti {
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 
-    /** As a hack for initializing static variables of a class, we can use this method. */
+    /**
+     * As a hack for initializing static variables of a class, we can use this method.
+     */
     private static void initializeUninitializedStaticVariables(Class<?>... classes) {
         for (Class<?> clazz : classes) {
             Constructor<?>[] constructors = clazz.getConstructors();
@@ -147,7 +148,8 @@ public class Concocti {
                     .filter(c -> c.getParameterCount() == 0)
                     .findFirst()
                     .orElse(null);
-            if (constructor == null) throw new IllegalStateException(clazz + " has no non-parameterized constructor (should be created by the virtual machine by default).");
+            if (constructor == null)
+                throw new IllegalStateException(clazz + " has no non-parameterized constructor (should be created by the virtual machine by default).");
             try {
                 // By doing this should also initialize static variables.
                 constructor.newInstance();

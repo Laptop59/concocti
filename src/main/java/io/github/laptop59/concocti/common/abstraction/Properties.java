@@ -1,10 +1,13 @@
 package io.github.laptop59.concocti.common.abstraction;
 
 import io.github.laptop59.concocti.client.gui.components.MachineSettingsSlots;
+import io.github.laptop59.concocti.common.recipe.LightningState;
 import net.minecraft.core.Direction;
 import net.neoforged.neoforge.fluids.FluidStack;
 
-/** This class contains {@link io.github.laptop59.concocti.common.abstraction.Property} constants for convenience. */
+/**
+ * This class contains {@link io.github.laptop59.concocti.common.abstraction.Property} constants for convenience.
+ */
 public final class Properties {
     public static final Property<Integer> TICKS_LEFT = ComplexionCodec.INTEGER.unique();
     public static final Property<Integer> TOTAL_TICKS = ComplexionCodec.INTEGER.unique();
@@ -25,6 +28,8 @@ public final class Properties {
     public static final Property<FluidStack> FLUID_INPUT_3 = ComplexionCodec.FLUID_STACK.unique();
     public static final Property<FluidStack> FLUID_INPUT_4 = ComplexionCodec.FLUID_STACK.unique();
     public static final Property<FluidStack> FLUID_OUTPUT = ComplexionCodec.FLUID_STACK.unique();
+
+    public static final Property<LightningState> LIGHTNING_STATE = ComplexionCodec.LIGHTNING_STATE.unique();
 
     private Properties() {}
 }

@@ -3,12 +3,16 @@ package io.github.laptop59.concocti.common.menu;
 import net.minecraft.world.Container;
 import net.minecraft.world.inventory.Slot;
 
-/** A interface for a slot which allows some custom icons to be placed on top. */
+/**
+ * A interface for a slot which allows some custom icons to be placed on top.
+ */
 public interface IconSlot {
 
     Icon getIcon();
 
-    /** A simple slot class that adds a custom icon as a class. */
+    /**
+     * A simple slot class that adds a custom icon as a class.
+     */
     class Generic extends Slot implements IconSlot {
 
         private final Icon icon;
@@ -24,7 +28,9 @@ public interface IconSlot {
         }
     }
 
-    /** A list of icons that can be placed on a slot. */
+    /**
+     * A list of icons that can be placed on a slot.
+     */
     enum Icon {
         CONCOCTI_UPGRADE("concocti_upgrade"),
         MOLD("mold"),

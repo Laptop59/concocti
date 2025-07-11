@@ -11,21 +11,21 @@ public class ConcoctiMachineSettingsSlotChangeC2SHandler {
     public static void handleData(final ConcoctiMachineSettingsSlotChangeC2S data, final IPayloadContext context) {
         // Try to get the cursor item of the player.
         context.enqueueWork(() -> {
-            Player player = context.player();
-            if (player instanceof ServerPlayer target) {
-                AbstractContainerMenu menu = target.containerMenu;
-                if (menu instanceof AbstractConcoctiMachineMenu<?> machineMenu) {
-                    if (machineMenu.containerId != data.containerId()) return; // just in case
-                    AbstractConcoctiMachineBlockEntity<?, ?, ?, ?, ?> blockEntity
-                        = (AbstractConcoctiMachineBlockEntity<?, ?, ?, ?, ?>) machineMenu.getContainer();
-                    blockEntity.machineSettings.cycleSlot(data.direction(), !data.wasRightClicked());
-                    blockEntity.getLevel().invalidateCapabilities(blockEntity.getBlockPos());
-                }
-            }
-        })
-        .exceptionally(e -> {
-            // Who cares anyway?
-            return null;
-        });
+                    Player player = context.player();
+                    if (player instanceof ServerPlayer target) {
+                        AbstractContainerMenu menu = target.containerMenu;
+                        if (menu instanceof AbstractConcoctiMachineMenu<?> machineMenu) {
+                            if (machineMenu.containerId != data.containerId()) return; // just in case
+                            AbstractConcoctiMachineBlockEntity<?, ?, ?, ?, ?> blockEntity
+                                    = (AbstractConcoctiMachineBlockEntity<?, ?, ?, ?, ?>) machineMenu.getContainer();
+                            blockEntity.machineSettings.cycleSlot(data.direction(), !data.wasRightClicked());
+                            blockEntity.getLevel().invalidateCapabilities(blockEntity.getBlockPos());
+                        }
+                    }
+                })
+                .exceptionally(e -> {
+                    // Who cares anyway?
+                    return null;
+                });
     }
 }

@@ -24,10 +24,11 @@ import org.joml.Matrix4f;
 import static io.github.laptop59.concocti.common.Concocti.MODID;
 
 /**
- * A class used to render a fluid bar.
+ * An abstract class used to render a fluid bar.
+ *
  * @param <T> The type of menu whose screen the bar should render for.
  */
-public class FluidBar<T extends AbstractContainerMenu> extends Renderable implements MenuAccess<T>, ClickableComponent {
+public abstract class AbstractFluidBar<T extends AbstractContainerMenu> extends Renderable implements MenuAccess<T>, ClickableComponent {
     T menu;
     AbstractContainerScreen<T> screen;
     ResourceLocation fluid;
@@ -36,10 +37,13 @@ public class FluidBar<T extends AbstractContainerMenu> extends Renderable implem
     int max;
     int id;
 
-    public static final ResourceLocation FLUID_BASE_SPRITE = ResourceLocation.fromNamespaceAndPath(MODID, "container/fluids/base");
+    public final ResourceLocation FLUID_BASE_SPRITE = getFrameTexture();
     public static final ResourceLocation FLUID_BLACK_SPRITE = ResourceLocation.fromNamespaceAndPath(MODID, "container/fluids/black");
 
-    public FluidBar(int guiLeft, int guiTop, AbstractContainerScreen<T> screen, T menu, ResourceLocation fluid, int id) {
+    abstract protected int getBarHeight();
+    abstract protected ResourceLocation getFrameTexture();
+
+    public AbstractFluidBar(int guiLeft, int guiTop, AbstractContainerScreen<T> screen, T menu, ResourceLocation fluid, int id) {
         super(guiLeft, guiTop);
         this.screen = screen;
         this.menu = menu;
@@ -47,7 +51,7 @@ public class FluidBar<T extends AbstractContainerMenu> extends Renderable implem
         this.id = id;
     }
 
-    public FluidBar(int guiLeft, int guiTop, AbstractContainerScreen<T> screen, T menu, int id) {
+    public AbstractFluidBar(int guiLeft, int guiTop, AbstractContainerScreen<T> screen, T menu, int id) {
         this(guiLeft, guiTop, screen, menu, ResourceLocation.withDefaultNamespace("empty"), id);
     }
 
@@ -59,8 +63,8 @@ public class FluidBar<T extends AbstractContainerMenu> extends Renderable implem
     @Override
     protected void render(GuiGraphics guiGraphics, RenderInfo renderInfo) {
         setToSolidifierFluid(BuiltInRegistries.FLUID.getId(stack.getFluid()));
-        int height = Mth.ceil(((float) stack.getAmount() / max) * 40.0F);
-        guiGraphics.blitSprite(FLUID_BASE_SPRITE, 17, 42, 0, 0, renderInfo.left() - 1, renderInfo.top() - 1, 17, 42);
+        int height = Mth.ceil(((float) stack.getAmount() / max) * (1.0F * (getHeight() - 2)));
+        guiGraphics.blitSprite(FLUID_BASE_SPRITE, 18, getHeight(), 0, 0, renderInfo.left() - 1, renderInfo.top() - 1, 18, getHeight());
         // Draw the full fluid.
         // Get the required texture atlas sprite and attributes.
         int incremented;
@@ -69,23 +73,23 @@ public class FluidBar<T extends AbstractContainerMenu> extends Renderable implem
             TextureAtlasSprite sprite = screen.getMinecraft().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(attributes.getStillTexture());
             setFluidColor(attributes.getTintColor());
             renderTiledTextureAtlas(guiGraphics, screen, sprite, renderInfo.left(),
-                    renderInfo.top() + (40 - height), 15, height, 100, true);
+                    renderInfo.top() + (getHeight() - 2 - height), 16, height, 100, true);
             // Set the shader color back.
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         }
         // Draw the blackened part of the fluid.
-        for (int blackenedLeft = 40 - height; blackenedLeft > 0; blackenedLeft -= incremented) {
-            incremented = Math.min(blackenedLeft, 15);
-            guiGraphics.blitSprite(FLUID_BLACK_SPRITE, 15, 15, 0, 0,
-                    renderInfo.left(), renderInfo.top() + 40 - blackenedLeft - height, 15, incremented);
+        for (int blackenedLeft = getHeight() - 2 - height; blackenedLeft > 0; blackenedLeft -= incremented) {
+            incremented = Math.min(blackenedLeft, 16);
+            guiGraphics.blitSprite(FLUID_BLACK_SPRITE, 16, 16, 0, 0,
+                    renderInfo.left(), renderInfo.top() + getHeight() - 2 - blackenedLeft - height, 16, incremented);
         }
 
         // Draw the fluid bar highlight if needed.
         if (renderInfo.isHovering(getWidth(), getHeight()))
             guiGraphics.fillGradient(RenderType.guiOverlay(), renderInfo.left(), renderInfo.top(),
-                renderInfo.left() + 16, renderInfo.top() + 40, -2130706433, -2130706433, 0);
+                    renderInfo.left() + 16, renderInfo.top() + getHeight() - 2, -2130706433, -2130706433, 0);
 
-        if (renderInfo.isHovering(15, 40)) {
+        if (renderInfo.isHovering(16, getHeight() - 2)) {
             renderInfo.renderTooltip(guiGraphics, Component.translatable("screen.concocti.fluid_bar",
                     Component.translatable(getFluidTranslation()).getString(), stack.getAmount(), max));
         }
@@ -97,11 +101,13 @@ public class FluidBar<T extends AbstractContainerMenu> extends Renderable implem
     }
 
     @Override
-    public int getHeight() {
-        return 40;
+    public final int getHeight() {
+        return getBarHeight();
     }
 
-    /** Sets the fluid color from a packed int color. */
+    /**
+     * Sets the fluid color from a packed int color.
+     */
     private static void setFluidColor(int color) {
         float r = (color >> 16 & 255) / 255.0F;
         float g = (color >> 8 & 255) / 255.0F;
@@ -110,9 +116,11 @@ public class FluidBar<T extends AbstractContainerMenu> extends Renderable implem
         RenderSystem.setShaderColor(r, g, b, a);
     }
 
-    /** Renders a tiled texture atlas. */
+    /**
+     * Renders a tiled texture atlas.
+     */
     public static void renderTiledTextureAtlas(GuiGraphics matrices, AbstractContainerScreen<?> screen,
-               TextureAtlasSprite sprite, int x, int y, int width, int height, int depth, boolean upsideDown) {
+                                               TextureAtlasSprite sprite, int x, int y, int width, int height, int depth, boolean upsideDown) {
         // start drawing sprites
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderTexture(0, sprite.atlasLocation());

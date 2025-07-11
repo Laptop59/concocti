@@ -41,7 +41,8 @@ public class ConcoctiFrameSlot extends Slot implements IconSlot {
 
     /**
      * Adds an item that can be placed in a machine's frame slot into a list of such items.
-     * @param frame Item to add.
+     *
+     * @param frame      Item to add.
      * @param attributes Attributes on how this item performs as a frame.
      */
     public static void addAsFrameItem(DeferredItem<? extends Item> frame, FrameAttributes attributes) {
@@ -50,6 +51,7 @@ public class ConcoctiFrameSlot extends Slot implements IconSlot {
 
     /**
      * Provides the attributes of a frame on how well it performs as one. Returns {@code Optional.empty} if the item is not a known frame.
+     *
      * @param item Item to query.
      */
     public static Optional<FrameAttributes> getFrameAttributes(Item item) {

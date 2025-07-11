@@ -10,15 +10,18 @@ import io.github.laptop59.concocti.common.abstraction.Properties;
 import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
-import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineOnlyItemsFluidsBlockEntity;
 import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
 import io.github.laptop59.concocti.common.block.entity.FluidHandlerBlockEntity;
+import io.github.laptop59.concocti.common.detail.DetailCodec;
+import io.github.laptop59.concocti.common.detail.DetailHolder;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachineDetails;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachineOnlyItemsFluids;
 import io.github.laptop59.concocti.common.machine.InputOutput;
 import io.github.laptop59.concocti.common.machine.ItemsFluidsInputValue;
-import io.github.laptop59.concocti.common.menu.*;
+import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
+import io.github.laptop59.concocti.common.menu.IconSlot;
+import io.github.laptop59.concocti.common.menu.ResultSlot;
 import io.github.laptop59.concocti.common.recipe.ItemsFluidsRecipeInput;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
 import io.github.laptop59.concocti.integration.jei.AbstractConcoctiRecipeCategory;
@@ -30,7 +33,6 @@ import mezz.jei.api.recipe.RecipeIngredientRole;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -43,28 +45,21 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.*;
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeInput;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
@@ -73,8 +68,8 @@ import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static io.github.laptop59.concocti.common.Concocti.MODID;
@@ -87,7 +82,7 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
         ConcoctiSolidifier.Block,
         ConcoctiSolidifier.Screen,
         ConcoctiSolidifier.RecipeCategory
-> {
+        > {
     static ConcoctiSolidifier INSTANCE;
 
     // Details
@@ -99,7 +94,8 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
     private static final int OUTPUT_SLOT = 4;
 
     public Supplier<ConcoctiMachineDetails<BlockEntity, Menu, ItemsFluidsInputValue, ItemsFluidsRecipeInput, Recipe>> getDetails() {
-        return () -> new ConcoctiMachineDetails<BlockEntity, Menu, ItemsFluidsInputValue, ItemsFluidsRecipeInput, Recipe>(
+        return () -> new ConcoctiMachineDetails<>(
+                BlockEntity.class,
                 10_000,
                 10_000,
                 5,
@@ -124,7 +120,7 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
                 ),
                 new EnumMap<>(
                         Map.of(
-                                SlotType.FLUID_INPUT, List.of(blockEntity -> blockEntity.tank)
+                                SlotType.FLUID_INPUT, List.of(blockEntity -> blockEntity.fluidInput.get())
                         )
                 ),
                 InputOutput.of(
@@ -138,9 +134,10 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
                 ),
                 InputOutput.onlyInputs(
                         blockEntity -> List.of(
-                                blockEntity.tank
+                                blockEntity.fluidInput.get()
                         )
-                )
+                ),
+                null
         );
     }
 
@@ -159,44 +156,19 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
         INSTANCE = this;
     }
 
-    public BlockEntityConstructor<BlockEntity> getBlockEntityConstructor() {
-        return BlockEntity::new;
-    }
-
-    public BlockConstructor<Block> getBlockConstructor() {
-        return Block::new;
-    }
-
-    public MenuClientConstructor<Menu> getMenuClientConstructor() {
-        return Menu::new;
-    }
-
-    public ScreenConstructor<Menu, Screen> getScreenConstructor() {
-        return Screen::new;
-    }
-
-    public RecipeCategoryConstructor<RecipeCategory, Recipe, ItemsFluidsRecipeInput> getRecipeCategoryConstructor() {
-        return RecipeCategory::new;
-    }
-
-    public RecipeSerializerConstructor<Recipe.Serializer, Recipe, ItemsFluidsRecipeInput> getRecipeSerializerConstructor() {
-        return Recipe.Serializer::new;
-    }
-
-    public Class<Recipe> getRecipeClass() {
-        return Recipe.class;
-    }
-
     public static class BlockEntity extends AbstractConcoctiMachineOnlyItemsFluidsBlockEntity
             <BlockEntity, Menu, Recipe>
-        implements FluidHandlerBlockEntity {
+            implements FluidHandlerBlockEntity {
 
-        public record InputValue(ItemStack mold, FluidStack fluid, ItemStack baseItem) {}
+        public record InputValue(ItemStack mold, FluidStack fluid, ItemStack baseItem) {
+        }
 
-        public final FluidTank tank = new FluidTank(TANK_CAPACITY);
+        private final DetailHolder<FluidTank> fluidInput = new DetailHolder<>(
+                DetailCodec.FLUID_TANK, "fluid_input", new FluidTank(TANK_CAPACITY), this
+        );
 
         // Properties
-        public final Property<FluidStack> FLUID_INPUT = Properties.FLUID_INPUT.newWithLinker(tank::getFluid);
+        public final Property<FluidStack> FLUID_INPUT = Properties.FLUID_INPUT.newWithLinker(() -> fluidInput.get().getFluid());
 
         protected final ConcoctiMachineComplexion dataAccess = new ConcoctiMachineComplexion(
                 this,
@@ -217,15 +189,6 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
         @Override
         protected boolean isItemValidInMachine(int slot, @NotNull ItemStack stack) {
             return slot == MOLD_SLOT || slot == BASE_ITEM_SLOT;
-        }
-
-        @Override
-        protected Recipe getRecipe(ItemsFluidsInputValue input) {
-            RecipeManager recipeManager = getLevel().getRecipeManager();
-            return recipeManager
-                    .getRecipeFor(INSTANCE.RECIPE_TYPE.get(), recipeInputFrom(input), getLevel())
-                    .map(RecipeHolder::value)
-                    .orElse(null);
         }
 
         @Override
@@ -258,99 +221,33 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
                 if (mold.getDamageValue() >= mold.getMaxDamage()) mold.shrink(1);
             }
             // Reduce the fluids.
-            tank.drain(recipe.getInputFluid().amount(), IFluidHandler.FluidAction.EXECUTE);
+            fluidInput.get().drain(recipe.getInputFluid().amount(), IFluidHandler.FluidAction.EXECUTE);
         }
 
         @Override
         public List<IFluidHandler> getIndexedFluidHandlers() {
-            return List.of(tank);
-        }
-
-        @Override
-        protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
-            super.loadAdditional(tag, registries);
-            tank.setFluid(parseFluidStack((CompoundTag) tag.get("fluid_input"), registries));
-        }
-
-        @Override
-        protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
-            super.saveAdditional(tag, registries);
-            saveFluidStack("fluid_input", tag, tank, registries);
+            return List.of(fluidInput.get());
         }
 
         @Override
         public List<IFluidTank> getFluidTanks() {
-            return List.of(
-                    tank
-            );
+            return List.of(fluidInput.get());
         }
     }
 
-    public static class Block extends AbstractConcoctiMachineBlock {
-        public static final BooleanProperty LIT = BlockStateProperties.LIT;
-    
-        public static final MapCodec<Block> CODEC = simpleCodec(Block::new);
-    
+    public static class Block extends AbstractConcoctiMachineBlock<Block> {
         protected Block(Properties properties) {
             super(properties);
-            this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(LIT, Boolean.FALSE));
-        }
-    
-        @Override
-        public @NotNull MapCodec<Block> codec() {
-            return CODEC;
         }
 
-        // Return a new instance of our block entity here.
         @Override
-        public net.minecraft.world.level.block.entity.BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
-            return new BlockEntity(pos, state);
+        protected ConcoctiSolidifier getMachineInstance() {
+            return INSTANCE;
         }
-    
+
         @Override
-        protected void createBlockStateDefinition(StateDefinition.Builder<net.minecraft.world.level.block.Block, BlockState> builder) {
-            builder.add(FACING, LIT);
-        }
-    
-        @Override
-        protected @NotNull RenderShape getRenderShape(@NotNull BlockState state) {
-            return RenderShape.MODEL;
-        }
-    
-        @Override
-        protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hitResult) {
-            if (level.isClientSide()) {
-                return InteractionResult.SUCCESS;
-            } else {
-                MenuProvider provider = this.getMenuProvider(state, level, pos);
-                if (provider != null) {
-                    player.openMenu(provider);
-                }
-    
-                return InteractionResult.CONSUME;
-            }
-        }
-    
-        @Override
-        protected @NotNull ItemInteractionResult useItemOnMachine(@NotNull ItemStack stack, @NotNull BlockState state, Level level, @NotNull BlockPos pos,
-                                                                  @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hitResult) {
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-        }
-    
-        @Override
-        public BlockState getStateForPlacement(BlockPlaceContext context) {
-            return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
-        }
-    
-        @Nullable
-        protected static <T extends net.minecraft.world.level.block.entity.BlockEntity> BlockEntityTicker<T> createTicker(
-                Level level, BlockEntityType<T> serverType, BlockEntityType<? extends BlockEntity> clientType
-        ) {
-            return level.isClientSide ? null : createTickerHelper(serverType, clientType, BlockEntity::serverTick);
-        }
-    
-        public <T extends net.minecraft.world.level.block.entity.BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> blockEntityType) {
-            return createTicker(level, blockEntityType, INSTANCE.BLOCK_ENTITY.get());
+        protected Function<Properties, Block> getBlockConstructor() {
+            return Block::new;
         }
     }
 
@@ -627,14 +524,11 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
 
         @Override
         public @org.jetbrains.annotations.Nullable ItemStack handleOtherQuickMoves(ItemStack movedStack) {
-            // index 2 - mold slot
-            if (!this.getSlot(2).hasItem() && !this.moveItemStackTo(movedStack, 2, 3, true)) {
-                // index 3 - base slot
-                if (!this.getSlot(3).hasItem() && !this.moveItemStackTo(movedStack, 3, 4, true)) {
-                    return ItemStack.EMPTY;
-                }
-            }
-            return null;
+            // index 3 - base slot
+            if (this.moveItemStackTo(movedStack, 2, 4, true))
+                return ItemStack.EMPTY;
+            else
+                return null;
         }
 
         public FluidStack getInputFluidStack() {
@@ -648,7 +542,7 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
 
     public static class Screen extends AbstractConcoctiMachineScreen<Menu> {
 
-        private final FluidBar<Menu> fluid = new FluidBar<>(30, 28, this, menu, 0);
+        private final FluidBars.Tall<Menu> fluid = new FluidBars.Tall<>(30, 28, this, menu, 0);
 
         private final EnergyBar<Menu> energyBar = new EnergyBar<>(10, 18, this, menu);
         private final ArrowProgress arrowProgress = new ArrowProgress(85, 36);
@@ -689,7 +583,10 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
 
     public static class RecipeCategory extends AbstractConcoctiRecipeCategory<Recipe> {
 
-        private final ResourceLocation texture = ResourceLocation.fromNamespaceAndPath(MODID, "textures/gui/jei/concocti_solidifier.png");
+        @Override
+        protected ConcoctiSolidifier getMachineInstance() {
+            return INSTANCE;
+        }
 
         public RecipeCategory(IGuiHelper guiHelper) {
             super(guiHelper, new ItemStack(INSTANCE.BLOCK.get()));
@@ -706,12 +603,9 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
         }
 
         @Override
-        protected ResourceLocation getTexture() {
-            return texture;
+        protected int getHorizontalArrowOffset(@NotNull ConcoctiSolidifier.Recipe recipe) {
+            return 16;
         }
-
-        @Override
-        protected int getHorizontalArrowOffset(@NotNull ConcoctiSolidifier.Recipe recipe) { return 16; }
 
         @Override
         public void setRecipe(@NotNull IRecipeLayoutBuilder builder, Recipe recipe, @NotNull IFocusGroup focuses) {
@@ -728,5 +622,33 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
                     .addIngredient(VanillaTypes.ITEM_STACK, recipe.getOutputItem())
                     .setSlotName("output");
         }
+    }
+
+    public BlockEntityConstructor<BlockEntity> getBlockEntityConstructor() {
+        return BlockEntity::new;
+    }
+
+    public BlockConstructor<Block> getBlockConstructor() {
+        return Block::new;
+    }
+
+    public MenuClientConstructor<Menu> getMenuClientConstructor() {
+        return Menu::new;
+    }
+
+    public ScreenConstructor<Menu, Screen> getScreenConstructor() {
+        return Screen::new;
+    }
+
+    public RecipeCategoryConstructor<RecipeCategory, Recipe, ItemsFluidsRecipeInput> getRecipeCategoryConstructor() {
+        return RecipeCategory::new;
+    }
+
+    public RecipeSerializerConstructor<Recipe.Serializer, Recipe, ItemsFluidsRecipeInput> getRecipeSerializerConstructor() {
+        return Recipe.Serializer::new;
+    }
+
+    public Class<Recipe> getRecipeClass() {
+        return Recipe.class;
     }
 }

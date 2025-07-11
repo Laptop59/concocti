@@ -15,11 +15,11 @@ public class LivingEntityRendererMixin {
 
     @Inject(
             method = "getOverlayCoords", at = @At(value = "HEAD"),
-    cancellable = true)
+            cancellable = true)
     private static void concocti$getOverlayCoords(LivingEntity livingEntity, float u, CallbackInfoReturnable<Integer> cir) {
         cir.setReturnValue(
-                    // OverlayTexture.v(livingEntity.hurtTime > 0 || livingEntity.deathTime > 0)
-                    OverlayTexture.pack(OverlayTexture.u(u), ((livingEntity.hurtTime > 0 || livingEntity.deathTime > 0) ? 3 : (concocti$hasConcoctizedEffect(livingEntity) ? 2 : 10)))
+                // OverlayTexture.v(livingEntity.hurtTime > 0 || livingEntity.deathTime > 0)
+                OverlayTexture.pack(OverlayTexture.u(u), ((livingEntity.hurtTime > 0 || livingEntity.deathTime > 0) ? 3 : (concocti$hasConcoctizedEffect(livingEntity) ? 2 : 10)))
         );
     }
 

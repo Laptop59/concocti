@@ -13,9 +13,13 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.*;
 import java.util.List;
 
-/** A class representing a mold item. */
+/**
+ * A class representing a mold item.
+ */
 public class MoldItem extends Item {
-    /** Material of a mold. */
+    /**
+     * Material of a mold.
+     */
     public enum Material implements Comparable<Material> {
         COPPER(16, "copper", 19),
         DIAMOND(64, "diamond", 184);
@@ -35,7 +39,9 @@ public class MoldItem extends Item {
         }
     }
 
-    /** Type of mold. */
+    /**
+     * Type of mold.
+     */
     public enum Type implements Comparable<Type> {
         NUGGET("nugget", ResourceLocation.fromNamespaceAndPath("c", "nuggets")),
         INGOT("ingot", ResourceLocation.fromNamespaceAndPath("c", "ingots"));
@@ -72,8 +78,13 @@ public class MoldItem extends Item {
         return material.prefix + "_mold_base";
     }
 
-    public Type getType() { return type; }
-    public Material getMaterial() { return material; }
+    public Type getType() {
+        return type;
+    }
+
+    public Material getMaterial() {
+        return material;
+    }
 
     @Override
     public void appendHoverText(@NotNull ItemStack stack, @NotNull TooltipContext context,

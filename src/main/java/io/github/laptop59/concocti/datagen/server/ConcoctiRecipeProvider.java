@@ -38,7 +38,8 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
         super(output, registries);
     }
 
-    record ConcoctiMoldingSolidifierRecipe(ItemStack result, Ingredient input, FluidStack fluidStack, int ticks) {}
+    record ConcoctiMoldingSolidifierRecipe(ItemStack result, Ingredient input, FluidStack fluidStack, int ticks) {
+    }
 
     @Override
     protected void buildRecipes(@NotNull RecipeOutput output) {

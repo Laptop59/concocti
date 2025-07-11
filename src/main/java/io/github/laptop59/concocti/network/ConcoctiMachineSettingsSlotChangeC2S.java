@@ -10,11 +10,13 @@ import org.jetbrains.annotations.NotNull;
 
 import static io.github.laptop59.concocti.common.Concocti.MODID;
 
-/** A payload called when a player attempts to change a slot of a {@code MachineSettings}.
+/**
+ * A payload called when a player attempts to change a slot of a {@code MachineSettings}.
  * <p></p>
  * For the direction, false indicates previous while true indicates next.
- * */
-public record ConcoctiMachineSettingsSlotChangeC2S(Direction direction, boolean wasRightClicked, int containerId) implements CustomPacketPayload {
+ */
+public record ConcoctiMachineSettingsSlotChangeC2S(Direction direction, boolean wasRightClicked,
+                                                   int containerId) implements CustomPacketPayload {
 
     public static final Type<ConcoctiMachineSettingsSlotChangeC2S> TYPE =
             new Type<>(ResourceLocation.fromNamespaceAndPath(MODID, "concocti_machine_settings_slot_change"));

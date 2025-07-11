@@ -8,6 +8,10 @@ import io.github.laptop59.concocti.common.Concocti;
 import io.github.laptop59.concocti.common.abstraction.Properties;
 import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.frame.FrameAttributes;
+import io.github.laptop59.concocti.common.detail.DetailContext;
+import io.github.laptop59.concocti.common.detail.DetailHolder;
+import io.github.laptop59.concocti.common.detail.DetailHolders;
+import io.github.laptop59.concocti.common.detail.Details;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTankHandler;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTankSlotTypedHandler;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
@@ -18,7 +22,7 @@ import io.github.laptop59.concocti.common.menu.ConcoctiFrameSlot;
 import io.github.laptop59.concocti.common.menu.ConcoctiUpgradeSlot;
 import io.github.laptop59.concocti.common.menu.MenuServerConstructor;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
-import io.github.laptop59.concocti.common.util.LazyVariable;
+import io.github.laptop59.concocti.common.util.Lazy;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -61,6 +65,7 @@ import static io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBl
 /**
  * A class that serves as a base for Concocti Machines. <p>
  * Any {@link ContainerData} will have to be stored by the extending classes.
+ *
  * @param <T> The type of block entity (should be itself.)
  * @param <M> The type of menu of this block entity.
  * @param <V> The recipe input data (items, fluids, ...) this block entity will accept for checking any recipes. <p>
@@ -72,7 +77,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
         <T extends AbstractConcoctiMachineBlockEntity<T, M, V, I, R>,
                 M extends AbstractConcoctiMachineMenu<M>, V, I extends RecipeInput, R extends ProcessingRecipe<R, I>>
         extends AbstractPoweredBlockEntity
-        implements ItemHandlerBlockEntity, FluidHandlerBlockEntity {
+        implements ItemHandlerBlockEntity, FluidHandlerBlockEntity, Details {
 
     public int ticksLeft = 0;
     public int totalTicks = 0;
@@ -86,7 +91,8 @@ public abstract class AbstractConcoctiMachineBlockEntity
     public int autoCooldown = 0;
 
     public ConcoctiMachineDetails<T, M, V, I, R> machineDetails;
-    public final MachineSettings machineSettings = new MachineSettings(List.of());
+    public DetailHolders detailHolders = new DetailHolders();
+    public final MachineSettings machineSettings = new MachineSettings(List.of(SlotType.NONE));
 
     public static final int AUTO_COOLDOWN = 5;
     public static final int TANK_CAPACITY = 64000;
@@ -114,14 +120,19 @@ public abstract class AbstractConcoctiMachineBlockEntity
     public final Property<MachineSettingsSlots> MACHINE_SETTINGS_SLOTS =
             Properties.MACHINE_SETTINGS_SLOTS.newWithLinker(() -> machineSettings.slots);
 
-    protected final LazyVariable<IItemHandler> inputItemHandler;
+    protected final Lazy<IItemHandler> inputItemHandler;
+    protected final Lazy<IFluidHandler> inputFluidHandler;
+    protected final Lazy<IItemHandler> outputItemHandler;
+    protected final Lazy<IFluidHandler> outputFluidHandler;
 
-    protected final LazyVariable<IFluidHandler> inputFluidHandler;
-
-    /** Get the machine-specific details of this machine, uncached. Do not use this function for normal use. */
+    /**
+     * Get the machine-specific details of this machine, uncached. Do not use this function for normal use.
+     */
     protected abstract Supplier<ConcoctiMachineDetails<T, M, V, I, R>> getUncachedMachineDetails();
 
-    /** Get the machine-specific details of this machine and caches it if not done yet. */
+    /**
+     * Get the machine-specific details of this machine and caches it if not done yet.
+     */
     protected ConcoctiMachineDetails<T, M, V, I, R> getMachineDetails() {
         if (this.machineDetails != null) return this.machineDetails;
         ConcoctiMachineDetails<T, M, V, I, R> details = getUncachedMachineDetails().get();
@@ -129,7 +140,9 @@ public abstract class AbstractConcoctiMachineBlockEntity
         return details;
     }
 
-    /** Gets the item handler from a particular direction. */
+    /**
+     * Gets the item handler from a particular direction.
+     */
     public @Nullable IItemHandler getSidedItemHandler(Direction direction) {
         SlotType slotType = machineSettings.getSlot(direction);
         if (slotType != null && !slotType.isSet(SlotFlag.ITEM)) return null;
@@ -149,13 +162,15 @@ public abstract class AbstractConcoctiMachineBlockEntity
 
             @Override
             public @NotNull ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
-                if (slots.contains(slot) && (slotType == null || slotType.isSet(SlotFlag.INPUT))) return itemHandler.insertItem(slot, stack, simulate);
+                if (slots.contains(slot) && (slotType == null || slotType.isSet(SlotFlag.INPUT)))
+                    return itemHandler.insertItem(slot, stack, simulate);
                 return stack;
             }
 
             @Override
             public @NotNull ItemStack extractItem(int slot, int amount, boolean simulate) {
-                if (slots.contains(slot) && (slotType == null || slotType.isSet(SlotFlag.OUTPUT))) return itemHandler.extractItem(slot, amount, simulate);
+                if (slots.contains(slot) && (slotType == null || slotType.isSet(SlotFlag.OUTPUT)))
+                    return itemHandler.extractItem(slot, amount, simulate);
                 return ItemStack.EMPTY.copy();
             }
 
@@ -171,21 +186,27 @@ public abstract class AbstractConcoctiMachineBlockEntity
         };
     }
 
-    /** Negates whether eject is on and returns the new value. */
+    /**
+     * Negates whether eject is on and returns the new value.
+     */
     public boolean changeEjectOn() {
         ejectOn = !ejectOn;
         attemptToEject();
         return ejectOn;
     }
 
-    /** Negates whether pull is on and returns the new value. */
+    /**
+     * Negates whether pull is on and returns the new value.
+     */
     public boolean changePullOn() {
         pullOn = !pullOn;
         attemptToPull();
         return pullOn;
     }
 
-    /** Attempts to eject output items, fluids and energy. However, this is a no-op if eject is not enabled. */
+    /**
+     * Attempts to eject output items, fluids and energy. However, this is a no-op if eject is not enabled.
+     */
     public void attemptToEject() {
         if (!ejectOn) return;
         attemptToEjectItems();
@@ -193,14 +214,18 @@ public abstract class AbstractConcoctiMachineBlockEntity
         attemptToEjectEnergy();
     }
 
-    /** Attempts to pull input items and fluids. However, this is a no-op if pull is not enabled. */
+    /**
+     * Attempts to pull input items and fluids. However, this is a no-op if pull is not enabled.
+     */
     public void attemptToPull() {
         if (!pullOn) return;
         attemptToPullItems();
         attemptToPullFluids();
     }
 
-    /** Attempts to eject output items. However, this is <b>NOT</b> a no-op if pull is not enabled - it doesn't care whether pull is on or off. */
+    /**
+     * Attempts to eject output items. However, this is <b>NOT</b> a no-op if pull is not enabled - it doesn't care whether pull is on or off.
+     */
     protected void attemptToEjectItems() {
         for (Direction direction : machineSettings.slots.keySet()) {
             IItemHandler input = getSidedItemHandler(direction);
@@ -215,7 +240,9 @@ public abstract class AbstractConcoctiMachineBlockEntity
         }
     }
 
-    /** Attempts to eject output fluids. However, this is <b>NOT</b> a no-op if eject is not enabled - it doesn't care whether eject is on or off. */
+    /**
+     * Attempts to eject output fluids. However, this is <b>NOT</b> a no-op if eject is not enabled - it doesn't care whether eject is on or off.
+     */
     protected void attemptToEjectFluids() {
         for (Direction direction : machineSettings.slots.keySet()) {
             IFluidHandler input = getSidedFluidHandler(direction);
@@ -230,7 +257,9 @@ public abstract class AbstractConcoctiMachineBlockEntity
         }
     }
 
-    /** Attempts to eject output energy (if applicable). However, this is <b>NOT</b> a no-op if eject is not enabled - it doesn't care whether eject is on or off. */
+    /**
+     * Attempts to eject output energy (if applicable). However, this is <b>NOT</b> a no-op if eject is not enabled - it doesn't care whether eject is on or off.
+     */
     protected void attemptToEjectEnergy() {
         for (Direction direction : machineSettings.slots.keySet()) {
             SlotType slotType = machineSettings.getSlot(direction);
@@ -247,7 +276,9 @@ public abstract class AbstractConcoctiMachineBlockEntity
         }
     }
 
-    /** Attempts to pull input items. However, this is <b>NOT</b> a no-op if pull is not enabled - it doesn't care whether pull is on or off. */
+    /**
+     * Attempts to pull input items. However, this is <b>NOT</b> a no-op if pull is not enabled - it doesn't care whether pull is on or off.
+     */
     protected void attemptToPullItems() {
         for (Direction direction : machineSettings.slots.keySet()) {
             IItemHandler output = getSidedItemHandler(direction);
@@ -262,7 +293,9 @@ public abstract class AbstractConcoctiMachineBlockEntity
         }
     }
 
-    /** Attempts to pull input fluids. However, this is <b>NOT</b> a no-op if pull is not enabled - it doesn't care whether pull is on or off. */
+    /**
+     * Attempts to pull input fluids. However, this is <b>NOT</b> a no-op if pull is not enabled - it doesn't care whether pull is on or off.
+     */
     protected void attemptToPullFluids() {
         for (Direction direction : machineSettings.slots.keySet()) {
             IFluidHandler output = getSidedFluidHandler(direction);
@@ -279,8 +312,9 @@ public abstract class AbstractConcoctiMachineBlockEntity
 
     /**
      * Transfer items from one handler to another.
+     *
      * @param from Handler to take items from.
-     * @param to Handler to put items to.
+     * @param to   Handler to put items to.
      */
     protected static void transfer(@NotNull IItemHandler from, @NotNull IItemHandler to, boolean fillExistingStacks) {
         // Transfer all the items possible from `from` to `to`.
@@ -314,8 +348,9 @@ public abstract class AbstractConcoctiMachineBlockEntity
 
     /**
      * Transfer fluids from one handler to another.
+     *
      * @param from Handler to take fluids from.
-     * @param to Handler to put fluids to.
+     * @param to   Handler to put fluids to.
      */
     protected static void transfer(@NotNull IFluidHandler from, @NotNull IFluidHandler to) {
         int iterations = 0;
@@ -330,8 +365,9 @@ public abstract class AbstractConcoctiMachineBlockEntity
 
     /**
      * Transfer energy from one storage to another.
+     *
      * @param from Storage to extract energy from.
-     * @param to Storage to insert energy to.
+     * @param to   Storage to insert energy to.
      */
     protected static void transfer(@NotNull IEnergyStorage from, @NotNull IEnergyStorage to) {
         if (!from.canExtract() || !to.canReceive()) return;
@@ -343,8 +379,9 @@ public abstract class AbstractConcoctiMachineBlockEntity
     /**
      * Transfer fluids from one handler to another. This function is a fixed version of NeoForge's handler, which does
      * not handle multi-tank to multi-tank transactions properly.
-     * @param from Handler to take fluids from.
-     * @param to Handler to put fluids to.
+     *
+     * @param from      Handler to take fluids from.
+     * @param to        Handler to put fluids to.
      * @param maxAmount The maximum amount of fluid from a tank to take from the {@code from} handler.
      * @param simulated Whether the transfer is simulated or not.
      */
@@ -368,7 +405,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
                     FluidStack drained = from.drain(drainable, IFluidHandler.FluidAction.EXECUTE);
                     if (!drained.isEmpty()) {
                         drained.setAmount(to.fill(drained, IFluidHandler.FluidAction.EXECUTE));
-                         return drained;
+                        return drained;
                     }
                 } else {
                     return drainable;
@@ -378,7 +415,9 @@ public abstract class AbstractConcoctiMachineBlockEntity
         return FluidStack.EMPTY;
     }
 
-    /** Gets the fluid handler from a particular direction. */
+    /**
+     * Gets the fluid handler from a particular direction.
+     */
     public @Nullable IFluidHandler getSidedFluidHandler(Direction direction) {
         SlotType slotType = machineSettings.getSlot(direction);
         if (slotType != null && !slotType.isSet(SlotFlag.FLUID)) return null;
@@ -396,7 +435,8 @@ public abstract class AbstractConcoctiMachineBlockEntity
 
     /**
      * Tells whether an item is valid in a specific slot index.
-     * @param slot The slot index.
+     *
+     * @param slot  The slot index.
      * @param stack The item stack.
      * @return The item's validity.
      */
@@ -414,6 +454,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
                 () -> DynamicEnergyStorage.Mode.NONE
         );
         AbstractConcoctiMachineBlockEntity<T, M, V, I, R> blockEntity = this;
+        T blockEntityT = (T) blockEntity;
 
         // Now fill up the blank variables.
         ConcoctiMachineDetails<T, M, V, I, R> details = getMachineDetails();
@@ -422,26 +463,27 @@ public abstract class AbstractConcoctiMachineBlockEntity
         this.maxEnergyTransfer = details.maxEnergyTransfer();
         this.resetItemHandler(details.slots());
         this.rateConsumption = details.rateConsumption();
-        this.machineSettings.availableTypes = details.allowedSlotTypes();
+        this.machineSettings.availableTypes = new ArrayList<>(details.allowedSlotTypes());
+        this.machineSettings.availableTypes.addFirst(SlotType.NONE);
         this.setEnergyModeSupplier(details.energyMode());
 
         this.fluidHandler = new ConcoctiFluidTankHandler(blockEntity::getFluidTanks);
 
-        T blockEntityT = (T) blockEntity;
+        inputItemHandler = new Lazy<>(() -> itemHandler.whitelistSlots(
+            details.inputOutputSlots().getInputs().apply(blockEntityT)
+        ));
+        inputFluidHandler = new Lazy<>(() -> fluidHandler.whitelistTanks(
+            details.inputOutputFluids().getInputs().apply(blockEntityT)
+        ));
+        outputItemHandler = new Lazy<>(() -> itemHandler.whitelistSlots(
+            details.inputOutputSlots().getOutputs().apply(blockEntityT)
+        ));
+        outputFluidHandler = new Lazy<>(() -> fluidHandler.whitelistTanks(
+            details.inputOutputFluids().getOutputs().apply(blockEntityT)
+        ));
 
-        inputItemHandler = new LazyVariable<>(
-                () -> itemHandler.whitelistSlots(
-                        details.inputOutputSlots().getInputs().apply(blockEntityT)
-                )
-        );
-
-        inputFluidHandler = new LazyVariable<>(
-                () -> fluidHandler.whitelistTanks(
-                        details.inputOutputFluids().getInputs().apply(blockEntityT)
-                )
-        );
-
-        if (details.slots() < 2) throw new IllegalArgumentException("Expected at least two slots for upgrades and frame.");
+        if (details.slots() < 2)
+            throw new IllegalArgumentException("Expected at least two slots for upgrades and frame.");
     }
 
     @Contract(pure = true)
@@ -462,7 +504,9 @@ public abstract class AbstractConcoctiMachineBlockEntity
     @Override
     protected void setItems(@NotNull NonNullList<ItemStack> items) { /* Don't do anything. */ }
 
-    /** Creates a menu for this block entity. */
+    /**
+     * Creates a menu for this block entity.
+     */
     @Override
     @SuppressWarnings("unchecked")
     protected @NotNull M createMenu(int containerId, @NotNull Inventory inventory) {
@@ -470,33 +514,45 @@ public abstract class AbstractConcoctiMachineBlockEntity
         return menuClass.create(containerId, inventory, this, getMachineDetails().complexion().apply((T) this));
     }
 
-    /** Gives the amount of energy (in FE) that this block entity consumes per tick. */
+    /**
+     * Gives the amount of energy (in FE) that this block entity consumes per tick.
+     */
     protected int getTickEnergyIntake() {
         return (int) (getTickMultiplier() * rateConsumption);
     }
 
-    /** Gives the amount of energy (in FE) that this block entity consumes per tick. */
+    /**
+     * Gives the amount of energy (in FE) that this block entity consumes per tick.
+     */
     protected float getEnergyMultiplier() {
         return (float) (getTickEnergyIntake()) * (1 - getEfficiency()) / rateConsumption;
     }
 
-    /** Gives the amount of energy (in FE) that this block entity consumes per tick without considering efficiency. */
+    /**
+     * Gives the amount of energy (in FE) that this block entity consumes per tick without considering efficiency.
+     */
     protected float getInefficientEnergyMultiplier() {
         return (float) (getTickEnergyIntake()) / rateConsumption;
     }
 
-    /** Gives the tick process multiplier (tells how must faster a recipe is for this block entity). */
+    /**
+     * Gives the tick process multiplier (tells how must faster a recipe is for this block entity).
+     */
     protected int getTickMultiplier() {
         return (int) (getTickMultiplier(ConcoctiUpgradeSlot.getUpgradeUnits(getItem(UPGRADE_SLOT))) * getFrameMultiplier());
     }
 
-    /** Gives the tick process multiplier (tells how must faster a recipe is for this block entity) from upgrade units. */
+    /**
+     * Gives the tick process multiplier (tells how must faster a recipe is for this block entity) from upgrade units.
+     */
     public static int getTickMultiplier(int upgradeUnits) {
         double ticks = Math.pow(1.2, upgradeUnits);
         return (int) ticks + upgradeUnits;
     }
 
-    /** Gives the multiplier caused by an upgradable frame in this machine. */
+    /**
+     * Gives the multiplier caused by an upgradable frame in this machine.
+     */
     protected float getFrameMultiplier() {
         Optional<FrameAttributes> optionalFrameAttributes = ConcoctiFrameSlot.getFrameAttributes(getItem(FRAME_SLOT).getItem());
         if (optionalFrameAttributes.isPresent()) {
@@ -506,7 +562,9 @@ public abstract class AbstractConcoctiMachineBlockEntity
         return 1.0f;
     }
 
-    /** Gives the energy efficiency caused by an upgradable frame in this machine. */
+    /**
+     * Gives the energy efficiency caused by an upgradable frame in this machine.
+     */
     protected float getEfficiency() {
         Optional<FrameAttributes> optionalFrameAttributes = ConcoctiFrameSlot.getFrameAttributes(getItem(FRAME_SLOT).getItem());
         if (optionalFrameAttributes.isPresent()) {
@@ -516,7 +574,9 @@ public abstract class AbstractConcoctiMachineBlockEntity
         return 0.0f;
     }
 
-    /** Gives this block entity's recipe type. */
+    /**
+     * Gives this block entity's recipe type.
+     */
     public Supplier<RecipeType<R>> getRecipeType() {
         return getMachineDetails().recipeType();
     }
@@ -542,14 +602,17 @@ public abstract class AbstractConcoctiMachineBlockEntity
         return getMachineDetails().defaultName();
     }
 
-    /** Creates a {@link RecipeInput} for an input. */
+    /**
+     * Creates a {@link RecipeInput} for an input.
+     */
     protected abstract I recipeInputFrom(V input);
 
     /**
      * Gets a recipe from an input
+     *
      * @param input The input to get a recipe from.
      */
-    protected R getRecipe(V input) {
+    protected final R getRecipe(V input) {
         I recipeInput = recipeInputFrom(input);
         Level level = getLevel();
         if (level == null) return null;
@@ -562,11 +625,14 @@ public abstract class AbstractConcoctiMachineBlockEntity
         return optional.map(RecipeHolder::value).orElse(null);
     }
 
-    /** Gets an input (e.g. item) from this block entity. This can rely on a slot, fluid stack or something else. */
+    /**
+     * Gets an input (e.g. item) from this block entity. This can rely on a slot, fluid stack or something else.
+     */
     abstract protected V getInput();
 
     /**
      * Called when a recipe has finished. This should account for any products being made.
+     *
      * @param recipe The recipe that has completed.
      */
     abstract protected void onRecipeCompleted(R recipe);
@@ -631,12 +697,6 @@ public abstract class AbstractConcoctiMachineBlockEntity
         }
     }
 
-    public static <T extends AbstractConcoctiMachineBlockEntity<T, M, V, I, R>,
-            M extends AbstractConcoctiMachineMenu<M>, V, I extends RecipeInput, R extends ProcessingRecipe<R, I>>
-        void serverTick(Level level, BlockPos pos, BlockState state, AbstractConcoctiMachineBlockEntity<T, M, V, I, R> entity) {
-        entity.tick(level, pos, state);
-    }
-
     /**
      * Loads the last recipe ID, ticks left and total ticks for this block entity, along with items.
      * <p> This method should call {@code super.loadAdditional()} at the beginning and load everything else
@@ -668,6 +728,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
                 .getOrThrow();
         this.ejectOn = tag.contains("eject_on") && tag.getBoolean("eject_on");
         this.pullOn = tag.contains("pull_on") && tag.getBoolean("pull_on");
+        deserialize(new DetailContext(tag, registries, null));
     }
 
     /**
@@ -687,6 +748,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
         );
         tag.putBoolean("eject_on", this.ejectOn);
         tag.putBoolean("pull_on", this.pullOn);
+        serialize(new DetailContext(tag, registries, null));
     }
 
     @Override
@@ -745,4 +807,24 @@ public abstract class AbstractConcoctiMachineBlockEntity
     }
 
     abstract protected ConcoctiMachine<T, M, V, I, R, ?, ?, ?, ?> getMachineInstance();
+
+    @Override
+    public <HT> void add(DetailHolder<HT> holder) {
+        detailHolders.add(holder);
+    }
+
+    @Override
+    public void addAll(List<DetailHolder<?>> holderList) {
+        detailHolders.addAll(holderList);
+    }
+
+    @Override
+    public void serialize(DetailContext context) {
+        detailHolders.serialize(context);
+    }
+
+    @Override
+    public void deserialize(DetailContext context) {
+        detailHolders.deserialize(context);
+    }
 }
