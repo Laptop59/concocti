@@ -487,7 +487,7 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
             guiGraphics.blitSprite(
                     lightningStateSprite,
                     renderInfo.left() + 55,
-                    renderInfo.top() + 38,
+                    renderInfo.top() + 37,
                     16,
                     16
             );
