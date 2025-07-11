@@ -11,7 +11,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-/** A class representing a Concocti Upgrade item. */
+/**
+ * A class representing a Concocti Upgrade item.
+ */
 public class ConcoctiUpgradeItem extends Item {
     public ConcoctiUpgradeItem(Properties properties) {
         super(properties);
@@ -23,9 +25,10 @@ public class ConcoctiUpgradeItem extends Item {
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
         int units = ConcoctiUpgradeSlot.getUpgradeUnits(stack.copyWithCount(1));
         int totalUnits = ConcoctiUpgradeSlot.getUpgradeUnits(stack);
-        if (stack.getCount() > 1) tooltipComponents.add(Component.translatable("screen.concocti.upgrade_info", Component.literal(Integer.toString(totalUnits)).withColor(0xB69DFF))
-                .withStyle(ChatFormatting.GRAY)
-        );
+        if (stack.getCount() > 1)
+            tooltipComponents.add(Component.translatable("screen.concocti.upgrade_info", Component.literal(Integer.toString(totalUnits)).withColor(0xB69DFF))
+                    .withStyle(ChatFormatting.GRAY)
+            );
         tooltipComponents.add(Component.translatable("screen.concocti.single_upgrade_info", Component.literal(Integer.toString(units)).withColor(0xC6ADFF))
                 .withStyle(ChatFormatting.DARK_GRAY)
         );

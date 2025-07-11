@@ -64,7 +64,8 @@ public abstract class AbstractPoweredBlockEntity extends BaseContainerBlockEntit
 
     /**
      * Used to determine the validity of items of a slot of this block entity.
-     * @param slot The index of the slot.
+     *
+     * @param slot  The index of the slot.
      * @param stack The stack to determine validity for.
      * @return Whether the stack is valid for the slot.
      */

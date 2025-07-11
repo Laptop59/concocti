@@ -27,7 +27,7 @@ public abstract class AbstractConcoctiMachineScreen<M extends AbstractConcoctiMa
 
     public static final ResourceLocation SLOT_SPRITE = ResourceLocation.fromNamespaceAndPath(MODID, "container/concocti_machine_slot");
 
-    Cogwheel cogwheel = new Cogwheel(imageWidth - 21,  imageHeight - 29 - 18 * 4, this::onCogwheelClick);
+    Cogwheel cogwheel = new Cogwheel(imageWidth - 21, imageHeight - 29 - 18 * 4, this::onCogwheelClick);
     MachineSettingsComponent<M> machineSettingsComponent = new MachineSettingsComponent<>(this, menu);
     boolean machineSettingsVisibility = false;
 
@@ -39,7 +39,9 @@ public abstract class AbstractConcoctiMachineScreen<M extends AbstractConcoctiMa
         super(menu, playerInventory, title);
     }
 
-    /** Returns the required background texture of this screen. Can be overridden. */
+    /**
+     * Returns the required background texture of this screen. Can be overridden.
+     */
     protected @NotNull ResourceLocation getBgTexture() {
         return BG_TEXTURE;
     }
@@ -114,7 +116,7 @@ public abstract class AbstractConcoctiMachineScreen<M extends AbstractConcoctiMa
             if (slot instanceof IconSlot iconSlot) {
                 extraIcon = ResourceLocation.fromNamespaceAndPath(MODID, "container/slot_icons/" + iconSlot.getIcon().path);
             }
-            if (extraIcon != null) guiGraphics.blitSprite(extraIcon, x+1, y+1, 16, 16);
+            if (extraIcon != null) guiGraphics.blitSprite(extraIcon, x + 1, y + 1, 16, 16);
         }
 
         if (isHovering(upgradeSlot.x, upgradeSlot.y, 16, 16, renderInfo.mouseX(), renderInfo.mouseY()) && !upgradeSlot.hasItem()) {
@@ -148,7 +150,7 @@ public abstract class AbstractConcoctiMachineScreen<M extends AbstractConcoctiMa
             // Only check for clickable components.
             if (renderable instanceof ClickableComponent clickable) {
                 if (renderable.getActualRenderInfo(renderInfo).isHovering(renderable.getWidth(), renderable.getHeight()) &&
-                    clickable.onMouseClick(mouseX - leftPos, mouseY - topPos, button, this, menu)) return true;
+                        clickable.onMouseClick(mouseX - leftPos, mouseY - topPos, button, this, menu)) return true;
             }
         }
         if (!isMinecraftAbstractContainerUsableHere(renderInfo)) {

@@ -15,6 +15,8 @@ import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineOnlyItemsFluidsBlockEntity;
 import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
+import io.github.laptop59.concocti.common.detail.DetailCodec;
+import io.github.laptop59.concocti.common.detail.DetailHolder;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachineDetails;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachineOnlyItemsFluids;
 import io.github.laptop59.concocti.common.machine.InputOutput;
@@ -33,10 +35,8 @@ import mezz.jei.api.recipe.RecipeIngredientRole;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.nbt.CompoundTag;
@@ -45,28 +45,21 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.*;
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;
@@ -78,8 +71,8 @@ import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static io.github.laptop59.concocti.common.Concocti.MODID;
@@ -92,7 +85,7 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
         ConcoctiMixer.Block,
         ConcoctiMixer.Screen,
         ConcoctiMixer.RecipeCategory
-> {
+        > {
     static ConcoctiMixer INSTANCE;
 
     // Details
@@ -106,7 +99,8 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
     private static final int INPUT_SLOT_4 = 5;
 
     public Supplier<ConcoctiMachineDetails<BlockEntity, Menu, ItemsFluidsInputValue, ItemsFluidsRecipeInput, Recipe>> getDetails() {
-        return () -> new ConcoctiMachineDetails<BlockEntity, Menu, ItemsFluidsInputValue, ItemsFluidsRecipeInput, Recipe>(
+        return () -> new ConcoctiMachineDetails<>(
+                BlockEntity.class,
                 5_000,
                 5_000,
                 7,
@@ -142,17 +136,17 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
                 ),
                 new EnumMap<>(
                         Map.of(
-                                SlotType.FLUID_INPUT_1, List.of(blockEntity -> blockEntity.fluidInput1),
-                                SlotType.FLUID_INPUT_2, List.of(blockEntity -> blockEntity.fluidInput2),
-                                SlotType.FLUID_INPUT_3, List.of(blockEntity -> blockEntity.fluidInput3),
-                                SlotType.FLUID_INPUT_4, List.of(blockEntity -> blockEntity.fluidInput4),
+                                SlotType.FLUID_INPUT_1, List.of(blockEntity -> blockEntity.fluidInput1.get()),
+                                SlotType.FLUID_INPUT_2, List.of(blockEntity -> blockEntity.fluidInput2.get()),
+                                SlotType.FLUID_INPUT_3, List.of(blockEntity -> blockEntity.fluidInput3.get()),
+                                SlotType.FLUID_INPUT_4, List.of(blockEntity -> blockEntity.fluidInput4.get()),
                                 SlotType.ALL_FLUID_INPUTS, List.of(
-                                        blockEntity -> blockEntity.fluidInput1,
-                                        blockEntity -> blockEntity.fluidInput2,
-                                        blockEntity -> blockEntity.fluidInput3,
-                                        blockEntity -> blockEntity.fluidInput4
+                                        blockEntity -> blockEntity.fluidInput1.get(),
+                                        blockEntity -> blockEntity.fluidInput2.get(),
+                                        blockEntity -> blockEntity.fluidInput3.get(),
+                                        blockEntity -> blockEntity.fluidInput4.get()
                                 ),
-                                SlotType.FLUID_OUTPUT, List.of(blockEntity -> blockEntity.fluidOutput)
+                                SlotType.FLUID_OUTPUT, List.of(blockEntity -> blockEntity.fluidOutput.get())
                         )
                 ),
                 InputOutput.of(
@@ -168,15 +162,16 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
                 ),
                 InputOutput.of(
                         blockEntity -> List.of(
-                                blockEntity.fluidInput1,
-                                blockEntity.fluidInput2,
-                                blockEntity.fluidInput3,
-                                blockEntity.fluidInput4
+                                blockEntity.fluidInput1.get(),
+                                blockEntity.fluidInput2.get(),
+                                blockEntity.fluidInput3.get(),
+                                blockEntity.fluidInput4.get()
                         ),
                         blockEntity -> List.of(
-                                blockEntity.fluidOutput
+                                blockEntity.fluidOutput.get()
                         )
-                )
+                ),
+                ConcoctiSounds.CONCOCTI_MIXER_FIRE_CRACKLE.get()
         );
     }
 
@@ -195,50 +190,31 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
         INSTANCE = this;
     }
 
-    public BlockEntityConstructor<BlockEntity> getBlockEntityConstructor() {
-        return BlockEntity::new;
-    }
-
-    public BlockConstructor<Block> getBlockConstructor() {
-        return Block::new;
-    }
-
-    public MenuClientConstructor<Menu> getMenuClientConstructor() {
-        return Menu::new;
-    }
-
-    public ScreenConstructor<Menu, Screen> getScreenConstructor() {
-        return Screen::new;
-    }
-
-    public RecipeCategoryConstructor<RecipeCategory, Recipe, ItemsFluidsRecipeInput> getRecipeCategoryConstructor() {
-        return RecipeCategory::new;
-    }
-
-    public RecipeSerializerConstructor<Recipe.Serializer, Recipe, ItemsFluidsRecipeInput> getRecipeSerializerConstructor() {
-        return Recipe.Serializer::new;
-    }
-
-    public Class<Recipe> getRecipeClass() {
-        return Recipe.class;
-    }
-
     public static class BlockEntity extends AbstractConcoctiMachineOnlyItemsFluidsBlockEntity
             <BlockEntity, Menu, Recipe> {
 
-        // Tanks
-        private final FluidTank fluidInput1 = new FluidTank(TANK_CAPACITY);
-        private final FluidTank fluidInput2 = new FluidTank(TANK_CAPACITY);
-        private final FluidTank fluidInput3 = new FluidTank(TANK_CAPACITY);
-        private final FluidTank fluidInput4 = new FluidTank(TANK_CAPACITY);
-        private final FluidTank fluidOutput = new FluidTank(TANK_CAPACITY * 2);
+        private final DetailHolder<FluidTank> fluidInput1 = new DetailHolder<>(
+                DetailCodec.FLUID_TANK, "fluid_input_1", new FluidTank(TANK_CAPACITY), this
+        );
+        private final DetailHolder<FluidTank> fluidInput2 = new DetailHolder<>(
+                DetailCodec.FLUID_TANK, "fluid_input_2", new FluidTank(TANK_CAPACITY), this
+        );
+        private final DetailHolder<FluidTank> fluidInput3 = new DetailHolder<>(
+                DetailCodec.FLUID_TANK, "fluid_input_3", new FluidTank(TANK_CAPACITY), this
+        );
+        private final DetailHolder<FluidTank> fluidInput4 = new DetailHolder<>(
+                DetailCodec.FLUID_TANK, "fluid_input_4", new FluidTank(TANK_CAPACITY), this
+        );
+        private final DetailHolder<FluidTank> fluidOutput = new DetailHolder<>(
+                DetailCodec.FLUID_TANK, "fluid_output", new FluidTank(TANK_CAPACITY * 2), this
+        );
 
         // Properties
-        public final Property<FluidStack> FLUID_INPUT_1 = Properties.FLUID_INPUT_1.newWithLinker(fluidInput1::getFluid);
-        public final Property<FluidStack> FLUID_INPUT_2 = Properties.FLUID_INPUT_2.newWithLinker(fluidInput2::getFluid);
-        public final Property<FluidStack> FLUID_INPUT_3 = Properties.FLUID_INPUT_3.newWithLinker(fluidInput3::getFluid);
-        public final Property<FluidStack> FLUID_INPUT_4 = Properties.FLUID_INPUT_4.newWithLinker(fluidInput4::getFluid);
-        public final Property<FluidStack> FLUID_OUTPUT = Properties.FLUID_OUTPUT.newWithLinker(fluidOutput::getFluid);
+        public final Property<FluidStack> FLUID_INPUT_1 = Properties.FLUID_INPUT_1.newWithLinker(fluidInput1.get()::getFluid);
+        public final Property<FluidStack> FLUID_INPUT_2 = Properties.FLUID_INPUT_2.newWithLinker(fluidInput2.get()::getFluid);
+        public final Property<FluidStack> FLUID_INPUT_3 = Properties.FLUID_INPUT_3.newWithLinker(fluidInput3.get()::getFluid);
+        public final Property<FluidStack> FLUID_INPUT_4 = Properties.FLUID_INPUT_4.newWithLinker(fluidInput4.get()::getFluid);
+        public final Property<FluidStack> FLUID_OUTPUT = Properties.FLUID_OUTPUT.newWithLinker(fluidOutput.get()::getFluid);
 
         @Override
         protected ConcoctiMixer getMachineInstance() {
@@ -247,7 +223,13 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
 
         @Override
         public List<IFluidHandler> getIndexedFluidHandlers() {
-            return List.of(fluidInput1, fluidInput2, fluidInput3, fluidInput4, fluidOutput);
+            return List.of(
+                    fluidInput1.get(),
+                    fluidInput2.get(),
+                    fluidInput3.get(),
+                    fluidInput4.get(),
+                    fluidOutput.get()
+            );
         }
 
         @Override
@@ -274,7 +256,8 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
         public boolean canProcess() {
             if (!super.canProcess()) return false;
             Recipe recipe = getRecipe(getInput());
-            if (!recipe.matches(new ItemsFluidsRecipeInput(inputItemHandler.get(), inputFluidHandler.get()))) return false;
+            if (!recipe.matches(new ItemsFluidsRecipeInput(inputItemHandler.get(), inputFluidHandler.get())))
+                return false;
             // Check whether the fluids obtained from this item will not exceed our fluid limit.
             ItemStack outputSlotItems = getItem(OUTPUT_SLOT);
             ItemStack resultItems = recipe.getOutputItem();
@@ -283,145 +266,49 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
                     outputSlotItems.getCount() + resultItems.getCount() > outputSlotItems.getMaxStackSize())
                 return false;
             FluidStack resultFluid = recipe.getOutputFluid();
-            if (resultFluid != null && fluidHandler.fill(resultFluid, IFluidHandler.FluidAction.SIMULATE) != resultFluid.getAmount())
-                return false;
+            if (resultFluid != null && !resultFluid.isEmpty()) {
+                int actuallyFilled = fluidOutput.get().fill(resultFluid, IFluidHandler.FluidAction.SIMULATE);
+                int requiredFilled = resultFluid.getAmount();
+                if (actuallyFilled != requiredFilled)
+                    return false;
+            }
             return true;
         }
 
         @Override
-        protected Recipe getRecipe(ItemsFluidsInputValue inputValue) {
-            RecipeManager recipeManager = getLevel().getRecipeManager();
-            return recipeManager
-                    .getRecipeFor(INSTANCE.RECIPE_TYPE.get(), recipeInputFrom(inputValue), getLevel())
-                    .map(RecipeHolder::value)
-                    .orElse(null);
-        }
-
-        @Override
         protected void onRecipeCompleted(Recipe recipe) {
-           recipeInputFrom(getInput()).consume(recipe.getInputItems(), recipe.getInputFluids());
-           if (recipe.getOutputItem() != null)
-               itemHandler.insertItem(OUTPUT_SLOT, recipe.getOutputItem().copy(), false);
-           if (recipe.getOutputFluid() != null)
-               fluidOutput.fill(recipe.getOutputFluid().copy(), IFluidHandler.FluidAction.EXECUTE);
-        }
-
-        @Override
-        protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
-            super.loadAdditional(tag, registries);
-            fluidInput1.setFluid(parseFluidStack((CompoundTag) tag.get("fluid_input_1"), registries));
-            fluidInput2.setFluid(parseFluidStack((CompoundTag) tag.get("fluid_input_2"), registries));
-            fluidInput3.setFluid(parseFluidStack((CompoundTag) tag.get("fluid_input_3"), registries));
-            fluidInput4.setFluid(parseFluidStack((CompoundTag) tag.get("fluid_input_4"), registries));
-            fluidOutput.setFluid(parseFluidStack((CompoundTag) tag.get("fluid_output"), registries));
-        }
-
-        @Override
-        protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
-            super.saveAdditional(tag, registries);
-            saveFluidStack("fluid_input_1", tag, fluidInput1, registries);
-            saveFluidStack("fluid_input_2", tag, fluidInput2, registries);
-            saveFluidStack("fluid_input_3", tag, fluidInput3, registries);
-            saveFluidStack("fluid_input_4", tag, fluidInput4, registries);
-            saveFluidStack("fluid_output", tag, fluidOutput, registries);
+            recipeInputFrom(getInput()).consume(recipe.getInputItems(), recipe.getInputFluids());
+            if (recipe.getOutputItem() != null)
+                itemHandler.insertItem(OUTPUT_SLOT, recipe.getOutputItem().copy(), false);
+            if (recipe.getOutputFluid() != null)
+                fluidOutput.get().fill(recipe.getOutputFluid().copy(), IFluidHandler.FluidAction.EXECUTE);
         }
 
         @Override
         public List<IFluidTank> getFluidTanks() {
             return List.of(
-                    fluidInput1, fluidInput2, fluidInput3, fluidInput4, fluidOutput
+                    fluidInput1.get(),
+                    fluidInput2.get(),
+                    fluidInput3.get(),
+                    fluidInput4.get(),
+                    fluidOutput.get()
             );
         }
     }
 
-    public static class Block extends AbstractConcoctiMachineBlock {
-        public static final MapCodec<Block> CODEC = simpleCodec(Block::new);
-
+    public static class Block extends AbstractConcoctiMachineBlock<Block> {
         protected Block(Properties properties) {
             super(properties);
-            this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(LIT, Boolean.FALSE));
         }
 
         @Override
-        public @NotNull MapCodec<Block> codec() {
-            return CODEC;
-        }
-
-        // Return a new instance of our block entity here.
-        @Override
-        public net.minecraft.world.level.block.entity.BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
-            return new BlockEntity(pos, state);
+        protected ConcoctiMixer getMachineInstance() {
+            return INSTANCE;
         }
 
         @Override
-        protected void createBlockStateDefinition(StateDefinition.Builder<net.minecraft.world.level.block.Block, BlockState> builder) {
-            builder.add(FACING, LIT);
-        }
-
-        @Override
-        protected @NotNull RenderShape getRenderShape(@NotNull BlockState state) {
-            return RenderShape.MODEL;
-        }
-
-        @Override
-        public BlockState getStateForPlacement(BlockPlaceContext context) {
-            return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
-        }
-
-        @Override
-        public void animateTick(BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull RandomSource random) {
-            if (state.getValue(LIT)) {
-                double x = pos.getX() + 0.5;
-                double y = pos.getY();
-                double z = pos.getZ() + 0.5;
-                if (random.nextDouble() < 0.05) {
-                    level.playLocalSound(x, y, z, ConcoctiSounds.CONCOCTI_MIXER_FIRE_CRACKLE.get(), SoundSource.BLOCKS, 1.0F, 1.0F, false);
-                }
-                Direction direction = state.getValue(FACING);
-                Direction.Axis axis = direction.getAxis();
-                double d = random.nextDouble() * 0.6 - 0.3;
-                double dx = axis == Direction.Axis.X ? (double)direction.getStepX() * 0.52 : d;
-                double dy = random.nextDouble() * 9.0 / 16.0;
-                double dz = axis == Direction.Axis.Z ? (double)direction.getStepZ() * 0.52 : d;
-                level.addParticle(ParticleTypes.SMOKE, x + dx, y + dy, z + dz, 0.0, 0.0, 0.0);
-            }
-        }
-
-        @Override
-        protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hitResult) {
-            if (level.isClientSide()) {
-                return InteractionResult.SUCCESS;
-            } else {
-                MenuProvider provider = this.getMenuProvider(state, level, pos);
-                if (provider != null) {
-                    player.openMenu(provider);
-                }
-
-                return InteractionResult.CONSUME;
-            }
-        }
-
-        @Override
-        protected @NotNull ItemInteractionResult useItemOnMachine(@NotNull ItemStack stack, @NotNull BlockState state, Level level, @NotNull BlockPos pos,
-                                                                  @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hitResult) {
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-        }
-
-        @Override
-        public MenuProvider getMenuProvider(@NotNull BlockState state, Level level, @NotNull BlockPos pos) {
-            net.minecraft.world.level.block.entity.BlockEntity blockEntity = level.getBlockEntity(pos);
-            return blockEntity instanceof BlockEntity entity ? entity : null;
-        }
-
-        @Nullable
-        protected static <T extends net.minecraft.world.level.block.entity.BlockEntity> BlockEntityTicker<T> createTicker(
-                Level level, BlockEntityType<T> serverType, BlockEntityType<? extends BlockEntity> clientType
-        ) {
-            return level.isClientSide ? null : createTickerHelper(serverType, clientType, BlockEntity::serverTick);
-        }
-
-        public <T extends net.minecraft.world.level.block.entity.BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> blockEntityType) {
-            return createTicker(level, blockEntityType, INSTANCE.BLOCK_ENTITY.get());
+        protected Function<Properties, Block> getBlockConstructor() {
+            return Block::new;
         }
     }
 
@@ -668,12 +555,13 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
         @Override
         protected void addOtherSlots() {
             // Input slots
+            int y = 37 + 6;
             for (int i = 0; i < 4; i++) {
                 int slot = i + 2;
-                this.addSlot(new Slot(container, slot, 30 + i * 18, 37 + 15));
+                this.addSlot(new Slot(container, slot, 30 + i * 18, y));
             }
             // Output slot
-            this.addSlot(new ResultSlot(null, container, 6, 30 + 104, 37 + 15));
+            this.addSlot(new ResultSlot(null, container, 6, 30 + 104, y));
         }
 
         @Override
@@ -708,12 +596,12 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
 
     @OnlyIn(Dist.CLIENT)
     public static class Screen extends AbstractConcoctiMachineScreen<Menu> {
-        private final FluidBar<Menu> inputFluid1 = new FluidBar<>(30, 9, this, menu, 0);
-        private final FluidBar<Menu> inputFluid2 = new FluidBar<>(30+18, 9, this, menu, 1);
-        private final FluidBar<Menu> inputFluid3 = new FluidBar<>(30+36, 9, this, menu, 2);
-        private final FluidBar<Menu> inputFluid4 = new FluidBar<>(30+54, 9, this, menu, 3);
+        private final FluidBars.Square<Menu> inputFluid1 = new FluidBars.Square<>(30, 26, this, menu, 0);
+        private final FluidBars.Square<Menu> inputFluid2 = new FluidBars.Square<>(30 + 18, 26, this, menu, 1);
+        private final FluidBars.Square<Menu> inputFluid3 = new FluidBars.Square<>(30 + 36, 26, this, menu, 2);
+        private final FluidBars.Square<Menu> inputFluid4 = new FluidBars.Square<>(30 + 54, 26, this, menu, 3);
 
-        private final FluidBar<Menu> outputFluid = new FluidBar<>(30+104, 9, this, menu, 4);
+        private final FluidBars.Square<Menu> outputFluid = new FluidBars.Square<>(30 + 104, 26, this, menu, 4);
 
         private final EnergyBar<Menu> energyBar = new EnergyBar<>(10, 18, this, menu);
         private final ArrowProgress arrowProgress = new ArrowProgress(106, 34);
@@ -756,7 +644,7 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
 
             // Render the fluids.
             outputFluid.update(menu.getOutputFluidStack(), menu.getOutputFluidStackSize());
-            List<FluidBar<Menu>> fluidBars = List.of(inputFluid1, inputFluid2, inputFluid3, inputFluid4);
+            List<FluidBars.Square<Menu>> fluidBars = List.of(inputFluid1, inputFluid2, inputFluid3, inputFluid4);
             List<FluidStack> fluidStacks = menu.getInputFluidStacks();
             for (int i = 0; i < 4; i++) {
                 fluidBars.get(i).update(fluidStacks.get(i), menu.getInputFluidStackSize());
@@ -767,7 +655,11 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
     }
 
     public static class RecipeCategory extends AbstractConcoctiRecipeCategory<Recipe> {
-        private final ResourceLocation texture = ResourceLocation.fromNamespaceAndPath(MODID, "textures/gui/jei/concocti_mixer.png");
+        @Override
+        protected ConcoctiMixer getMachineInstance() {
+            return INSTANCE;
+        }
+
         private final int WIDTH = 176;
 
         public RecipeCategory(IGuiHelper guiHelper) {
@@ -784,12 +676,8 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
             return Component.translatable("block.concocti.concocti_mixer");
         }
 
-        @Override
-        protected ResourceLocation getTexture() {
-            return texture;
+        public record DrawInfo(List<Integer> slots, int arrowPos) {
         }
-
-        public record DrawInfo(List<Integer> slots, int arrowPos) {}
 
         public DrawInfo createDrawInfo(Recipe recipe) {
             int drawnSlots = 0;
@@ -800,11 +688,8 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
             int left = (WIDTH - drawnWidth) / 2;
             ArrayList<Integer> toBeDrawnSlots = new ArrayList<>(drawnSlots);
             // Add the recipe inputs.
-            for (SizedIngredient ingredient : recipe.getInputItems()) {
-                toBeDrawnSlots.add(left);
-                left += 18;
-            }
-            for (SizedFluidIngredient ingredient : recipe.getInputFluids()) {
+            int drawnInputSlots = recipe.getInputItems().size() + recipe.getInputFluids().size();
+            for (int i = 0; i < drawnInputSlots; i++) {
                 toBeDrawnSlots.add(left);
                 left += 18;
             }
@@ -841,8 +726,8 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
             i = 1;
             for (SizedFluidIngredient ingredient : recipe.getInputFluids()) {
                 IRecipeSlotBuilder slotBuilder =
-                    builder.addSlot(RecipeIngredientRole.INPUT, left, 6)
-                        .setSlotName("input_fluid_" + i);
+                        builder.addSlot(RecipeIngredientRole.INPUT, left, 6)
+                                .setSlotName("input_fluid_" + i);
                 for (FluidStack fluidStack : ingredient.getFluids())
                     slotBuilder.addFluidStack(fluidStack.getFluid(), fluidStack.getAmount());
                 i++;
@@ -875,6 +760,36 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
         }
 
         @Override
-        protected int getHorizontalArrowOffset(@NotNull ConcoctiMixer.Recipe recipe) { return createDrawInfo(recipe).arrowPos - 72; }
+        protected int getHorizontalArrowOffset(@NotNull ConcoctiMixer.Recipe recipe) {
+            return createDrawInfo(recipe).arrowPos - 72;
+        }
+    }
+
+    public BlockEntityConstructor<BlockEntity> getBlockEntityConstructor() {
+        return BlockEntity::new;
+    }
+
+    public BlockConstructor<Block> getBlockConstructor() {
+        return Block::new;
+    }
+
+    public MenuClientConstructor<Menu> getMenuClientConstructor() {
+        return Menu::new;
+    }
+
+    public ScreenConstructor<Menu, Screen> getScreenConstructor() {
+        return Screen::new;
+    }
+
+    public RecipeCategoryConstructor<RecipeCategory, Recipe, ItemsFluidsRecipeInput> getRecipeCategoryConstructor() {
+        return RecipeCategory::new;
+    }
+
+    public RecipeSerializerConstructor<Recipe.Serializer, Recipe, ItemsFluidsRecipeInput> getRecipeSerializerConstructor() {
+        return Recipe.Serializer::new;
+    }
+
+    public Class<Recipe> getRecipeClass() {
+        return Recipe.class;
     }
 }

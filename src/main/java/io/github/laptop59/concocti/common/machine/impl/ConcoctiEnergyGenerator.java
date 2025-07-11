@@ -28,9 +28,10 @@ import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.core.*;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeOutput;
@@ -40,31 +41,21 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.*;
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;
@@ -74,8 +65,8 @@ import net.neoforged.neoforge.registries.datamaps.builtin.NeoForgeDataMaps;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static io.github.laptop59.concocti.common.Concocti.MODID;
@@ -89,15 +80,17 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
         ConcoctiEnergyGenerator.Block,
         ConcoctiEnergyGenerator.Screen,
         ConcoctiEnergyGenerator.RecipeCategory
-> {
+        > {
     static ConcoctiEnergyGenerator INSTANCE;
 
     // Details
     public final static String ID = "concocti_energy_generator";
 
     public final static int INPUT_OUTPUT_SLOT = 2;
+
     public Supplier<ConcoctiMachineDetails<BlockEntity, Menu, ItemsFluidsInputValue, ItemsFluidsRecipeInput, Recipe>> getDetails() {
-        return () -> new ConcoctiMachineDetails<BlockEntity, Menu, ItemsFluidsInputValue, ItemsFluidsRecipeInput, Recipe>(
+        return () -> new ConcoctiMachineDetails<>(
+                BlockEntity.class,
                 100_000,
                 100_000,
                 3,
@@ -125,7 +118,8 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
                         blockEntity -> List.of(INPUT_OUTPUT_SLOT),
                         blockEntity -> List.of(INPUT_OUTPUT_SLOT)
                 ),
-                InputOutput.empty()
+                InputOutput.empty(),
+                ConcoctiSounds.CONCOCTI_ENERGY_GENERATOR_FIRE_CRACKLE.get()
         );
     }
 
@@ -142,34 +136,6 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
                 new ConcoctiBlocks.BlockData(ConcoctiBlocks.BlockToolRank.STONE, ConcoctiBlocks.BlockToolType.PICKAXE)
         );
         INSTANCE = this;
-    }
-
-    public BlockEntityConstructor<BlockEntity> getBlockEntityConstructor() {
-        return BlockEntity::new;
-    }
-
-    public BlockConstructor<Block> getBlockConstructor() {
-        return Block::new;
-    }
-
-    public MenuClientConstructor<Menu> getMenuClientConstructor() {
-        return Menu::new;
-    }
-
-    public ScreenConstructor<Menu, Screen> getScreenConstructor() {
-        return Screen::new;
-    }
-
-    public RecipeCategoryConstructor<RecipeCategory, Recipe, ItemsFluidsRecipeInput> getRecipeCategoryConstructor() {
-        return RecipeCategory::new;
-    }
-
-    public RecipeSerializerConstructor<Recipe.Serializer, Recipe, ItemsFluidsRecipeInput> getRecipeSerializerConstructor() {
-        return Recipe.Serializer::new;
-    }
-
-    public Class<Recipe> getRecipeClass() {
-        return Recipe.class;
     }
 
     public static class BlockEntity extends AbstractConcoctiMachineOnlyItemsFluidsBlockEntity
@@ -200,7 +166,9 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
             return this.getItem(INPUT_OUTPUT_SLOT);
         }
 
-        /** Returns 0 if the input item is not a fuel, otherwise return the number of ticks it would burn for. */
+        /**
+         * Returns 0 if the input item is not a fuel, otherwise return the number of ticks it would burn for.
+         */
         public int getFuelTicksFromOneInputItem() {
             ItemStack input = getInputStack();
             Holder<Item> holder = input.getItemHolder();
@@ -261,7 +229,8 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
         }
 
         @Override
-        protected void onRecipeCompleted(Recipe recipe) {}
+        protected void onRecipeCompleted(Recipe recipe) {
+        }
 
         @Override
         protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
@@ -279,96 +248,95 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
         }
     }
 
-    public static class Block extends AbstractConcoctiMachineBlock {
-        public static final BooleanProperty LIT = BlockStateProperties.LIT;
-
-        public static final MapCodec<Block> CODEC = simpleCodec(Block::new);
-
+    public static class Block extends AbstractConcoctiMachineBlock<Block> {
         protected Block(Properties properties) {
             super(properties);
-            this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(LIT, Boolean.FALSE));
         }
 
         @Override
-        public @NotNull MapCodec<Block> codec() {
-            return CODEC;
-        }
-
-        // Return a new instance of our block entity here.
-        @Override
-        public net.minecraft.world.level.block.entity.BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
-            return new BlockEntity(pos, state);
+        protected ConcoctiEnergyGenerator getMachineInstance() {
+            return INSTANCE;
         }
 
         @Override
-        protected void createBlockStateDefinition(StateDefinition.Builder<net.minecraft.world.level.block.Block, BlockState> builder) {
-            builder.add(FACING, LIT);
+        protected Function<Properties, Block> getBlockConstructor() {
+            return Block::new;
         }
+    }
 
+    public static class Menu extends AbstractConcoctiMachineMenu<Menu> {
+
+        @Contract(pure = true)
         @Override
-        protected @NotNull RenderShape getRenderShape(@NotNull BlockState state) {
-            return RenderShape.MODEL;
+        public List<Property<?>> getMachineSpecificProperties() {
+            return List.of();
         }
 
-        @Override
-        public BlockState getStateForPlacement(BlockPlaceContext context) {
-            return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
-        }
-
-        @Override
-        public void animateTick(BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull RandomSource random) {
-            if (state.getValue(LIT)) {
-                double x = pos.getX() + 0.5;
-                double y = pos.getY();
-                double z = pos.getZ() + 0.5;
-                if (random.nextDouble() < 0.1) {
-                    level.playLocalSound(x, y, z, ConcoctiSounds.CONCOCTI_ENERGY_GENERATOR_FIRE_CRACKLE.get(), SoundSource.BLOCKS, 1.0F, 1.0F, false);
-                }
-                Direction direction = state.getValue(FACING);
-                Direction.Axis axis = direction.getAxis();
-                double d = random.nextDouble() * 0.6 - 0.3;
-                double dx = axis == Direction.Axis.X ? (double)direction.getStepX() * 0.52 : d;
-                double dy = random.nextDouble() * 9.0 / 16.0;
-                double dz = axis == Direction.Axis.Z ? (double)direction.getStepZ() * 0.52 : d;
-                level.addParticle(ParticleTypes.SMOKE, x + dx, y + dy, z + dz, 0.0, 0.0, 0.0);
-            }
-        }
-
-        @Override
-        protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hitResult) {
-            if (level.isClientSide()) {
-                return InteractionResult.SUCCESS;
-            } else {
-                MenuProvider provider = this.getMenuProvider(state, level, pos);
-                if (provider != null) {
-                    player.openMenu(provider);
-                }
-
-                return InteractionResult.CONSUME;
-            }
-        }
-
-        @Override
-        protected @NotNull ItemInteractionResult useItemOnMachine(@NotNull ItemStack stack, @NotNull BlockState state, Level level, @NotNull BlockPos pos,
-                                                                  @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hitResult) {
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-        }
-
-        @Override
-        public MenuProvider getMenuProvider(@NotNull BlockState state, Level level, @NotNull BlockPos pos) {
-            net.minecraft.world.level.block.entity.BlockEntity blockEntity = level.getBlockEntity(pos);
-            return blockEntity instanceof BlockEntity entity ? entity : null;
-        }
-
-        @Nullable
-        protected static <T extends net.minecraft.world.level.block.entity.BlockEntity> BlockEntityTicker<T> createTicker(
-                Level level, BlockEntityType<T> serverType, BlockEntityType<? extends BlockEntity> clientType
+        // Client
+        public Menu(
+                int containerId, Inventory playerInventory
         ) {
-            return level.isClientSide ? null : createTickerHelper(serverType, clientType, BlockEntity::serverTick);
+            super(containerId, playerInventory, 3, INSTANCE.MENU);
         }
 
-        public <T extends net.minecraft.world.level.block.entity.BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> blockEntityType) {
-            return createTicker(level, blockEntityType, INSTANCE.BLOCK_ENTITY.get());
+        // Server
+        public Menu(int containerId, Inventory playerInventory, Container container, ContainerData data) {
+            super(containerId, playerInventory, container, data, INSTANCE.MENU);
+        }
+
+        @Override
+        protected void addOtherSlots() {
+            // Fuel item slot
+            this.addSlot(new Slot(container, 2, 75, 28));
+        }
+
+        @Override
+        public @org.jetbrains.annotations.Nullable ItemStack handleOtherQuickMoves(ItemStack movedStack) {
+            // index 2
+            if (!this.getSlot(2).hasItem() && !this.moveItemStackTo(movedStack, 2, 3, true)) {
+                return ItemStack.EMPTY;
+            }
+            return null;
+        }
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public static class Screen extends AbstractConcoctiMachineScreen<Menu> {
+        private final EnergyBar<Menu> energyBar = new EnergyBar<>(10, 18, this, menu);
+        private final FlameProgress flameProgress = new FlameProgress(76, 28 + 18 + 2);
+
+        public Screen(
+                Menu menu,
+                Inventory playerInventory,
+                Component title
+        ) {
+            super(menu, playerInventory, title);
+        }
+
+        public List<Renderable> getUniqueChildren() {
+            return List.of(
+                    flameProgress,
+                    energyBar
+            );
+        }
+
+        @Override
+        public List<Renderable> getChildren() {
+            ArrayList<Renderable> children = new ArrayList<>(super.getChildren());
+            children.addAll(getUniqueChildren());
+            return List.copyOf(children);
+        }
+
+        @Override
+        public void render(@NotNull GuiGraphics guiGraphics, RenderInfo renderInfo) {
+            // Don't forget to first render the abstract screen!
+            super.render(guiGraphics, renderInfo);
+
+            flameProgress.update(menu.getProgress());
+
+            energyBar.update(menu.getNumberEnergyLeft(false), menu.getNumberEnergyLeft(true));
+
+            renderChildren(guiGraphics, renderInfo, this.getUniqueChildren());
         }
     }
 
@@ -547,86 +515,12 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
         }
     }
 
-    public static class Menu extends AbstractConcoctiMachineMenu<Menu> {
-
-        @Contract(pure = true)
-        @Override
-        public List<Property<?>> getMachineSpecificProperties() {
-            return List.of();
-        }
-
-        // Client
-        public Menu(
-                int containerId, Inventory playerInventory
-        ) {
-            super(containerId, playerInventory, 3, INSTANCE.MENU);
-        }
-
-        // Server
-        public Menu(int containerId, Inventory playerInventory, Container container, ContainerData data) {
-            super(containerId, playerInventory, container, data, INSTANCE.MENU);
-        }
-
-        @Override
-        protected void addOtherSlots() {
-            // Fuel item slot
-            this.addSlot(new Slot(container, 2, 75, 28));
-        }
-
-        @Override
-        public @org.jetbrains.annotations.Nullable ItemStack handleOtherQuickMoves(ItemStack movedStack) {
-            // index 2
-            if (!this.getSlot(2).hasItem() && !this.moveItemStackTo(movedStack, 2, 3, true)) {
-                return ItemStack.EMPTY;
-            }
-            return null;
-        }
-    }
-
-    @OnlyIn(Dist.CLIENT)
-    public static class Screen extends AbstractConcoctiMachineScreen<Menu> {
-        private final EnergyBar<Menu> energyBar = new EnergyBar<>(10, 18, this, menu);
-        private final FlameProgress flameProgress = new FlameProgress(76, 28 + 18 + 2);
-
-        public Screen(
-                Menu menu,
-                Inventory playerInventory,
-                Component title
-        ) {
-            super(menu, playerInventory, title);
-        }
-
-        public List<Renderable> getUniqueChildren() {
-            return List.of(
-                    flameProgress,
-                    energyBar
-            );
-        }
-
-        @Override
-        public List<Renderable> getChildren() {
-            ArrayList<Renderable> children = new ArrayList<>(super.getChildren());
-            children.addAll(getUniqueChildren());
-            return List.copyOf(children);
-        }
-
-        @Override
-        public void render(@NotNull GuiGraphics guiGraphics, RenderInfo renderInfo) {
-            // Don't forget to first render the abstract screen!
-            super.render(guiGraphics, renderInfo);
-
-            flameProgress.update(menu.getProgress());
-
-            energyBar.update(menu.getNumberEnergyLeft(false), menu.getNumberEnergyLeft(true));
-
-            renderChildren(guiGraphics, renderInfo, this.getUniqueChildren());
-        }
-    }
-
     // This serves as a dummy RecipeCategory.
     public static class RecipeCategory extends AbstractConcoctiRecipeCategory<Recipe> {
-
-        private final ResourceLocation texture = ResourceLocation.fromNamespaceAndPath(MODID, "textures/gui/jei/concocti_energy_generator.png");
+        @Override
+        protected ConcoctiEnergyGenerator getMachineInstance() {
+            return INSTANCE;
+        }
 
         public RecipeCategory(IGuiHelper guiHelper) {
             super(guiHelper, new ItemStack(INSTANCE.BLOCK.get()));
@@ -644,12 +538,39 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
 
         @Override
         public void getTooltip(@NotNull ITooltipBuilder tooltip, @NotNull ConcoctiEnergyGenerator.Recipe recipe,
-                               @NotNull IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {}
+                               @NotNull IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
+        }
 
         @Override
-        protected ResourceLocation getTexture() { return texture; }
+        public void setRecipe(@NotNull IRecipeLayoutBuilder builder, @NotNull Recipe recipe, @NotNull IFocusGroup focuses) {
+        }
+    }
 
-        @Override
-        public void setRecipe(@NotNull IRecipeLayoutBuilder builder, @NotNull Recipe recipe, @NotNull IFocusGroup focuses) {}
+    public BlockEntityConstructor<BlockEntity> getBlockEntityConstructor() {
+        return BlockEntity::new;
+    }
+
+    public BlockConstructor<Block> getBlockConstructor() {
+        return Block::new;
+    }
+
+    public MenuClientConstructor<Menu> getMenuClientConstructor() {
+        return Menu::new;
+    }
+
+    public ScreenConstructor<Menu, Screen> getScreenConstructor() {
+        return Screen::new;
+    }
+
+    public RecipeCategoryConstructor<RecipeCategory, Recipe, ItemsFluidsRecipeInput> getRecipeCategoryConstructor() {
+        return RecipeCategory::new;
+    }
+
+    public RecipeSerializerConstructor<Recipe.Serializer, Recipe, ItemsFluidsRecipeInput> getRecipeSerializerConstructor() {
+        return Recipe.Serializer::new;
+    }
+
+    public Class<Recipe> getRecipeClass() {
+        return Recipe.class;
     }
 }

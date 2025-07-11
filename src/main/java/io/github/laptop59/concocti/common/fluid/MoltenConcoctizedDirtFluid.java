@@ -25,7 +25,7 @@ public abstract class MoltenConcoctizedDirtFluid extends BaseFlowingFluid {
                         ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT,
                         ConcoctiFluids.FLOWING_MOLTEN_CONCOCTIZED_DIRT
                 ).block(ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT_BLOCK)
-                .bucket(ConcoctiItems.MOLTEN_CONCOCTIZED_DIRT_BUCKET)
+                        .bucket(ConcoctiItems.MOLTEN_CONCOCTIZED_DIRT_BUCKET)
         );
     }
 

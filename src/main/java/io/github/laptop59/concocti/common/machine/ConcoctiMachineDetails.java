@@ -4,14 +4,16 @@ import io.github.laptop59.concocti.client.gui.components.SlotType;
 import io.github.laptop59.concocti.common.abstraction.ConcoctiMachineComplexion;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
 import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
+import io.github.laptop59.concocti.common.detail.DetailHolder;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.menu.MenuServerConstructor;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.neoforged.neoforge.fluids.IFluidTank;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -24,23 +26,28 @@ public record ConcoctiMachineDetails<
         V,
         I extends RecipeInput,
         R extends ProcessingRecipe<R, I>
->(
-    int maxEnergy,
-    int maxEnergyTransfer,
-    int slots,
-    float rateConsumption,
-    Supplier<DynamicEnergyStorage.Mode> energyMode,
+        >(
+        Class<T> blockEntityClass,
 
-    Supplier<RecipeType<R>> recipeType,
+        int maxEnergy,
+        int maxEnergyTransfer,
+        int slots,
+        float rateConsumption,
+        Supplier<DynamicEnergyStorage.Mode> energyMode,
 
-    Component defaultName,
-    List<SlotType> allowedSlotTypes,
-    MenuServerConstructor<M> menuServerConstructor,
+        Supplier<RecipeType<R>> recipeType,
 
-    Function<T, ConcoctiMachineComplexion> complexion,
-    EnumMap<SlotType, List<Integer>> itemSlotsMap,
-    EnumMap<SlotType, List<Function<T, IFluidTank>>> fluidSlotsMap,
+        Component defaultName,
+        List<SlotType> allowedSlotTypes,
+        MenuServerConstructor<M> menuServerConstructor,
 
-    InputOutput<Function<T, List<Integer>>> inputOutputSlots,
-    InputOutput<Function<T, List<IFluidTank>>> inputOutputFluids
-) {}
+        Function<T, ConcoctiMachineComplexion> complexion,
+        EnumMap<SlotType, List<Integer>> itemSlotsMap,
+        EnumMap<SlotType, List<Function<T, IFluidTank>>> fluidSlotsMap,
+
+        InputOutput<Function<T, List<Integer>>> inputOutputSlots,
+        InputOutput<Function<T, List<IFluidTank>>> inputOutputFluids,
+
+        @Nullable SoundEvent cracklingSoundEvent
+) {
+}

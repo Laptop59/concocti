@@ -27,46 +27,52 @@ public record RenderInfo(
         blocks.removeLast();
     }
 
-    /** A structure that allows blocking of tooltips at certain regions. */
-    public record Block(int left, int top, int width, int height) {}
+    /**
+     * A structure that allows blocking of tooltips at certain regions.
+     */
+    public record Block(int left, int top, int width, int height) {
+    }
 
     /**
      * Renders a tooltip conditionally based on the current {@code Block}s.
+     *
      * @param guiGraphics Graphics object to use for rendering.
-     * @param text The text of the tooltip to render.
+     * @param text        The text of the tooltip to render.
      */
     public void renderTooltip(GuiGraphics guiGraphics, Component text) {
         for (Block block : blocks()) {
             if (mouseX > block.left &&
-                mouseX < block.left + block.width &&
-                mouseY > block.top &&
-                mouseY < block.top + block.height) return;
+                    mouseX < block.left + block.width &&
+                    mouseY > block.top &&
+                    mouseY < block.top + block.height) return;
         }
         guiGraphics.renderTooltip(font, List.of(text.getVisualOrderText()), mouseX, mouseY);
     }
 
     /**
      * Checks if a cursor position is within the provided left, top, width, height of a rectangular region.
-     * @param x The left position of the rectangular region.
-     * @param y The up position of the rectangular region.
-     * @param width The width of the region.
+     *
+     * @param x      The left position of the rectangular region.
+     * @param y      The up position of the rectangular region.
+     * @param width  The width of the region.
      * @param height The height of the region.
      * @param mouseX The x-coordinate of the cursor.
      * @param mouseY The y-coordinate of the cursor.
      * @return Whether the cursor is within the specified rectangular region.
      */
     public static boolean isHovering(int x, int y, int width, int height, int mouseX, int mouseY) {
-        return mouseX >= (double)(x - 1)
-                && mouseX < (double)(x + width + 1)
-                && mouseY >= (double)(y - 1)
-                && mouseY < (double)(y + height + 1);
+        return mouseX >= (double) (x - 1)
+                && mouseX < (double) (x + width + 1)
+                && mouseY >= (double) (y - 1)
+                && mouseY < (double) (y + height + 1);
     }
 
     /**
      * Checks if a cursor position is within the provided left, top, width, height of a rectangular component.
+     *
      * @param renderInfo The provided render info of the component.
-     * @param width The width of the region.
-     * @param height The height of the region.
+     * @param width      The width of the region.
+     * @param height     The height of the region.
      * @return Whether the cursor is within the specified rectangular region.
      */
     public static boolean isHovering(RenderInfo renderInfo, int width, int height) {
@@ -75,7 +81,8 @@ public record RenderInfo(
 
     /**
      * Checks if a cursor position is within the provided left, top, width, height of this provided rectangular component.
-     * @param width The width of the region.
+     *
+     * @param width  The width of the region.
      * @param height The height of the region.
      * @return Whether the cursor is within the specified rectangular region.
      */
@@ -85,8 +92,9 @@ public record RenderInfo(
 
     /**
      * Adds an offset to the rendering information for the rendered element to be shifted.
+     *
      * @param left Number of pixels to shift from the left.
-     * @param top Number of pixels to shift from the top.
+     * @param top  Number of pixels to shift from the top.
      * @return a copied version of this object with the above changes. This does not mutate the original object.
      */
     public RenderInfo offset(int left, int top) {

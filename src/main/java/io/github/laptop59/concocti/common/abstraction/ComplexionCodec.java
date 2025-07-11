@@ -2,6 +2,7 @@ package io.github.laptop59.concocti.common.abstraction;
 
 import io.github.laptop59.concocti.client.gui.components.MachineSettingsSlots;
 import io.github.laptop59.concocti.client.gui.components.SlotType;
+import io.github.laptop59.concocti.common.recipe.LightningState;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -20,7 +21,7 @@ import org.jetbrains.annotations.NotNull;
  * @see Complexion
  * @see ValuedComplexionCodec
  * @see Property
- * */
+ */
 public record ComplexionCodec<T>(
         int size,
         ComplexionSerializer<T> serializer,
@@ -52,7 +53,7 @@ public record ComplexionCodec<T>(
     );
 
     public static final ComplexionCodec<Integer> INTEGER = new ComplexionCodec<>(
-        1,
+            1,
             (object, instance) -> instance.encode(object),
             Complexion::decode,
             "INTEGER"
@@ -127,7 +128,7 @@ public record ComplexionCodec<T>(
     );
 
     public static final ComplexionCodec<MachineSettingsSlots> MACHINE_SETTINGS_SLOTS = new ComplexionCodec<>(
-        6, // each slot occupies 1 integer.
+            6, // each slot occupies 1 integer.
             (object, instance) -> {
                 for (Direction direction : MachineSettingsSlots.SLOTS_ORDER) {
                     SLOT_TYPE.serialize(
@@ -153,28 +154,46 @@ public record ComplexionCodec<T>(
             "DIRECTION"
     );
 
-    /** Creates a read-only codec that allows the conversion that a complexion codec would do. */
-    public ComplexionCodec {}
+    public static final ComplexionCodec<LightningState> LIGHTNING_STATE = new ComplexionCodec<>(
+            1,
+            (object, instance) -> BOOLEAN.serialize(object.getLightningCollected(), instance),
+            instance -> new LightningState(BOOLEAN.deserialize(instance)),
+            "LIGHTNING_STATE"
+    );
 
-    /** Deserializes an object from a {@code Complexion} */
+    /**
+     * Creates a read-only codec that allows the conversion that a complexion codec would do.
+     */
+    public ComplexionCodec {
+    }
+
+    /**
+     * Deserializes an object from a {@code Complexion}
+     */
     @Override
     public T deserialize(Complexion instance) {
         return deserializer.deserialize(instance);
     }
 
-    /** Serializes an object from a {@code Complexion} */
+    /**
+     * Serializes an object from a {@code Complexion}
+     */
     @Override
     public void serialize(T object, Complexion instance) {
         serializer.serialize(object, instance);
     }
 
-    /** Creates a unique complexion codec, now called a {@code Property}, whose identity cannot be recreated. */
+    /**
+     * Creates a unique complexion codec, now called a {@code Property}, whose identity cannot be recreated.
+     */
     public Property<T> unique() {
         return new Property<>(this);
     }
 
-    /** Creates a unique complexion codec, now called a {@code Property}, whose identity cannot be recreated. This
-     * also loosely links to an object. */
+    /**
+     * Creates a unique complexion codec, now called a {@code Property}, whose identity cannot be recreated. This
+     * also loosely links to an object.
+     */
     public Property<T> link(Linker<T> linker) {
         return new Property<>(this, linker);
     }

@@ -1,8 +1,9 @@
 package io.github.laptop59.concocti.integration.jei;
 
 import io.github.laptop59.concocti.common.Concocti;
-import io.github.laptop59.concocti.common.machine.*;
-import io.github.laptop59.concocti.common.recipe.*;
+import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
+import io.github.laptop59.concocti.common.machine.ConcoctiMachines;
+import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.VanillaTypes;
@@ -75,7 +76,7 @@ public class ConcoctiJeiPlugin implements IModPlugin {
         registration.addRecipeCatalyst(new ItemStack(machine.BLOCK.get()), machine.JEI_RECIPE_TYPE);
     }
 
-    private <C extends AbstractConcoctiRecipeCategory<R>,R extends ProcessingRecipe<R, I>, I extends RecipeInput> void registerRecipeCategoryFor(
+    private <C extends AbstractConcoctiRecipeCategory<R>, R extends ProcessingRecipe<R, I>, I extends RecipeInput> void registerRecipeCategoryFor(
             IRecipeCategoryRegistration registration,
             IGuiHelper guiHelper,
             ConcoctiMachine<?, ?, ?, I, R, ?, ?, ?, C> machine

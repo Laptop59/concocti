@@ -25,6 +25,7 @@ import java.util.function.Supplier;
 
 /**
  * A class which serves as a base for a Concocti Machine's menu.
+ *
  * @param <T> The type of menu. Should be itself.
  */
 public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMachineMenu<T>> extends AbstractContainerMenu {
@@ -74,7 +75,7 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
 
     private AbstractConcoctiMachineMenu(
             int containerId, Inventory playerInventory, Container container, ContainerData data,
-                                       Supplier<MenuType<T>> menuSupplier, boolean ignoredViewer) {
+            Supplier<MenuType<T>> menuSupplier, boolean ignoredViewer) {
         super(menuSupplier.get(), containerId);
         this.container = container;
         this.data = data;
@@ -100,7 +101,9 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
         this.addDataSlots(data);
     }
 
-    /** Gets all properties synced by a {@link ContainerData} for this menu. */
+    /**
+     * Gets all properties synced by a {@link ContainerData} for this menu.
+     */
     @Contract(pure = true)
     public abstract List<Property<?>> getMachineSpecificProperties();
 
@@ -137,22 +140,30 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
         };
     }
 
-    /** Gets the machine settings slots associated with this menu. */
+    /**
+     * Gets the machine settings slots associated with this menu.
+     */
     public MachineSettingsSlots getMachineSettingsSlots() {
         return viewer.get(Properties.MACHINE_SETTINGS_SLOTS);
     }
 
-    /** Whether this machine is set to eject. */
+    /**
+     * Whether this machine is set to eject.
+     */
     public boolean shouldEject() {
         return viewer.get(Properties.EJECT_ON);
     }
 
-    /** Whether this machine is set to pull. */
+    /**
+     * Whether this machine is set to pull.
+     */
     public boolean shouldPull() {
         return viewer.get(Properties.PULL_ON);
     }
 
-    /** Gets the facing direction of this machine. */
+    /**
+     * Gets the facing direction of this machine.
+     */
     public Direction getFacingDirection() {
         return viewer.get(Properties.FACING_DIRECTION);
     }
@@ -224,17 +235,23 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
         this.container.stopOpen(player);
     }
 
-    /** Gets all slots of this menu without the base slots. */
+    /**
+     * Gets all slots of this menu without the base slots.
+     */
     public NonNullList<Slot> getSpecificSlots() {
         return NonNullList.copyOf(this.slots.stream().skip(2).toList());
     }
 
-    /** Gets both the upgrade and frame slots of this menu. */
+    /**
+     * Gets both the upgrade and frame slots of this menu.
+     */
     public NonNullList<Slot> getBaseSlots() {
         return NonNullList.copyOf(this.slots.stream().limit(2).toList());
     }
 
-    /** Gets all the machine-specific slots of this menu. */
+    /**
+     * Gets all the machine-specific slots of this menu.
+     */
     public List<Slot> getMachineSlots() {
         return this.slots.subList(0, container.getContainerSize());
     }
@@ -245,15 +262,22 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
         return left != 0 && total != 0 ? Mth.clamp((float) (total - left) / total, 0.0F, 1.0F) : 0.0F;
     }
 
-    /** Returns the amount of energy/maximum energy left in this block. */
+    /**
+     * Returns the amount of energy/maximum energy left in this block.
+     */
     public int getNumberEnergyLeft(boolean max) {
         Property<Integer> property =
                 max ? Properties.MAX_ENERGY_STORED : Properties.ENERGY_STORED;
         return viewer.get(property);
     }
 
-    public ConcoctiUpgradeSlot getUpgradeSlot() { return (ConcoctiUpgradeSlot) this.getSlot(0); }
-    public ConcoctiFrameSlot getFrameSlot() { return (ConcoctiFrameSlot) this.getSlot(1); }
+    public ConcoctiUpgradeSlot getUpgradeSlot() {
+        return (ConcoctiUpgradeSlot) this.getSlot(0);
+    }
+
+    public ConcoctiFrameSlot getFrameSlot() {
+        return (ConcoctiFrameSlot) this.getSlot(1);
+    }
 
     public Container getContainer() {
         return container;

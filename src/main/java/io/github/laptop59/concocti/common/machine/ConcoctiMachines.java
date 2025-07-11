@@ -31,5 +31,6 @@ public final class ConcoctiMachines {
         MACHINES.forEach(consumer);
     }
 
-    private ConcoctiMachines() {}
+    private ConcoctiMachines() {
+    }
 }

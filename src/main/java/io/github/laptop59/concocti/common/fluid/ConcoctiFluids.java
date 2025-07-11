@@ -19,15 +19,15 @@ public class ConcoctiFluids {
     public static final DeferredHolder<FluidType, FluidType> MOLTEN_CONCOCTI_FLUID_TYPE = ConcoctiRegisters.FLUID_TYPES.register("molten_concocti",
             (loc) -> new FluidType(
                     FluidType.Properties.create()
-                    .temperature(300)
-                    .lightLevel(13)
-                    .viscosity(1500)
-                    .density(10)
-                    .canConvertToSource(false)
-                    .canDrown(false)
-                    .canSwim(true)
+                            .temperature(300)
+                            .lightLevel(13)
+                            .viscosity(1500)
+                            .density(10)
+                            .canConvertToSource(false)
+                            .canDrown(false)
+                            .canSwim(true)
             )
-        );
+    );
 
     public static final DeferredBlock<LiquidBlock> MOLTEN_CONCOCTI_BLOCK = ConcoctiBlocks.registerFluidBlock("molten_concocti", MOLTEN_CONCOCTI,
             BlockBehaviour.Properties.ofFullCopy(Blocks.LAVA).mapColor(DyeColor.PURPLE)

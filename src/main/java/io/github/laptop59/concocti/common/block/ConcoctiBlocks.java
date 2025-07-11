@@ -3,7 +3,9 @@ package io.github.laptop59.concocti.common.block;
 import io.github.laptop59.concocti.common.ConcoctiRegisters;
 import io.github.laptop59.concocti.common.block.frame.FrameBlock;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.TransparentBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
@@ -19,15 +21,15 @@ public class ConcoctiBlocks {
 
     public static final DeferredBlock<Block> DIAMETHYST_BLOCK = registerBlock("diamethyst_block", Block::new,
             BlockBehaviour.Properties.of().mapColor(DyeColor.LIGHT_BLUE).requiresCorrectToolForDrops().explosionResistance(6).strength(6f),
-    new BlockData(BlockToolRank.IRON, BlockToolType.PICKAXE));
+            new BlockData(BlockToolRank.IRON, BlockToolType.PICKAXE));
 
     public static final DeferredBlock<Block> DIRTY_CONCOCTI_BLOCK = registerBlock("dirty_concocti_block", Block::new,
             BlockBehaviour.Properties.of().mapColor(DyeColor.PURPLE).requiresCorrectToolForDrops().explosionResistance(8).strength(3f),
-    new BlockData(BlockToolRank.STONE, BlockToolType.PICKAXE));
+            new BlockData(BlockToolRank.STONE, BlockToolType.PICKAXE));
 
     public static final DeferredBlock<Block> PURIFIED_CONCOCTI_BLOCK = registerBlock("purified_concocti_block", Block::new,
             BlockBehaviour.Properties.of().mapColor(DyeColor.MAGENTA).requiresCorrectToolForDrops().explosionResistance(10).strength(3.5f),
-    new BlockData(BlockToolRank.IRON, BlockToolType.PICKAXE));
+            new BlockData(BlockToolRank.IRON, BlockToolType.PICKAXE));
 
     public static final DeferredBlock<Block> TOUGH_CONCOCTI_BLOCK = registerBlock("tough_concocti_block", Block::new,
             BlockBehaviour.Properties.of().mapColor(DyeColor.MAGENTA).requiresCorrectToolForDrops().explosionResistance(20).strength(9f),
@@ -97,10 +99,12 @@ public class ConcoctiBlocks {
 
     /**
      * Stores data related to how tags should describe this block.
+     *
      * @param toolRank The rank of tool (stone/iron).
      * @param toolType The type of tool (pickaxe).
      */
-    public record BlockData(BlockToolRank toolRank, BlockToolType toolType) {}
+    public record BlockData(BlockToolRank toolRank, BlockToolType toolType) {
+    }
 
     public enum BlockToolRank {
         STONE("stone"),

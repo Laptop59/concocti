@@ -16,7 +16,7 @@ public abstract class MoltenLightningFluid extends BaseFlowingFluid {
                         ConcoctiFluids.MOLTEN_LIGHTNING,
                         ConcoctiFluids.FLOWING_MOLTEN_LIGHTNING
                 ).block(ConcoctiFluids.MOLTEN_LIGHTNING_BLOCK)
-                .levelDecreasePerBlock(2)
+                        .levelDecreasePerBlock(2)
         );
     }
 

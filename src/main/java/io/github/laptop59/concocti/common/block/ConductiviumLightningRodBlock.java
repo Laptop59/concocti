@@ -13,7 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import org.jetbrains.annotations.NotNull;
 
-public class ConductiviumLightningRodBlock extends LightningRodBlock  {
+public class ConductiviumLightningRodBlock extends LightningRodBlock {
     public ConductiviumLightningRodBlock(Properties properties) {
         super(properties);
     }
@@ -21,7 +21,7 @@ public class ConductiviumLightningRodBlock extends LightningRodBlock  {
     @Override
     public void animateTick(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull RandomSource random) {
         if (level.isThundering()
-                && (long)level.random.nextInt(50) <= level.getGameTime() % 200L
+                && (long) level.random.nextInt(50) <= level.getGameTime() % 200L
                 && pos.getY() == level.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX(), pos.getZ()) - 1) {
             ParticleUtils.spawnParticlesAlongAxis(
                     state.getValue(FACING).getAxis(), level, pos, 0.150, ParticleTypes.ELECTRIC_SPARK, UniformInt.of(1, 2)

@@ -9,17 +9,23 @@ public final class ValuedComplexionCodec<T> {
         this.object = object;
     }
 
-    /** Get the property stored within this object. */
+    /**
+     * Get the property stored within this object.
+     */
     public Property<T> complexionCodec() {
         return property;
     }
 
-    /** Get the stored default value of this object. */
+    /**
+     * Get the stored default value of this object.
+     */
     public T object() {
         return object;
     }
 
-    /** Set the new default value of this object. */
+    /**
+     * Set the new default value of this object.
+     */
     public void setNewValue(T object) {
         this.object = object;
     }

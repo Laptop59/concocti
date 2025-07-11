@@ -6,15 +6,26 @@ import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class ConcoctiItemStackHandler extends ItemStackHandler {
-    public ConcoctiItemStackHandler() { super(); }
-    public ConcoctiItemStackHandler(int slots) { super(slots); }
+    public ConcoctiItemStackHandler() {
+        super();
+    }
 
-    private boolean indexInvalid(int slot) { return slot >= getSlots(); }
+    public ConcoctiItemStackHandler(int slots) {
+        super(slots);
+    }
 
-    protected void validate(int slot) {  if (indexInvalid(slot)) throw new IllegalArgumentException("Size of slots is " + getSlots() + ", got: " + slot); }
+    private boolean indexInvalid(int slot) {
+        return slot >= getSlots();
+    }
+
+    protected void validate(int slot) {
+        if (indexInvalid(slot)) throw new IllegalArgumentException("Size of slots is " + getSlots() + ", got: " + slot);
+    }
 
     @Override
     public int getSlotLimit(int slot) {
@@ -30,7 +41,9 @@ public class ConcoctiItemStackHandler extends ItemStackHandler {
         this.stacks = stacks;
     }
 
-    /** Creates an item handler around this handler that only shows the provided slots and hides everything else. */
+    /**
+     * Creates an item handler around this handler that only shows the provided slots and hides everything else.
+     */
     public IItemHandler whitelistSlots(List<Integer> slots) {
         Set<Integer> whitelisted = new HashSet<>(slots.size());
         whitelisted.addAll(slots);

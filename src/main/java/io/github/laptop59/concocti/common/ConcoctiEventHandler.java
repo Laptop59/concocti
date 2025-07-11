@@ -7,6 +7,7 @@ import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingConversionEvent;
+
 @EventBusSubscriber(modid = "concocti", bus = EventBusSubscriber.Bus.GAME)
 public class ConcoctiEventHandler {
     @SubscribeEvent
@@ -15,7 +16,8 @@ public class ConcoctiEventHandler {
         Level level = event.getEntity().level();
         if (level.isClientSide()) return;
         if (level instanceof ServerLevel serverLevel) {
-            for (ServerPlayer player : serverLevel.players()) ConcoctizedEntitiesPayloadHandler.updateEntities(level, player);
+            for (ServerPlayer player : serverLevel.players())
+                ConcoctizedEntitiesPayloadHandler.updateEntities(level, player);
         }
     }
 }

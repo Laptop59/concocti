@@ -17,7 +17,9 @@ import static io.github.laptop59.concocti.common.Concocti.MODID;
 
 @Mixin(Gui.class)
 public abstract class GuiMixin {
-    @Shadow @Nullable protected abstract Player getCameraPlayer();
+    @Shadow
+    @Nullable
+    protected abstract Player getCameraPlayer();
 
     @Inject(
             method = "renderHeart", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;enableBlend()V", shift = At.Shift.AFTER),

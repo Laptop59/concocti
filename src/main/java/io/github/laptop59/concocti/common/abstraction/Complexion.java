@@ -17,18 +17,18 @@ import java.util.function.Consumer;
  * <p>
  * 2. Inside your class put multiple of the following, each being a distinct property as shown below:
  * <p>
- *      {@code public static final Property<T> yourPropertyName = ComplexionCodec.CODEC_NAME.unique()}
+ * {@code public static final Property<T> yourPropertyName = ComplexionCodec.CODEC_NAME.unique()}
  * <p>
- *    This requires a particular codec and object type. Example:
+ * This requires a particular codec and object type. Example:
  * <p>
- *     {@code T} = {@code Integer}, {@code CODEC_NAME} = {@code INTEGER}.
+ * {@code T} = {@code Integer}, {@code CODEC_NAME} = {@code INTEGER}.
  * <p>
  * 3. Create your constructors where you will construct your own complexion using its vararg constructor.
  * <p>
  * 4. Make sure to override the default constructor.
  * <p>
  * 5. Your {@code Complexion} can now act as a ContainerData
- *    and abstract over its integers!
+ * and abstract over its integers!
  */
 public class Complexion implements ContainerData {
     protected final int sizeIntegers;
@@ -36,12 +36,16 @@ public class Complexion implements ContainerData {
     protected final Property<?>[] properties;
     protected int pointer;
 
-    /** Creates a new {@code Complexion} instance with the specified codecs and values. */
+    /**
+     * Creates a new {@code Complexion} instance with the specified codecs and values.
+     */
     public Complexion(ValuedComplexionCodec<?>... valuedComplexionCodecs) {
         this(Arrays.stream(valuedComplexionCodecs).toList());
     }
 
-    /** Creates a new {@code Complexion} instance with the specified codecs and values. */
+    /**
+     * Creates a new {@code Complexion} instance with the specified codecs and values.
+     */
     public Complexion(List<ValuedComplexionCodec<?>> valuedComplexionCodecs) {
         int totalSize = 0;
         for (ValuedComplexionCodec<?> valuedComplexionCodec : valuedComplexionCodecs) {
@@ -95,15 +99,17 @@ public class Complexion implements ContainerData {
         throw new IllegalArgumentException("The codec " + complexionCodec + " provided was not registered within this instance.");
     }
 
-    /** Gets the stored value of this codec using a property.
+    /**
+     * Gets the stored value of this codec using a property.
      * Using this function, the aftermath position of the internal pointer should not be predicted and used in consideration.
      * <p>
      * <b>IMPORTANT:</b> Only the {@code Property}s used to construct this complexion can be used here! Make sure to store the properties used statically in your class!
      * <p>
      * Even two {@code Property}s with the same codec but are actually different instances are totally distinct.
+     *
      * @param complexionCodec A property to index the complexion with.
      * @return The value stored in the property in the complexion.
-     * */
+     */
     public <T> T get(Property<T> complexionCodec) {
         Linker<T> linker = complexionCodec.linker();
         if (linker != null)
@@ -114,15 +120,17 @@ public class Complexion implements ContainerData {
         return complexionCodec.codec().deserialize(this);
     }
 
-    /** Sets the value of this codec, using a property, to a new value.
+    /**
+     * Sets the value of this codec, using a property, to a new value.
      * Using this function, the aftermath position of the internal pointer should not be predicted and used in consideration.
      * <p>
      * <b>IMPORTANT:</b> Only the {@code Property}s used to construct this complexion can be used here! Make sure to store the properties used statically in your class!
      * <p>
      * Even two {@code Property}s with the same codec but are actually different instances are totally distinct.
+     *
      * @param complexionCodec A property to index the complexion with.
-     * @param value The new value.
-     * */
+     * @param value           The new value.
+     */
     public <T> void set(Property<T> complexionCodec, T value) {
         Linker<T> linker = complexionCodec.linker();
         // First, get the pointer right before the codec and set it.
@@ -131,15 +139,17 @@ public class Complexion implements ContainerData {
         complexionCodec.codec().serialize(value, this);
     }
 
-    /** Edits the value of this codec, using a property and a consumer.
+    /**
+     * Edits the value of this codec, using a property and a consumer.
      * Using this function, the aftermath position of the internal pointer should not be predicted and used in consideration.
      * <p>
      * <b>IMPORTANT:</b> Only the {@code Property}s used to construct this complexion can be used here! Make sure to store the properties used statically in your class!
      * <p>
      * Even two {@code Property}s with the same codec but are actually different instances are totally distinct.
+     *
      * @param complexionCodec A property to index the complexion with.
-     * @param consumer Your consumer which will edit the values of the object desired.
-     * */
+     * @param consumer        Your consumer which will edit the values of the object desired.
+     */
     public <T> void edit(Property<T> complexionCodec, Consumer<T> consumer) {
         // First, get the pointer right before the codec and set it.
         int propertyPointer = pointerAt(complexionCodec);
@@ -152,15 +162,17 @@ public class Complexion implements ContainerData {
         complexionCodec.codec().serialize(object, this);
     }
 
-    /** Edits the value of this codec, using a property and an editor.
+    /**
+     * Edits the value of this codec, using a property and an editor.
      * Using this function, the aftermath position of the internal pointer should not be predicted and used in consideration.
      * <p>
      * <b>IMPORTANT:</b> Only the {@code Property}s used to construct this complexion can be used here! Make sure to store the properties used statically in your class!
      * <p>
      * Even two {@code Property}s with the same codec but are actually different instances are totally distinct.
+     *
      * @param complexionCodec A property to index the complexion with.
-     * @param editor Your editor which will edit the values of the object desired and return it.
-     * */
+     * @param editor          Your editor which will edit the values of the object desired and return it.
+     */
     public <T> void edit(Property<T> complexionCodec, Editor<T> editor) {
         // First, get the pointer right before the codec and set it.
         int propertyPointer = pointerAt(complexionCodec);
@@ -173,17 +185,21 @@ public class Complexion implements ContainerData {
         complexionCodec.codec().serialize(object, this);
     }
 
-    /** Overwrites internal data inside the complexion with a pointer that moves to the right. Only use this for {@code ComplexionCodec}s!
+    /**
+     * Overwrites internal data inside the complexion with a pointer that moves to the right. Only use this for {@code ComplexionCodec}s!
+     *
      * @param values Integers to encode into the internal buffer.
-     * */
+     */
     public void encode(int... values) {
         for (int value : values)
             if (data.length > pointer) data[pointer++] = value;
     }
 
-    /** Reads internal data inside the complexion with a pointer that moves to the right. Only use this for {@code ComplexionCodec}s!
+    /**
+     * Reads internal data inside the complexion with a pointer that moves to the right. Only use this for {@code ComplexionCodec}s!
+     *
      * @return The read integer and shifts the pointer after.
-     * */
+     */
     public int decode() {
         if (data.length > pointer) return data[pointer++];
         return 0;
@@ -204,7 +220,9 @@ public class Complexion implements ContainerData {
         return data[index];
     }
 
-    /** Serializes an object if linked and returns whether it was serialized or not. */
+    /**
+     * Serializes an object if linked and returns whether it was serialized or not.
+     */
     protected <T> boolean serializeIfLinked(Property<T> property) {
         // Check if this property is linked.
         Linker<T> linker = property.linker();

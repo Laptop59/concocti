@@ -4,9 +4,6 @@ import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
-import net.minecraft.world.inventory.MenuType;
-
-import java.util.function.Supplier;
 
 public interface MenuServerConstructor<T extends AbstractContainerMenu> {
     T create(int containerId, Inventory playerInventory, Container container, ContainerData containerData);

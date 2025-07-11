@@ -22,6 +22,7 @@ import static io.github.laptop59.concocti.common.Concocti.MODID;
 
 /**
  * A class that allows a machine to have settings.
+ *
  * @param <T>
  */
 public class MachineSettingsComponent<T extends AbstractContainerMenu> extends Renderable implements ClickableComponent {
@@ -43,7 +44,8 @@ public class MachineSettingsComponent<T extends AbstractContainerMenu> extends R
     static int guiLeft = 0;
     static int guiTop = 82;
 
-    protected record Pos(int x, int y) {}
+    protected record Pos(int x, int y) {
+    }
 
     public MachineSettingsComponent(AbstractContainerScreen<T> screen, T menu) {
         super(guiLeft, guiTop);
@@ -75,8 +77,8 @@ public class MachineSettingsComponent<T extends AbstractContainerMenu> extends R
                 RenderSystem.setShaderColor(1.1f, 1.1f, 1.1f, 1.1f);
                 ejectRenderInfo.renderTooltip(
                         guiGraphics, Component.translatable(
-                            "screen.concocti.eject_" + (ejectOn ? "on" : "off")
-                    ).withColor(0xff7a7a7a)
+                                "screen.concocti.eject_" + (ejectOn ? "on" : "off")
+                        ).withColor(0xff7a7a7a)
                 );
             }
             guiGraphics.blit(
@@ -138,7 +140,7 @@ public class MachineSettingsComponent<T extends AbstractContainerMenu> extends R
             String relativeDirectionKey = "screen.concocti.slot_" + relativeDirection.toLowerCase(Locale.ROOT);
             if (slotInfo.isHovering(16, 16))
                 slotInfo.renderTooltip(guiGraphics, Component.translatable(
-                    "screen.concocti.slot_compound",
+                        "screen.concocti.slot_compound",
                         Component.translatable(slotTypeKey),
                         Component.translatable(relativeDirectionKey)
                 ).withColor(slotType.color));
@@ -196,7 +198,8 @@ public class MachineSettingsComponent<T extends AbstractContainerMenu> extends R
             case "down" -> new Pos(0, 1);
             case "right" -> new Pos(1, 0);
             case "left" -> new Pos(-1, 0);
-            default -> throw new IllegalStateException("Could not get position of relative direction " + relativeDirection + ".");
+            default ->
+                    throw new IllegalStateException("Could not get position of relative direction " + relativeDirection + ".");
         };
         pos = new Pos(
                 pos.x * 20 + WIDTH / 2 - 10,

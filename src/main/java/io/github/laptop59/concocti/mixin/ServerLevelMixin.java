@@ -44,7 +44,8 @@ public abstract class ServerLevelMixin {
         // So that means for same resistance, copper rod's distance from the lightning strike's
         // original position is two times that of conductivium rod.
         // (probably not realistically accurate, but this is a block game)
-        if (optional.isEmpty() && concocti$optionalConductivium.isPresent()) cir.setReturnValue(concocti$optionalConductivium.map(op -> op.above(1)));
+        if (optional.isEmpty() && concocti$optionalConductivium.isPresent())
+            cir.setReturnValue(concocti$optionalConductivium.map(op -> op.above(1)));
         else if (concocti$optionalConductivium.isPresent() && optional.isPresent() && concocti$serverLevel.random.nextInt(9) != 0) {
             // We can do the mathematical check.
             int sqDistanceCopper = concocti$sqDistBetween(pos, optional.get());
@@ -76,7 +77,8 @@ public abstract class ServerLevelMixin {
                     PoiManager.Occupancy.ANY
             ).count();
             boolean concocti$flag = flag && concocti$serverLevel.isThundering() && concocti$serverLevel.isRainingAt(concocti$blockposBeforeChance);
-            if (!concocti$flag) concocti$flag = concocti$serverLevel.random.nextInt(3) == 0; // if no thunderstorm and/or no rain
+            if (!concocti$flag)
+                concocti$flag = concocti$serverLevel.random.nextInt(3) == 0; // if no thunderstorm and/or no rain
             if (concocti$flag && concocti$rods > 0) {
             /*
                  Calculate the chance.

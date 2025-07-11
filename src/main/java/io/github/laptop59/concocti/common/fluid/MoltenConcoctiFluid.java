@@ -25,7 +25,7 @@ public abstract class MoltenConcoctiFluid extends BaseFlowingFluid {
                         ConcoctiFluids.MOLTEN_CONCOCTI,
                         ConcoctiFluids.FLOWING_MOLTEN_CONCOCTI
                 ).block(ConcoctiFluids.MOLTEN_CONCOCTI_BLOCK)
-                .bucket(ConcoctiItems.MOLTEN_CONCOCTI_BUCKET)
+                        .bucket(ConcoctiItems.MOLTEN_CONCOCTI_BUCKET)
         );
     }
 

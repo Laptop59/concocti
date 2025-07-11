@@ -14,6 +14,7 @@ public class MachineSettings {
      * Creates a new {@code MachineSettings} object based only on the available slot types.
      * <p></p>
      * Note: {@code availableTypes} should exclude {@link SlotType#NONE}!
+     *
      * @param availableTypes The slot types to include, excluding {@code NONE} which is already included.
      */
     public MachineSettings(List<SlotType> availableTypes) {
@@ -29,6 +30,7 @@ public class MachineSettings {
 
     /**
      * Gets the slot of a particular block face.
+     *
      * @param direction The direction of the block face.
      * @return The slot type associated with the provided direction.
      */
@@ -38,16 +40,19 @@ public class MachineSettings {
 
     /**
      * Sets the slot of a particular block face to a particular slot type.
+     *
      * @param direction The direction of the block face.
-     * @param slotType The slot type to fill the block face with.
+     * @param slotType  The slot type to fill the block face with.
      */
     void setSlot(Direction direction, SlotType slotType) {
-        if (!availableTypes.contains(slotType)) throw new IllegalArgumentException("This MachineSettings does not accept the " + slotType.name() + " slot type.");
+        if (!availableTypes.contains(slotType))
+            throw new IllegalArgumentException("This MachineSettings does not accept the " + slotType.name() + " slot type.");
         slots.put(direction, slotType);
     }
 
     /**
      * Sets the slots of the provided full map to these settings.
+     *
      * @param map The map to use to fill these settings.
      */
     void setSlots(EnumMap<Direction, SlotType> map) {
@@ -56,6 +61,7 @@ public class MachineSettings {
 
     /**
      * Cycles the slot of a particular block face to the next one.
+     *
      * @param direction The direction of the block face.
      */
     public void cycleSlotNext(Direction direction) {
@@ -66,6 +72,7 @@ public class MachineSettings {
 
     /**
      * Cycles the slot of a particular block face to the previous one.
+     *
      * @param direction The direction of the block face.
      */
     public void cycleSlotPrevious(Direction direction) {
@@ -76,8 +83,9 @@ public class MachineSettings {
 
     /**
      * Cycles the slot of a particular block face based on the provided direction.
+     *
      * @param direction The direction of the block face.
-     * @param isNext Whether the cycle is to the next slot type or to the previous one.
+     * @param isNext    Whether the cycle is to the next slot type or to the previous one.
      */
     public void cycleSlot(Direction direction, boolean isNext) {
         if (isNext)

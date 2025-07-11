@@ -32,6 +32,7 @@ public class ConcoctiClient {
             public @NotNull ResourceLocation getStillTexture() {
                 return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_concocti_still");
             }
+
             @Override
             public @NotNull ResourceLocation getFlowingTexture() {
                 return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_concocti_flow");
@@ -42,6 +43,7 @@ public class ConcoctiClient {
             public @NotNull ResourceLocation getStillTexture() {
                 return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_concoctized_dirt_still");
             }
+
             @Override
             public @NotNull ResourceLocation getFlowingTexture() {
                 return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_concoctized_dirt_flow");
@@ -52,6 +54,7 @@ public class ConcoctiClient {
             public @NotNull ResourceLocation getStillTexture() {
                 return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_copper_still");
             }
+
             @Override
             public @NotNull ResourceLocation getFlowingTexture() {
                 return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_copper_flow");
@@ -62,6 +65,7 @@ public class ConcoctiClient {
             public @NotNull ResourceLocation getStillTexture() {
                 return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_conductivium_still");
             }
+
             @Override
             public @NotNull ResourceLocation getFlowingTexture() {
                 return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_conductivium_flow");
@@ -72,6 +76,7 @@ public class ConcoctiClient {
             public @NotNull ResourceLocation getStillTexture() {
                 return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_lightning_still");
             }
+
             @Override
             public @NotNull ResourceLocation getFlowingTexture() {
                 return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_lightning_flow");

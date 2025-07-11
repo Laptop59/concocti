@@ -18,7 +18,7 @@ public abstract class MoltenCopperFluid extends BaseFlowingFluid {
                         ConcoctiFluids.MOLTEN_COPPER,
                         ConcoctiFluids.FLOWING_MOLTEN_COPPER
                 ).block(ConcoctiFluids.MOLTEN_COPPER_BLOCK)
-                .bucket(ConcoctiItems.MOLTEN_COPPER_BUCKET)
+                        .bucket(ConcoctiItems.MOLTEN_COPPER_BUCKET)
         );
     }
 

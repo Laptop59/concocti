@@ -31,8 +31,8 @@ public class ConcoctiBlockTagsProvider extends BlockTagsProvider {
                     this.tag(TagKey.create(Registries.BLOCK,
                             // There is a netherite tool tag, but in the neoforge namespace!
                             ResourceLocation.fromNamespaceAndPath(
-                                    rank == ConcoctiBlocks.BlockToolRank.NETHERITE ? "neoforge": ResourceLocation.DEFAULT_NAMESPACE,
-                            "needs_" + rank.rank + "_tool")
+                                    rank == ConcoctiBlocks.BlockToolRank.NETHERITE ? "neoforge" : ResourceLocation.DEFAULT_NAMESPACE,
+                                    "needs_" + rank.rank + "_tool")
                     ))
             );
         }

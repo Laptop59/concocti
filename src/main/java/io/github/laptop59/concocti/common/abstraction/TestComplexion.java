@@ -5,7 +5,9 @@ import io.github.laptop59.concocti.client.gui.components.MachineSettingsSlots;
 import io.github.laptop59.concocti.client.gui.components.SlotType;
 import net.minecraft.core.Direction;
 
-/** This class describes how a custom Complexion is created. */
+/**
+ * This class describes how a custom Complexion is created.
+ */
 public class TestComplexion extends Complexion {
     public final static Property<Integer> A = ComplexionCodec.INTEGER.unique();
     public final static Property<Integer> B = ComplexionCodec.INTEGER.unique();
