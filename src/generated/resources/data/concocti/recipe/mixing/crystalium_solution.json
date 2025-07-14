@@ -1,0 +1,25 @@
+{
+  "type": "concocti:concocti_mixer",
+  "input_fluids": [
+    {
+      "amount": 1000,
+      "fluid": "minecraft:water"
+    }
+  ],
+  "input_items": [
+    {
+      "count": 18,
+      "item": "concocti:raw_crystalium"
+    },
+    {
+      "count": 1,
+      "item": "minecraft:popped_chorus_fruit"
+    }
+  ],
+  "output_fluid": {
+    "amount": 1000,
+    "id": "concocti:crystalium_solution"
+  },
+  "output_item": {},
+  "ticks": 80
+}

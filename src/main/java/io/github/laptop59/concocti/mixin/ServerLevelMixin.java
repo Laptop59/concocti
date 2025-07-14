@@ -3,11 +3,13 @@ package io.github.laptop59.concocti.mixin;
 import com.llamalad7.mixinextras.sugar.Local;
 import io.github.laptop59.concocti.common.poi.ConcoctiPoiTypes;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
+import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
@@ -28,7 +30,7 @@ public abstract class ServerLevelMixin {
             method = "findLightningRod",
             at = @At(value = "TAIL"),
             cancellable = true)
-    private void powerLightningRod(BlockPos pos, CallbackInfoReturnable<Optional<BlockPos>> cir, @Local Optional<BlockPos> optional) {
+    private void findLightningRod(BlockPos pos, CallbackInfoReturnable<Optional<BlockPos>> cir, @Local Optional<BlockPos> optional) {
         // Check for our rod.
         ServerLevel concocti$serverLevel = (ServerLevel) (Object) this;
         Optional<BlockPos> concocti$optionalConductivium = concocti$serverLevel.getPoiManager()
@@ -70,15 +72,19 @@ public abstract class ServerLevelMixin {
         if (concocti$serverLevel.random.nextInt(1000) == 0) {
             BlockPos concocti$blockposBeforeChance = concocti$findLightningTargetAroundOnlyConductivium(concocti$serverLevel.getBlockRandomPos(i, 0, j, 15));
             long concocti$rods = concocti$serverLevel.getPoiManager().findAllWithType(
-                    holder -> holder.value() == ConcoctiPoiTypes.CONDUCTIVIUM_LIGHTNING_ROD.get(),
-                    pos -> pos.getY() == concocti$serverLevel.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX(), pos.getZ()) - 1,
-                    concocti$blockposBeforeChance,
-                    256,
-                    PoiManager.Occupancy.ANY
+                holder -> {
+                    PoiType a = holder.value();
+                    PoiType b = ConcoctiPoiTypes.CONDUCTIVIUM_LIGHTNING_ROD.get();
+                    return a == b;
+                },
+                pos -> pos.getY() == concocti$serverLevel.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX(), pos.getZ()) - 1,
+                concocti$blockposBeforeChance,
+                256,
+                PoiManager.Occupancy.ANY
             ).count();
             boolean concocti$flag = flag && concocti$serverLevel.isThundering() && concocti$serverLevel.isRainingAt(concocti$blockposBeforeChance);
             if (!concocti$flag)
-                concocti$flag = concocti$serverLevel.random.nextInt(3) == 0; // if no thunderstorm and/or no rain
+                concocti$flag = concocti$serverLevel.random.nextInt(7) == 0; // if no thunderstorm and/or no rain
             if (concocti$flag && concocti$rods > 0) {
             /*
                  Calculate the chance.

@@ -4,7 +4,7 @@
   "pattern": [
     "###",
     "#B#",
-    "#C#"
+    "LCL"
   ],
   "key": {
     "#": {
@@ -15,6 +15,9 @@
     },
     "C": {
       "item": "minecraft:coal_block"
+    },
+    "L": {
+      "item": "minecraft:lava_bucket"
     }
   },
   "result": {

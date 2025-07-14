@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:ore",
+  "config": {
+    "targets": [
+      {
+        "target": {
+          "predicate_type": "minecraft:random_block_match",
+          "block": "minecraft:end_stone",
+          "probability": 1
+        },
+        "state": {
+          "Name": "concocti:crystalium_ore"
+        }
+      }
+    ],
+    "size": 17,
+    "discard_chance_on_air_exposure": 0.17
+  }
+}

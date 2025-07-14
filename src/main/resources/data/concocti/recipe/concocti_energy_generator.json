@@ -3,18 +3,21 @@
   "category": "building",
   "pattern": [
     "###",
-    "#R#",
-    "#C#"
+    "RCR",
+    "NNN"
   ],
   "key": {
     "#": {
-      "item": "concocti:purified_concocti_nugget"
+      "item": "concocti:purified_concocti_ingot"
     },
     "R": {
       "item": "minecraft:redstone_block"
     },
+    "N": {
+      "item": "minecraft:netherrack"
+    },
     "C": {
-      "item": "minecraft:coal_block"
+      "item": "minecraft:coal"
     }
   },
   "result": {

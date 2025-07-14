@@ -26,7 +26,9 @@ import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
+import mezz.jei.api.recipe.RecipeIngredientRole;
 import net.minecraft.advancements.Criterion;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -142,7 +144,7 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
             <BlockEntity, Menu, Recipe> {
         // Properties: None
 
-        public static int energyPerTick = 50;
+        public static int DEFAULT_ENERGY_PER_TICK = 25;
 
         @Override
         protected ConcoctiEnergyGenerator getMachineInstance() {
@@ -171,6 +173,9 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
          */
         public int getFuelTicksFromOneInputItem() {
             ItemStack input = getInputStack();
+            if (getRecipe(getInput()) instanceof Recipe recipe) {
+                return recipe.ticks;
+            }
             Holder<Item> holder = input.getItemHolder();
             FurnaceFuel fuel = holder.getData(NeoForgeDataMaps.FURNACE_FUELS);
             if (fuel == null) return 0;
@@ -191,7 +196,6 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
                 entity.lastUpgradeUnits = currentUpgradeUnits;
                 entity.setNewEnergyMultiplier(entity.getInefficientEnergyMultiplier());
             }
-            if (entity.ticksLeft >= entity.totalTicks) entity.lastRecipe = null;
             if (--entity.autoCooldown <= 0) {
                 entity.autoCooldown = AUTO_COOLDOWN;
                 entity.attemptToPull();
@@ -203,7 +207,7 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
                     int ticksConsumed = consumableTicks;
                     if (ticksConsumed > entity.ticksLeft) ticksConsumed = entity.ticksLeft;
                     consumableTicks -= ticksConsumed;
-                    entity.energy.forceReceiveEnergy(energyPerTick * ticksConsumed, false);
+                    entity.energy.forceReceiveEnergy(getEnergyPerTick() * ticksConsumed, false);
                     entity.ticksLeft -= ticksConsumed;
                 } else {
                     entity.lastRecipe = null;
@@ -213,6 +217,7 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
                     {
                         entity.totalTicks = ticksToBurn;
                         entity.ticksLeft += entity.totalTicks;
+                        entity.lastRecipe = getRecipe(getInput());
                         ItemStack previousItemStack = getInputStack().copy();
                         getInputStack().shrink(1);
                         if (getInputStack().isEmpty()) {
@@ -226,6 +231,10 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
             if (state.getValue(LIT) != (entity.ticksLeft > 0)) {
                 level.setBlock(pos, state.setValue(LIT, (entity.ticksLeft > 0)), 1 | 2);
             }
+        }
+
+        protected int getEnergyPerTick() {
+            return this.lastRecipe == null ? DEFAULT_ENERGY_PER_TICK : this.lastRecipe.fePerTick;
         }
 
         @Override
@@ -340,25 +349,28 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
         }
     }
 
-    // This serves as a dummy Recipe.
+    // This serves as a Recipe mostly used as a proxy.
     public static class Recipe implements ProcessingRecipe<Recipe, ItemsFluidsRecipeInput> {
         // An in-code representation of our recipe data. This can be basically anything you want.
         // Common things to have here is a processing time integer of some kind, or an experience reward.
         // Note that we now use an ingredient instead of an item stack for the input.
         private final Ingredient inputItem;
         private final int ticks;
+        private final int fePerTick;
 
         private static final HashMap<Ingredient, ResourceLocation> idMap = new HashMap<>();
 
         // Add a constructor that sets all properties.
-        public Recipe(ResourceLocation id, Ingredient inputItem, int ticks) {
+        public Recipe(ResourceLocation id, Ingredient inputItem, int ticks, int fePerTick) {
             this.inputItem = inputItem;
+            this.fePerTick = fePerTick;
             this.ticks = ticks;
             idMap.put(inputItem, id);
         }
 
-        public Recipe(Ingredient inputItem, int ticks) {
+        public Recipe(Ingredient inputItem, int ticks, int fePerTick) {
             this.inputItem = inputItem;
+            this.fePerTick = fePerTick;
             this.ticks = ticks;
             idMap.put(inputItem, Arrays.stream(inputItem.getItems()).findFirst()
                     .map(s -> BuiltInRegistries.ITEM.getKey(s.getItem()))
@@ -426,6 +438,10 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
             return ticks;
         }
 
+        public int getFePerTick() {
+            return fePerTick;
+        }
+
         @Override
         public ResourceLocation getId() {
             return idMap.getOrDefault(inputItem, null);
@@ -435,10 +451,12 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
         public static class Builder implements RecipeBuilder {
             protected final Ingredient inputItem;
             protected final int ticks;
+            protected final int fePerTick;
 
-            public Builder(Ingredient inputItem, int ticks) {
+            public Builder(Ingredient inputItem, int ticks, int fePerTick) {
                 this.inputItem = inputItem;
                 this.ticks = ticks;
+                this.fePerTick = fePerTick;
             }
 
             @Override
@@ -482,7 +500,7 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
 
             @Override
             public void save(RecipeOutput recipeOutput, @NotNull ResourceLocation id) {
-                Recipe recipe = new Recipe(id, this.inputItem, this.ticks);
+                Recipe recipe = new Recipe(id, this.inputItem, this.ticks, this.fePerTick);
                 recipeOutput.accept(id, recipe, null);
             }
         }
@@ -491,13 +509,15 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
         public static class Serializer implements RecipeSerializer<Recipe> {
             public static final MapCodec<Recipe> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
                     Ingredient.CODEC.fieldOf("ingredient").forGetter(Recipe::getInputItem),
-                    Codec.INT.fieldOf("ticks").forGetter(Recipe::getTicks)
+                    Codec.INT.fieldOf("ticks").forGetter(Recipe::getTicks),
+                    Codec.INT.fieldOf("fe_per_tick").forGetter(Recipe::getFePerTick)
             ).apply(inst, Recipe::new));
 
             public static final StreamCodec<RegistryFriendlyByteBuf, Recipe> STREAM_CODEC =
                     StreamCodec.composite(
                             Ingredient.CONTENTS_STREAM_CODEC, Recipe::getInputItem,
                             ByteBufCodecs.INT, Recipe::getTicks,
+                            ByteBufCodecs.INT, Recipe::getFePerTick,
                             Recipe::new
                     );
 
@@ -517,6 +537,8 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
 
     // This serves as a dummy RecipeCategory.
     public static class RecipeCategory extends AbstractConcoctiRecipeCategory<Recipe> {
+        private FlameProgress flameProgress = new FlameProgress(0, 10);
+
         @Override
         protected ConcoctiEnergyGenerator getMachineInstance() {
             return INSTANCE;
@@ -537,12 +559,50 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
         }
 
         @Override
-        public void getTooltip(@NotNull ITooltipBuilder tooltip, @NotNull ConcoctiEnergyGenerator.Recipe recipe,
-                               @NotNull IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
+        public void setRecipe(@NotNull IRecipeLayoutBuilder builder, Recipe recipe, @NotNull IFocusGroup focuses) {
+            // Add the recipe input.
+            builder.addSlot(RecipeIngredientRole.INPUT, 48, 6)
+                    .addItemStacks(List.of(recipe.getInputItem().getItems()))
+                    .setSlotName("input");
         }
 
         @Override
-        public void setRecipe(@NotNull IRecipeLayoutBuilder builder, @NotNull Recipe recipe, @NotNull IFocusGroup focuses) {
+        public void getTooltip(@NotNull ITooltipBuilder tooltip, @NotNull Recipe recipe,
+                               @NotNull IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
+            // Show the duration, if needed.
+            super.getTooltip(tooltip, recipe, recipeSlotsView, mouseX, mouseY);
+        }
+
+        @Override
+        public void draw(@NotNull Recipe recipe, @NotNull IRecipeSlotsView recipeSlotsView,
+                         GuiGraphics guiGraphics, double mouseX, double mouseY) {
+            int left = -4;
+            int top = -4;
+            // Draw the background texture.
+            guiGraphics.blit(this.getTexture(), left, top, 0, 0, 176, 36, 176, 36);
+            // Draw the arrow progress.
+            long absoluteTicks = System.currentTimeMillis() / 50;
+            int tickDuration = getTicks(recipe);
+            long passedTicks = absoluteTicks % tickDuration;
+            double progress = (double) passedTicks / tickDuration;
+            flameProgress.setGuiLeft(77);
+            flameProgress.setGuiTop(6);
+            flameProgress.update((float) (progress * 23) / 22);
+            Renderable.renderChildAbsolute(guiGraphics, RenderInfo.withNullifiedOffset(null), flameProgress);
+            guiGraphics.drawString(
+                    Minecraft.getInstance().font,
+                    EnergyBar.formatEnergy(recipe.getFePerTick())  + "/t",
+                    100,
+                    5,
+                    0xFF2d3366, false
+            );
+            guiGraphics.drawString(
+                    Minecraft.getInstance().font,
+                    EnergyBar.formatEnergy((long) recipe.getFePerTick() * recipe.getTicks()),
+                    100,
+                    15,
+                    0xFF363e7e, false
+            );
         }
     }
 

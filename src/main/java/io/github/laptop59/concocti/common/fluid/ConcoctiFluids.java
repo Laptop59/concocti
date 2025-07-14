@@ -8,6 +8,7 @@ import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.FluidState;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -111,5 +112,45 @@ public class ConcoctiFluids {
 
     public static final DeferredBlock<LiquidBlock> MOLTEN_CONDUCTIVIUM_BLOCK = ConcoctiBlocks.registerFluidBlock("molten_conductivium", MOLTEN_CONDUCTIVIUM,
             BlockBehaviour.Properties.ofFullCopy(Blocks.LAVA).mapColor(DyeColor.CYAN)
+    );
+
+    public static final DeferredHolder<Fluid, FlowingFluid> CRYSTALIUM_SOLUTION = ConcoctiRegisters.FLUIDS.register("crystalium_solution", (loc) -> new CrystaliumSolutionFluid.Source());
+    public static final DeferredHolder<Fluid, FlowingFluid> FLOWING_CRYSTALIUM_SOLUTION = ConcoctiRegisters.FLUIDS.register("flowing_crystalium_solution", (loc) -> new CrystaliumSolutionFluid.Flowing());
+
+    public static final DeferredHolder<FluidType, FluidType> CRYSTALIUM_SOLUTION_FLUID_TYPE = ConcoctiRegisters.FLUID_TYPES.register("crystalium_solution",
+            (loc) -> new FluidType(
+                    FluidType.Properties.create()
+                            .temperature(50)
+                            .lightLevel(1)
+                            .viscosity(40)
+                            .density(2)
+                            .canConvertToSource(false)
+                            .canDrown(false)
+                            .canSwim(true)
+            )
+    );
+
+    public static final DeferredBlock<LiquidBlock> CRYSTALIUM_SOLUTION_BLOCK = ConcoctiBlocks.registerFluidBlock("crystalium_solution", CRYSTALIUM_SOLUTION,
+            BlockBehaviour.Properties.ofFullCopy(Blocks.WATER).mapColor(DyeColor.PINK)
+    );
+
+    public static final DeferredHolder<Fluid, FlowingFluid> SUPERSATURATED_CRYSTALIUM_SOLUTION = ConcoctiRegisters.FLUIDS.register("supersaturated_crystalium_solution", (loc) -> new SupersaturatedCrystaliumSolutionFluid.Source());
+    public static final DeferredHolder<Fluid, FlowingFluid> FLOWING_SUPERSATURATED_CRYSTALIUM_SOLUTION = ConcoctiRegisters.FLUIDS.register("flowing_supersaturated_crystalium_solution", (loc) -> new SupersaturatedCrystaliumSolutionFluid.Flowing());
+
+    public static final DeferredHolder<FluidType, FluidType> SUPERSATURATED_CRYSTALIUM_SOLUTION_FLUID_TYPE = ConcoctiRegisters.FLUID_TYPES.register("supersaturated_crystalium_solution",
+            (loc) -> new FluidType(
+                    FluidType.Properties.create()
+                            .temperature(50)
+                            .lightLevel(2)
+                            .viscosity(30)
+                            .density(5)
+                            .canConvertToSource(false)
+                            .canDrown(false)
+                            .canSwim(true)
+            )
+    );
+
+    public static final DeferredBlock<LiquidBlock> SUPERSATURATED_CRYSTALIUM_SOLUTION_BLOCK = ConcoctiBlocks.registerFluidBlock("supersaturated_crystalium_solution", SUPERSATURATED_CRYSTALIUM_SOLUTION,
+            BlockBehaviour.Properties.ofFullCopy(Blocks.WATER).mapColor(DyeColor.PINK)
     );
 }

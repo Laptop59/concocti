@@ -66,6 +66,9 @@ public class ConcoctiItems {
     public static final DeferredItem<BucketItem> MOLTEN_COPPER_BUCKET = registerBucketItem("molten_copper_bucket", ConcoctiFluids.MOLTEN_COPPER);
     public static final DeferredItem<BucketItem> MOLTEN_CONDUCTIVIUM_BUCKET = registerBucketItem("molten_conductivium_bucket", ConcoctiFluids.MOLTEN_CONDUCTIVIUM);
 
+    public static final DeferredItem<BucketItem> CRYSTALIUM_SOLUTION_BUCKET = registerBucketItem("crystalium_solution_bucket", ConcoctiFluids.CRYSTALIUM_SOLUTION);
+    public static final DeferredItem<BucketItem> SUPERSATURATED_CRYSTALIUM_SOLUTION_BUCKET = registerBucketItem("supersaturated_crystalium_solution_bucket", ConcoctiFluids.SUPERSATURATED_CRYSTALIUM_SOLUTION);
+
     public static final DeferredItem<? extends Item> COMPACT_CONCOCTI_UPGRADE = registerItem("compact_concocti_upgrade", ConcoctiUpgradeItem::new, new Item.Properties().stacksTo(8));
     public static final DeferredItem<? extends Item> COMPACTER_CONCOCTI_UPGRADE = registerItem("compacter_concocti_upgrade", ConcoctiUpgradeItem::new, new Item.Properties().stacksTo(8));
     public static final DeferredItem<? extends Item> COMPACTEST_CONCOCTI_UPGRADE = registerItem("compactest_concocti_upgrade", ConcoctiUpgradeItem::new, new Item.Properties().stacksTo(8));
@@ -260,6 +263,8 @@ public class ConcoctiItems {
         acceptStack(output, MOLTEN_CONCOCTIZED_DIRT_BUCKET);
         acceptStack(output, MOLTEN_COPPER_BUCKET);
         acceptStack(output, MOLTEN_CONDUCTIVIUM_BUCKET);
+        acceptStack(output, CRYSTALIUM_SOLUTION_BUCKET);
+        acceptStack(output, SUPERSATURATED_CRYSTALIUM_SOLUTION_BUCKET);
 
         for (Map.Entry<MoldItem.Material, Map<MoldItem.Type, DeferredItem<? extends Item>>> entry : MOLDS.entrySet()) {
             acceptStack(output, MOLD_BASES.get(entry.getKey()));

@@ -15,6 +15,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ConcoctiBlockLootSubProvider extends BlockLootSubProvider {
+    public final static Set<? extends Block> excluded = Set.of(
+            ConcoctiBlocks.CRYSTALIUM_ORE.get()
+    );
+
     public ConcoctiBlockLootSubProvider(HolderLookup.Provider lookupProvider) {
         super(Set.of(), FeatureFlags.DEFAULT_FLAGS, lookupProvider);
     }
@@ -25,6 +29,7 @@ public class ConcoctiBlockLootSubProvider extends BlockLootSubProvider {
         return ConcoctiRegisters.BLOCKS.getEntries()
                 .stream()
                 .map(DeferredHolder::get)
+                .filter(block -> !excluded.contains(block))
                 .collect(Collectors.toSet());
     }
 
@@ -32,6 +37,7 @@ public class ConcoctiBlockLootSubProvider extends BlockLootSubProvider {
     protected void generate() {
         for (DeferredBlock<? extends Block> deferredBlock : ConcoctiBlocks.BLOCK_MAP.keySet()) {
             Block block = deferredBlock.get();
+            if (excluded.contains(block)) continue;
             if (block instanceof BaseEntityBlock) {
                 add(block, createNameableBlockEntityTable(block));
             } else {

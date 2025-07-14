@@ -1,0 +1,19 @@
+{
+  "type": "concocti:concocti_mixer",
+  "input_fluids": [
+    {
+      "amount": 100,
+      "fluid": "concocti:supersaturated_crystalium_solution"
+    }
+  ],
+  "input_items": [],
+  "output_fluid": {
+    "amount": 100,
+    "id": "minecraft:water"
+  },
+  "output_item": {
+    "count": 1,
+    "id": "concocti:crystalium_nugget"
+  },
+  "ticks": 900
+}

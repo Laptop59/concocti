@@ -3,10 +3,7 @@ package io.github.laptop59.concocti.datagen.server;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.item.MoldItem;
-import io.github.laptop59.concocti.common.machine.impl.ConcoctiElectronCollector;
-import io.github.laptop59.concocti.common.machine.impl.ConcoctiMelter;
-import io.github.laptop59.concocti.common.machine.impl.ConcoctiMixer;
-import io.github.laptop59.concocti.common.machine.impl.ConcoctiSolidifier;
+import io.github.laptop59.concocti.common.machine.impl.*;
 import io.github.laptop59.concocti.common.util.ConcoctiConstants;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -50,6 +47,12 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
         threeStageStorageRecipes(output, ConcoctiItems.TOUGH_CONCOCTI_NUGGET, ConcoctiItems.TOUGH_CONCOCTI_INGOT, ConcoctiItems.TOUGH_CONCOCTI_BLOCK);
         threeStageStorageRecipes(output, ConcoctiItems.CONDUCTIVIUM_NUGGET, ConcoctiItems.CONDUCTIVIUM_INGOT, ConcoctiItems.CONDUCTIVIUM_BLOCK);
         threeStageStorageRecipes(output, ConcoctiItems.CRYSTALIUM_NUGGET, ConcoctiItems.CRYSTALIUM_INGOT, ConcoctiItems.CRYSTALIUM_BLOCK);
+
+        smeltingResultFromBase(
+                output,
+                ConcoctiItems.RAW_CRYSTALIUM,
+                ConcoctiItems.CRYSTALIUM_ORE
+        );
 
         moldBaseRecipes(output, Items.IRON_NUGGET, Items.COPPER_INGOT, MoldItem.Material.COPPER);
         moldBaseRecipes(output, ConcoctiItems.PURIFIED_CONCOCTI_NUGGET, Items.DIAMOND, MoldItem.Material.DIAMOND);
@@ -149,6 +152,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 SizedFluidIngredient.of(new FluidStack(ConcoctiFluids.MOLTEN_COPPER, 27)),
                 SizedFluidIngredient.of(new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, 9))
         ), null, new FluidStack(ConcoctiFluids.MOLTEN_CONDUCTIVIUM, 18));
+
         concoctiMixerRecipe(output, "electrostatic_conductivium_nugget_mixing", 20 * 20, List.of(
                 SizedIngredient.of(ConcoctiItems.CONDUCTIVIUM_NUGGET.get(), 3),
                 SizedIngredient.of(Items.REDSTONE, 16)
@@ -156,6 +160,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 SizedFluidIngredient.of(new FluidStack(ConcoctiFluids.MOLTEN_LIGHTNING, 1)),
                 SizedFluidIngredient.of(new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_NUGGET))
         ), new ItemStack(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_NUGGET.get()), null);
+
         concoctiMixerRecipe(output, "electrostatic_conductivium_ingot_mixing", 4 * 20 * 20, List.of(
                 SizedIngredient.of(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_NUGGET.get(), 9),
                 SizedIngredient.of(Items.REDSTONE, 64),
@@ -163,9 +168,41 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
         ), List.of(
                 SizedFluidIngredient.of(new FluidStack(ConcoctiFluids.MOLTEN_COPPER, ConcoctiConstants.MOLTEN_BLOCK))
         ), new ItemStack(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_INGOT.get()), null);
+
         concoctiMixerRecipe(output, "electrostatic_conductivium_nugget_from_ingot", 60 * 20, List.of(
                 SizedIngredient.of(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_INGOT.get(), 1)
         ), List.of(), new ItemStack(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_NUGGET.get(), 9), null);
+
+        concoctiMixerRecipe(
+                output,
+                "crystalium_solution",
+                20 * 4,
+                List.of(
+                        SizedIngredient.of(ConcoctiItems.RAW_CRYSTALIUM, 18),
+                    SizedIngredient.of(Items.POPPED_CHORUS_FRUIT, 1)
+                ),
+                List.of(SizedFluidIngredient.of(Fluids.WATER, 1000)),
+                null,
+                new FluidStack(ConcoctiFluids.CRYSTALIUM_SOLUTION, 1000)
+        );
+
+        concoctiMixerRecipe(output,
+                "supersaturated_crystalium_solution",
+                20 * 20,
+                List.of(SizedIngredient.of(ConcoctiItems.RAW_CRYSTALIUM, 9)),
+                List.of(SizedFluidIngredient.of(ConcoctiFluids.CRYSTALIUM_SOLUTION.get(), 1000)),
+                null,
+                new FluidStack(ConcoctiFluids.SUPERSATURATED_CRYSTALIUM_SOLUTION, 1000)
+        );
+
+        concoctiMixerRecipe(output,
+                "crystalium_nugget",
+                20 * 45,
+                List.of(),
+                List.of(SizedFluidIngredient.of(ConcoctiFluids.SUPERSATURATED_CRYSTALIUM_SOLUTION.get(), 100)),
+                new ItemStack(ConcoctiItems.CRYSTALIUM_NUGGET.get(), 1),
+                new FluidStack(Fluids.WATER, 100)
+        );
 
         // Mold recipes
         for (var entryMaterial : ConcoctiItems.MOLDS.entrySet()) {
