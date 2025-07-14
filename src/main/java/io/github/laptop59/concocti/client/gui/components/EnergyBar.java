@@ -54,9 +54,9 @@ public class EnergyBar<T extends AbstractContainerMenu> extends Renderable {
         }
     }
 
-    protected String formatEnergy(long energy) {
+     public static String formatEnergy(long energy) {
         if (energy < 1_000_000) return String.format("%,d FE", energy);
-        final String[] prefixes = {"", "k", "M", "G", "T", "P", "E", "Z", "Y"};
+        final String[] prefixes = {"", "k", "M", "G", "T", "P", "E", "Z", "Y", "R", "Q"};
         int index = (int) Math.log10(energy) / 3;
         if (index >= prefixes.length) index = prefixes.length; // This probably won't happen.
         double base = Math.pow(1_000, index);

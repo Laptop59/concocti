@@ -3,6 +3,7 @@ package io.github.laptop59.concocti.integration.jei;
 import io.github.laptop59.concocti.common.Concocti;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachines;
+import io.github.laptop59.concocti.common.machine.impl.ConcoctiEnergyGenerator;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
@@ -15,20 +16,20 @@ import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeInput;
-import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.*;
+import net.neoforged.neoforge.registries.datamaps.builtin.FurnaceFuel;
+import net.neoforged.neoforge.registries.datamaps.builtin.NeoForgeDataMaps;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @JeiPlugin
 public class ConcoctiJeiPlugin implements IModPlugin {
@@ -67,6 +68,33 @@ public class ConcoctiJeiPlugin implements IModPlugin {
             ConcoctiMachine<?, ?, ?, I, R, ?, ?, ?, ?> machine
     ) {
         registerRecipesFor(registration, manager, machine.RECIPE_TYPE.get(), machine.JEI_RECIPE_TYPE);
+        if (machine == ConcoctiMachines.ENERGY_GENERATOR) {
+            final var registry = Minecraft.getInstance().level.registryAccess().registryOrThrow(Registries.ITEM);
+            var datamap = registry.getDataMap(NeoForgeDataMaps.FURNACE_FUELS);
+            ArrayList<ConcoctiEnergyGenerator.Recipe> proxies = new ArrayList<>();
+            Set<Ingredient> unproxiedIngredients = manager
+                    .getAllRecipesFor(ConcoctiMachines.ENERGY_GENERATOR.RECIPE_TYPE.get())
+                    .stream()
+                    .map(RecipeHolder::value)
+                    .map(ConcoctiEnergyGenerator.Recipe::getInputItem)
+                    .collect(Collectors.toUnmodifiableSet());
+            outer:
+            for (Map.Entry<ResourceKey<Item>, FurnaceFuel> entry : datamap.entrySet().stream().sorted(Comparator.comparingInt(
+                    item -> BuiltInRegistries.ITEM.getId(item.getKey())
+            )).toList()) {
+                var item = BuiltInRegistries.ITEM.get(entry.getKey());
+                for (Ingredient ingredient : unproxiedIngredients) {
+                    if (ingredient.test(new ItemStack(item, 1))) continue outer;
+                }
+                ConcoctiEnergyGenerator.Recipe proxy = new ConcoctiEnergyGenerator.Recipe(
+                        Ingredient.of(item),
+                        entry.getValue().burnTime(),
+                        ConcoctiEnergyGenerator.BlockEntity.DEFAULT_ENERGY_PER_TICK
+                );
+                proxies.add(proxy);
+            }
+            registration.addRecipes(ConcoctiMachines.ENERGY_GENERATOR.JEI_RECIPE_TYPE, proxies);
+        }
     }
 
     private <R extends ProcessingRecipe<R, I>, I extends RecipeInput> void registerRecipeCatalystFor(
@@ -100,14 +128,16 @@ public class ConcoctiJeiPlugin implements IModPlugin {
     }
 
     private void registerForAllMachines(Consumer<ConcoctiMachine<?, ?, ?, ?, ?, ?, ?, ?, ?>> machineConsumer) {
-        for (var machine : ConcoctiMachines.MACHINES)
+        for (var machine : ConcoctiMachines.MACHINES) {
             machineConsumer.accept(machine);
+        }
     }
 
     private void registerInfos(@NotNull IRecipeRegistration registration) {
         List<String> items = Arrays.asList(
                 "concocti_seeds",
                 "dirty_concocti_nugget",
+                "dirty_concocti_ingot",
                 "conductivium_lightning_rod",
                 "concocti_electron_collector"
         );

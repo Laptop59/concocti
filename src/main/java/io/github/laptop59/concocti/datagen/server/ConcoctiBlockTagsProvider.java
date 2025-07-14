@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -21,6 +22,8 @@ public class ConcoctiBlockTagsProvider extends BlockTagsProvider {
     public ConcoctiBlockTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, String modId, @Nullable ExistingFileHelper existingFileHelper) {
         super(output, lookupProvider, modId, existingFileHelper);
     }
+
+    private final HashMap<ResourceLocation, IntrinsicTagAppender<Block>> blockTags = new HashMap<>();
 
     @Override
     protected void addTags(HolderLookup.@NotNull Provider provider) {
@@ -50,5 +53,21 @@ public class ConcoctiBlockTagsProvider extends BlockTagsProvider {
             rankTag.add(block.getKey().get());
             typeTag.add(block.getKey().get());
         }
+
+        // Add blocks to other tags.
+        addToTag(ConcoctiBlocks.Tags.GUARDED_BY_ENDERMEN, ConcoctiBlocks.CRYSTALIUM_ORE, ConcoctiBlocks.CRYSTALIUM_BLOCK);
     }
+
+    @SafeVarargs
+    protected final void addToTag(TagKey<Block> tag, DeferredBlock<Block>... blocks) {
+        // Make a tag appender if there isn't one already.
+        IntrinsicTagAppender<Block> addedTo;
+        if (!blockTags.containsKey(tag.location())) {
+            addedTo = this.tag(tag);
+            blockTags.put(tag.location(), addedTo);
+        } else addedTo = blockTags.get(tag.location());
+        // Add the block to the tag.
+        for (DeferredBlock<Block> block : blocks) addedTo.add(block.get());
+    }
+
 }

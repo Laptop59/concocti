@@ -75,6 +75,8 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiItems.MOLTEN_CONCOCTIZED_DIRT_BUCKET, "Bucket of Molten Concoctized Dirt");
         add(ConcoctiItems.MOLTEN_COPPER_BUCKET, "Bucket of Molten Copper");
         add(ConcoctiItems.MOLTEN_CONDUCTIVIUM_BUCKET, "Bucket of Molten Conductivium");
+        add(ConcoctiItems.CRYSTALIUM_SOLUTION_BUCKET, "Bucket of Crystalium Solution");
+        add(ConcoctiItems.SUPERSATURATED_CRYSTALIUM_SOLUTION_BUCKET, "Bucket of Supersaturated Crystalium Solution");
         add(ConcoctiItems.COMPACT_CONCOCTI_UPGRADE, "Compact Concocti Upgrade");
         add(ConcoctiItems.COMPACTER_CONCOCTI_UPGRADE, "Compacter Concocti Upgrade");
         add(ConcoctiItems.COMPACTEST_CONCOCTI_UPGRADE, "Compactest Concocti Upgrade");
@@ -95,6 +97,8 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiFluids.MOLTEN_COPPER, "Molten Copper");
         add(ConcoctiFluids.MOLTEN_CONDUCTIVIUM, "Molten Conductivium");
         add(ConcoctiFluids.MOLTEN_LIGHTNING, "Molten Lightning");
+        add(ConcoctiFluids.CRYSTALIUM_SOLUTION, "Crystalium Solution");
+        add(ConcoctiFluids.SUPERSATURATED_CRYSTALIUM_SOLUTION, "Supersaturated Crystalium Solution");
 
         // Miscellaneous things go here.
         add("effect.concocti.concoctized", "Concoctized");
@@ -142,8 +146,9 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add("screen.concocti.pull_on", "Pull: ON");
 
         // Information of items go here.
-        add("info.concocti.concocti_seeds", "Hitting a mob with this item usually provides it a status effect of Concoctized, which allows Dirty Concocti Nuggets to start dropping upon taking damage while losing less health.");
-        add("info.concocti.dirty_concocti_nugget", "Dropped from hitting a mob with the Concoctized status effect, which is induced by hitting it with Concoctized Seeds.");
+        add("info.concocti.concocti_seeds", "Hitting a mob with this item usually provides it a status effect of Concoctized, which allows Dirty Concocti Nuggets and Ingots to start dropping upon taking damage while losing less health.");
+        add("info.concocti.dirty_concocti_nugget", "Drop from hitting a mob with the Concoctized status effect, induced by hitting it with Concoctized Seeds.");
+        add("info.concocti.dirty_concocti_ingot", "Lucky drop from hitting a mob with the Concoctized status effect, induced by hitting it with Concoctized Seeds.");
         add("info.concocti.conductivium_lightning_rod", "Being more conductive than the copper variant of this block, even without thunderstorms or rain, lightning strikes can still hit this rod.");
         add("info.concocti.concocti_electron_collector", "Collects electrons from lightning strikes struck on the Conductivium Lightning Rod above it and converts them into a fluid called Molten Lightning.");
 

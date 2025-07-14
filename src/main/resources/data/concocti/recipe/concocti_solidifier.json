@@ -4,7 +4,7 @@
   "pattern": [
     "###",
     "#B#",
-    "#C#"
+    "WWW"
   ],
   "key": {
     "#": {
@@ -13,7 +13,7 @@
     "B": {
       "item": "minecraft:packed_ice"
     },
-    "C": {
+    "W": {
       "item": "minecraft:water_bucket"
     }
   },

@@ -1,0 +1,21 @@
+{
+  "type": "concocti:concocti_mixer",
+  "input_fluids": [
+    {
+      "amount": 1000,
+      "fluid": "concocti:crystalium_solution"
+    }
+  ],
+  "input_items": [
+    {
+      "count": 9,
+      "item": "concocti:raw_crystalium"
+    }
+  ],
+  "output_fluid": {
+    "amount": 1000,
+    "id": "concocti:supersaturated_crystalium_solution"
+  },
+  "output_item": {},
+  "ticks": 400
+}

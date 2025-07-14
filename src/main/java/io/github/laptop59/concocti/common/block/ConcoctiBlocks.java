@@ -2,6 +2,9 @@ package io.github.laptop59.concocti.common.block;
 
 import io.github.laptop59.concocti.common.ConcoctiRegisters;
 import io.github.laptop59.concocti.common.block.frame.FrameBlock;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LiquidBlock;
@@ -16,8 +19,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import static io.github.laptop59.concocti.common.Concocti.MODID;
+
 public class ConcoctiBlocks {
     public static final Map<DeferredBlock<? extends Block>, BlockData> BLOCK_MAP = new HashMap<>();
+
+    public static class Tags {
+        public static TagKey<Block> GUARDED_BY_ENDERMEN = TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(MODID, "guarded_by_endermen"));
+    }
 
     public static final DeferredBlock<Block> DIAMETHYST_BLOCK = registerBlock("diamethyst_block", Block::new,
             BlockBehaviour.Properties.of().mapColor(DyeColor.LIGHT_BLUE).requiresCorrectToolForDrops().explosionResistance(6).strength(6f),

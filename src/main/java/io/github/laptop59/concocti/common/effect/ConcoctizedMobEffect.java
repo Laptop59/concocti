@@ -26,6 +26,11 @@ public class ConcoctizedMobEffect extends MobEffect {
             level.addFreshEntity(new ItemEntity(level, entity.getX(), entity.getY(), entity.getZ(),
                     new ItemStack(ConcoctiItems.DIRTY_CONCOCTI_NUGGET.get(), nuggets)
             ));
+            // Chance to drop an ingot.
+            if (Math.random() < Math.clamp((0.1 * amplifier + 0.15) * Math.clamp(nuggets + 0.25f, 0, 1), 0, 0.5))
+                level.addFreshEntity(new ItemEntity(level, entity.getX(), entity.getY(), entity.getZ(),
+                        new ItemStack(ConcoctiItems.DIRTY_CONCOCTI_INGOT.get(), 1 + nuggets / 2)
+                ));
         }
     }
 }
