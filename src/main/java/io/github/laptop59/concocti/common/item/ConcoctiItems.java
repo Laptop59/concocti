@@ -58,6 +58,10 @@ public class ConcoctiItems {
     public static final DeferredItem<Item> RAW_CRYSTALIUM = registerItem("raw_crystalium", new Item.Properties());
     public static final DeferredItem<BlockItem> CRYSTALIUM_ORE = registerBlockItem(ConcoctiBlocks.CRYSTALIUM_ORE);
 
+    public static final DeferredItem<Item> LATTICIUM_NUGGET = registerItem("latticium_nugget", new Item.Properties());
+    public static final DeferredItem<Item> LATTICIUM_INGOT = registerItem("latticium_ingot", new Item.Properties());
+    public static final DeferredItem<BlockItem> LATTICIUM_BLOCK = registerBlockItem(ConcoctiBlocks.LATTICIUM_BLOCK);
+
     public static final DeferredItem<Item> ELECTROSTATIC_CONDUCTIVIUM_NUGGET = registerItem("electrostatic_conductivium_nugget", new Item.Properties());
     public static final DeferredItem<Item> ELECTROSTATIC_CONDUCTIVIUM_INGOT = registerItem("electrostatic_conductivium_ingot", new Item.Properties());
 
@@ -66,6 +70,7 @@ public class ConcoctiItems {
     public static final DeferredItem<BucketItem> MOLTEN_CONCOCTIZED_DIRT_BUCKET = registerBucketItem("molten_concoctized_dirt_bucket", ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT);
     public static final DeferredItem<BucketItem> MOLTEN_COPPER_BUCKET = registerBucketItem("molten_copper_bucket", ConcoctiFluids.MOLTEN_COPPER);
     public static final DeferredItem<BucketItem> MOLTEN_CONDUCTIVIUM_BUCKET = registerBucketItem("molten_conductivium_bucket", ConcoctiFluids.MOLTEN_CONDUCTIVIUM);
+    public static final DeferredItem<BucketItem> MOLTEN_LATTICIUM_BUCKET = registerBucketItem("molten_latticium_bucket", ConcoctiFluids.MOLTEN_LATTICIUM);
 
     public static final DeferredItem<BucketItem> CRYSTALIUM_SOLUTION_BUCKET = registerBucketItem("crystalium_solution_bucket", ConcoctiFluids.CRYSTALIUM_SOLUTION);
     public static final DeferredItem<BucketItem> SUPERSATURATED_CRYSTALIUM_SOLUTION_BUCKET = registerBucketItem("supersaturated_crystalium_solution_bucket", ConcoctiFluids.SUPERSATURATED_CRYSTALIUM_SOLUTION);
@@ -147,10 +152,12 @@ public class ConcoctiItems {
      * @return A map of the registered {@link DeferredItem}.
      */
     public static DeferredItem<? extends Item> registerMold(MoldItem.Material material, MoldItem.Type type) {
+        Item.Properties moldProperties = new Item.Properties();
+        if (material.durability != Integer.MAX_VALUE) moldProperties.durability(material.durability);
         DeferredItem<Item> item = ConcoctiRegisters.ITEMS.registerItem(
                 MoldItem.getIdentifier(material, type),
                 (properties -> new MoldItem(properties, material, type)),
-                new Item.Properties().durability(material.durability)
+                moldProperties
         );
         DISABLED_DURABILITY_TOOLTIP_ITEMS.add(item);
         addToItemList(item);
@@ -248,6 +255,10 @@ public class ConcoctiItems {
         acceptStack(output, CRYSTALIUM_INGOT);
         acceptStack(output, CRYSTALIUM_BLOCK);
 
+        acceptStack(output, LATTICIUM_NUGGET);
+        acceptStack(output, LATTICIUM_INGOT);
+        acceptStack(output, LATTICIUM_BLOCK);
+
         acceptStack(output, ELECTROSTATIC_CONDUCTIVIUM_NUGGET);
         acceptStack(output, ELECTROSTATIC_CONDUCTIVIUM_INGOT);
 
@@ -267,6 +278,7 @@ public class ConcoctiItems {
         acceptStack(output, MOLTEN_CONDUCTIVIUM_BUCKET);
         acceptStack(output, CRYSTALIUM_SOLUTION_BUCKET);
         acceptStack(output, SUPERSATURATED_CRYSTALIUM_SOLUTION_BUCKET);
+        acceptStack(output, MOLTEN_LATTICIUM_BUCKET);
 
         for (Map.Entry<MoldItem.Material, Map<MoldItem.Type, DeferredItem<? extends Item>>> entry : MOLDS.entrySet()) {
             acceptStack(output, MOLD_BASES.get(entry.getKey()));

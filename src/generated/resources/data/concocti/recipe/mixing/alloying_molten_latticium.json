@@ -1,0 +1,25 @@
+{
+  "type": "concocti:concocti_mixer",
+  "input_fluids": [
+    {
+      "amount": 16,
+      "fluid": "concocti:molten_tough_concocti"
+    }
+  ],
+  "input_items": [
+    {
+      "count": 2,
+      "item": "minecraft:coal"
+    },
+    {
+      "count": 1,
+      "item": "minecraft:quartz"
+    }
+  ],
+  "output_fluid": {
+    "amount": 64,
+    "id": "concocti:molten_latticium"
+  },
+  "output_item": {},
+  "ticks": 40
+}

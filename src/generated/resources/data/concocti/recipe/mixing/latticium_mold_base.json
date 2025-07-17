@@ -1,0 +1,20 @@
+{
+  "type": "concocti:concocti_mixer",
+  "input_fluids": [],
+  "input_items": [
+    {
+      "count": 1,
+      "item": "concocti:latticium_ingot"
+    },
+    {
+      "count": 1,
+      "item": "concocti:tough_concocti_nugget"
+    }
+  ],
+  "output_fluid": {},
+  "output_item": {
+    "count": 1,
+    "id": "concocti:latticium_mold_base"
+  },
+  "ticks": 80
+}

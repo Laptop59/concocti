@@ -62,6 +62,16 @@ public class ConcoctiBlocks {
                     .isViewBlocking((blockState, blockGetter, blockPos) -> false),
             new BlockData(BlockToolRank.DIAMOND, BlockToolType.PICKAXE));
 
+    public static final DeferredBlock<Block> LATTICIUM_BLOCK = registerBlock("latticium_block", Block::new,
+            BlockBehaviour.Properties.of()
+                    .mapColor(DyeColor.BLACK)
+                    .requiresCorrectToolForDrops()
+                    .explosionResistance(200000)
+                    .strength(400000f)
+                    .noOcclusion()
+                    .isViewBlocking((blockState, blockGetter, blockPos) -> false),
+            new BlockData(BlockToolRank.NETHERITE, BlockToolType.PICKAXE));
+
     public static final DeferredBlock<Block> CRYSTALIUM_ORE = registerBlock("crystalium_ore", Block::new,
             BlockBehaviour.Properties.of().mapColor(DyeColor.MAGENTA).requiresCorrectToolForDrops().explosionResistance(10).strength(6f),
             new BlockData(BlockToolRank.DIAMOND, BlockToolType.PICKAXE));

@@ -1,0 +1,20 @@
+{
+  "type": "concocti:concocti_mixer",
+  "input_fluids": [],
+  "input_items": [
+    {
+      "count": 1,
+      "item": "concocti:latticium_mold_base"
+    },
+    {
+      "count": 1,
+      "tag": "c:nuggets"
+    }
+  ],
+  "output_fluid": {},
+  "output_item": {
+    "count": 1,
+    "id": "concocti:latticium_nugget_mold"
+  },
+  "ticks": 40
+}

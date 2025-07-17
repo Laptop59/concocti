@@ -28,9 +28,12 @@ public class MoldBaseItem extends Item {
     public void appendHoverText(@NotNull ItemStack stack, @NotNull TooltipContext context,
                                 @NotNull List<Component> tooltipComponents, @NotNull TooltipFlag tooltipFlag) {
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+        String durability = "∞";
+        if (material.durability != Integer.MAX_VALUE)
+            durability = String.valueOf(material.durability);
         tooltipComponents.add(Component.translatable("screen.concocti.mold_base_" +
                                 "durability_info",
-                        Component.literal(String.valueOf(material.durability)).withColor(material.getColor())
+                        Component.literal(durability).withColor(material.getColor())
                 ).withStyle(ChatFormatting.DARK_GRAY)
         );
     }

@@ -3,6 +3,7 @@
     "#c:nuggets/concocti",
     "concocti:conductivium_nugget",
     "concocti:electrostatic_conductivium_nugget",
-    "concocti:crystalium_nugget"
+    "concocti:crystalium_nugget",
+    "concocti:latticium_nugget"
   ]
 }

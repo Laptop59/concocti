@@ -3,6 +3,7 @@
     "#c:ingots/concocti",
     "concocti:conductivium_ingot",
     "concocti:electrostatic_conductivium_ingot",
-    "concocti:crystalium_ingot"
+    "concocti:crystalium_ingot",
+    "concocti:latticium_ingot"
   ]
 }

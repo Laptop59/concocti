@@ -3,6 +3,7 @@
     "#c:storage_blocks/concocti",
     "concocti:diamethyst_block",
     "concocti:conductivium_block",
-    "concocti:crystalium_block"
+    "concocti:crystalium_block",
+    "concocti:latticium_block"
   ]
 }
