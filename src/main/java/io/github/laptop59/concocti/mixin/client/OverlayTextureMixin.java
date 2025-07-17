@@ -13,10 +13,10 @@ public class OverlayTextureMixin {
     @Inject(
             method = "<init>", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/NativeImage;setPixelRGBA(III)V", shift = At.Shift.AFTER)
     )
-    private void concocti$setOverlayColor(CallbackInfo ci, @Local(ordinal = 0) int i, @Local(ordinal = 1) int j, @Local(name = "nativeimage") NativeImage image) {
+    private void concocti$setOverlayColor(CallbackInfo ci, @Local(ordinal = 0) int i, @Local(ordinal = 1) int j, @Local(ordinal = 0) NativeImage nativeimage) {
         if (i < 3) {
             // We tint the mob "purple".
-            image.setPixelRGBA(j, i, -1295765639);
+            nativeimage.setPixelRGBA(j, i, -1295765639);
         }
     }
 }

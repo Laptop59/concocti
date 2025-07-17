@@ -8,6 +8,7 @@ import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
+import io.github.laptop59.concocti.common.util.Lazy;
 import io.github.laptop59.concocti.integration.jei.AbstractConcoctiRecipeCategory;
 import mezz.jei.api.helpers.IGuiHelper;
 import net.minecraft.client.gui.screens.MenuScreens;
@@ -33,6 +34,8 @@ import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.function.Supplier;
 
 import static io.github.laptop59.concocti.common.ConcoctiRegisters.*;
@@ -56,7 +59,7 @@ public abstract class ConcoctiMachine<
     public final Supplier<RecipeType<R>> RECIPE_TYPE;
     public final Supplier<Z> RECIPE_SERIALIZER;
     public final Supplier<MenuType<M>> MENU;
-    public final mezz.jei.api.recipe.RecipeType<R> JEI_RECIPE_TYPE;
+    public final Lazy<?> JEI_RECIPE_TYPE;
     public final BlockBehaviour.Properties BLOCK_BEHAVIOUR_PROPERTIES;
     public final ConcoctiBlocks.BlockData BLOCK_DATA;
     public final String ID;
@@ -105,7 +108,16 @@ public abstract class ConcoctiMachine<
         );
         RECIPE_SERIALIZER = ConcoctiRegisters.RECIPE_SERIALIZERS.register(id, getRecipeSerializerConstructor());
         MENU = MENUS.register(id + "_menu", () -> new MenuType<>(getMenuClientConstructor(), FeatureFlags.DEFAULT_FLAGS));
-        JEI_RECIPE_TYPE = mezz.jei.api.recipe.RecipeType.create(Concocti.MODID, id, getRecipeClass());
+        JEI_RECIPE_TYPE = new Lazy<>(() -> {
+            try {
+                Class<?> recipeTypeJeiClass = Class.forName("mezz.jei.api.recipe.RecipeType");
+                Method method = recipeTypeJeiClass.getMethod("create", String.class, String.class, Class.class);
+                return method.invoke(null, Concocti.MODID, id, getRecipeClass());
+                // mezz.jei.api.recipe.RecipeType.create(Concocti.MODID, id, getRecipeClass());
+            } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        });
         BLOCK_BEHAVIOUR_PROPERTIES = properties;
         BLOCK_DATA = blockData;
         ConcoctiBlocks.BLOCK_MAP.put(BLOCK, BLOCK_DATA);
@@ -151,7 +163,9 @@ public abstract class ConcoctiMachine<
         return getDetails().get().blockEntityClass();
     }
 
-    ;
+    public final Object getJeiRecipeType() {
+        return JEI_RECIPE_TYPE.get();
+    }
 
     /**
      * Get the constructor of this machine's block class.

@@ -62,12 +62,18 @@ public class ConcoctiJeiPlugin implements IModPlugin {
         registerInfos(registration);
     }
 
+    @SuppressWarnings("unchecked")
+    private <R extends ProcessingRecipe<R, I>, I extends RecipeInput> mezz.jei.api.recipe.RecipeType<R> getJeiRecipeType(ConcoctiMachine<?, ?, ?, I, R, ?, ?, ?, ?> machine) {
+        return (mezz.jei.api.recipe.RecipeType<R>) machine.JEI_RECIPE_TYPE.get();
+    }
+
+    @SuppressWarnings("unchecked")
     private <R extends ProcessingRecipe<R, I>, I extends RecipeInput> void registerRecipesFor(
             IRecipeRegistration registration,
             RecipeManager manager,
             ConcoctiMachine<?, ?, ?, I, R, ?, ?, ?, ?> machine
     ) {
-        registerRecipesFor(registration, manager, machine.RECIPE_TYPE.get(), machine.JEI_RECIPE_TYPE);
+        registerRecipesFor(registration, manager, machine.RECIPE_TYPE.get(), getJeiRecipeType(machine));
         if (machine == ConcoctiMachines.ENERGY_GENERATOR) {
             final var registry = Minecraft.getInstance().level.registryAccess().registryOrThrow(Registries.ITEM);
             var datamap = registry.getDataMap(NeoForgeDataMaps.FURNACE_FUELS);
@@ -93,7 +99,7 @@ public class ConcoctiJeiPlugin implements IModPlugin {
                 );
                 proxies.add(proxy);
             }
-            registration.addRecipes(ConcoctiMachines.ENERGY_GENERATOR.JEI_RECIPE_TYPE, proxies);
+            registration.addRecipes(getJeiRecipeType(ConcoctiMachines.ENERGY_GENERATOR), proxies);
         }
     }
 
@@ -101,7 +107,7 @@ public class ConcoctiJeiPlugin implements IModPlugin {
             IRecipeCatalystRegistration registration,
             ConcoctiMachine<?, ?, ?, I, R, ?, ?, ?, ?> machine
     ) {
-        registration.addRecipeCatalyst(new ItemStack(machine.BLOCK.get()), machine.JEI_RECIPE_TYPE);
+        registration.addRecipeCatalyst(new ItemStack(machine.BLOCK.get()), getJeiRecipeType(machine));
     }
 
     private <C extends AbstractConcoctiRecipeCategory<R>, R extends ProcessingRecipe<R, I>, I extends RecipeInput> void registerRecipeCategoryFor(
