@@ -549,8 +549,9 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public @NotNull mezz.jei.api.recipe.RecipeType<Recipe> getRecipeType() {
-            return INSTANCE.JEI_RECIPE_TYPE;
+            return (mezz.jei.api.recipe.RecipeType<Recipe>) INSTANCE.getJeiRecipeType();
         }
 
         @Override
