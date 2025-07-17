@@ -1,0 +1,16 @@
+{
+  "type": "concocti:concocti_solidifier",
+  "base_item": [],
+  "input_fluid": {
+    "amount": 144,
+    "fluid": "concocti:molten_tough_concocti"
+  },
+  "mold": {
+    "tag": "concocti:molds/ingot"
+  },
+  "output_item": {
+    "count": 1,
+    "id": "concocti:tough_concocti_ingot"
+  },
+  "ticks": 640
+}

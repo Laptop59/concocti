@@ -1,0 +1,15 @@
+{
+  "type": "concocti:concocti_crystallizer",
+  "input_fluid": {
+    "amount": 50,
+    "fluid": "concocti:supersaturated_crystalium_solution"
+  },
+  "output_item": {
+    "count": 4,
+    "id": "concocti:crystalium_nugget"
+  },
+  "seed_crystal": {
+    "item": "concocti:crystalium_nugget"
+  },
+  "ticks": 100
+}

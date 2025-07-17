@@ -13,6 +13,7 @@ public final class ConcoctiMachines {
     public static ConcoctiEnergyGenerator ENERGY_GENERATOR;
     public static ConcoctiMixer MIXER;
     public static ConcoctiElectronCollector ELECTRON_COLLECTOR;
+    public static ConcoctiCrystallizer CRYSTALLIZER;
 
     private static <T extends ConcoctiMachine<?, ?, ?, ?, ?, ?, ?, ?, ?>> T register(T machine) {
         MACHINES.add(machine);
@@ -25,6 +26,7 @@ public final class ConcoctiMachines {
         ENERGY_GENERATOR = register(new ConcoctiEnergyGenerator());
         MIXER = register(new ConcoctiMixer());
         ELECTRON_COLLECTOR = register(new ConcoctiElectronCollector());
+        CRYSTALLIZER = register(new ConcoctiCrystallizer());
     }
 
     public static void forEach(Consumer<ConcoctiMachine<?, ?, ?, ?, ?, ?, ?, ?, ?>> consumer) {

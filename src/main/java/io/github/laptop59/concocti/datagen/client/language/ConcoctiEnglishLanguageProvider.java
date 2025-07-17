@@ -43,6 +43,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiMachines.ENERGY_GENERATOR.BLOCK, "Concocti Energy Generator");
         add(ConcoctiMachines.MIXER.BLOCK, "Concocti Mixer");
         add(ConcoctiMachines.ELECTRON_COLLECTOR.BLOCK, "Concocti Electron Collector");
+        add(ConcoctiMachines.CRYSTALLIZER.BLOCK, "Concocti Crystallizer");
 
         // Blocks go here.
         add(ConcoctiBlocks.DIAMETHYST_BLOCK, "Block of Diamethyst");
@@ -72,6 +73,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiItems.CONDUCTIVIUM_NUGGET, "Conductivium Nugget");
         add(ConcoctiItems.CONDUCTIVIUM_INGOT, "Conductivium Ingot");
         add(ConcoctiItems.MOLTEN_CONCOCTI_BUCKET, "Bucket of Molten Concocti");
+        add(ConcoctiItems.MOLTEN_TOUGH_CONCOCTI_BUCKET, "Bucket of Molten Tough Concocti");
         add(ConcoctiItems.MOLTEN_CONCOCTIZED_DIRT_BUCKET, "Bucket of Molten Concoctized Dirt");
         add(ConcoctiItems.MOLTEN_COPPER_BUCKET, "Bucket of Molten Copper");
         add(ConcoctiItems.MOLTEN_CONDUCTIVIUM_BUCKET, "Bucket of Molten Conductivium");
@@ -93,6 +95,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
 
         // Fluid types go here.
         add(ConcoctiFluids.MOLTEN_CONCOCTI, "Molten Concocti");
+        add(ConcoctiFluids.MOLTEN_TOUGH_CONCOCTI, "Molten Tough Concocti");
         add(ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT, "Molten Concoctized Dirt");
         add(ConcoctiFluids.MOLTEN_COPPER, "Molten Copper");
         add(ConcoctiFluids.MOLTEN_CONDUCTIVIUM, "Molten Conductivium");

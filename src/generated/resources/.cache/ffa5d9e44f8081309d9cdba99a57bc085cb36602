@@ -1,4 +1,4 @@
-// 1.21.1	2025-07-13T21:07:13.604581012	Item Models: concocti
+// 1.21.1	2025-07-15T13:59:57.681370805	Item Models: concocti
 9860ec1d2840f2feb3028da96207cecc0c5e3f62 assets/concocti/models/item/advanced_concocti_frame.json
 dd158e01c0d63b3f0b51a1b83e0a0dd4bb49c1c5 assets/concocti/models/item/basic_concocti_frame.json
 cf580921ecb218d04b6901c60c3a8ac60a25b83e assets/concocti/models/item/compact_concocti_upgrade.json
@@ -8,6 +8,7 @@ cf580921ecb218d04b6901c60c3a8ac60a25b83e assets/concocti/models/item/compact_con
 0f7740711423b91a9b647135a67a16e4401cdd83 assets/concocti/models/item/compressed_concocti_ingot.json
 e3a05b422cc5c9cf8347d5af9e2bab2042c5394c assets/concocti/models/item/compressed_concocti_nugget.json
 736db04630b72d46c17a083cf1a0ff1a54504958 assets/concocti/models/item/concocti_bricks.json
+2eaabb465c9a08ec5336e1aa938d36b0120de672 assets/concocti/models/item/concocti_crystallizer.json
 07b4b65fa76ccb0df9cda20738d3b76c0229144f assets/concocti/models/item/concocti_electron_collector.json
 04826a1f5bc06afdf1220a58f65cae9af229215d assets/concocti/models/item/concocti_energy_generator.json
 0c8bca9d0cf449a7a6350656ebedbefc2159cdd0 assets/concocti/models/item/concocti_melter.json
@@ -40,6 +41,7 @@ f6b20d387573b20b7afa079194ecd7177f69d662 assets/concocti/models/item/molten_conc
 7b6c9836131bc70554fc0120dc23845469fd2d80 assets/concocti/models/item/molten_concoctized_dirt_bucket.json
 010909be8a5c097a5ae073f40d01d3b3a98a7c0b assets/concocti/models/item/molten_conductivium_bucket.json
 4a519d575ef3d87e07e15f6d1f89bc7ea6e04278 assets/concocti/models/item/molten_copper_bucket.json
+43f9b1548cf269767cbfd01ec5ec56fb3da7a43c assets/concocti/models/item/molten_tough_concocti_bucket.json
 2ae32a256d3b05256a574728c79daa0840632fe3 assets/concocti/models/item/purified_concocti_block.json
 85888f0e2f0f4e55983fe4e423befcf8c7b844dc assets/concocti/models/item/purified_concocti_ingot.json
 76583167b2da295d11057c296416a880da0c6a29 assets/concocti/models/item/purified_concocti_nugget.json

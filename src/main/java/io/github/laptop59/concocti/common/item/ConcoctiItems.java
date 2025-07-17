@@ -62,6 +62,7 @@ public class ConcoctiItems {
     public static final DeferredItem<Item> ELECTROSTATIC_CONDUCTIVIUM_INGOT = registerItem("electrostatic_conductivium_ingot", new Item.Properties());
 
     public static final DeferredItem<BucketItem> MOLTEN_CONCOCTI_BUCKET = registerBucketItem("molten_concocti_bucket", ConcoctiFluids.MOLTEN_CONCOCTI);
+    public static final DeferredItem<BucketItem> MOLTEN_TOUGH_CONCOCTI_BUCKET = registerBucketItem("molten_tough_concocti_bucket", ConcoctiFluids.MOLTEN_TOUGH_CONCOCTI);
     public static final DeferredItem<BucketItem> MOLTEN_CONCOCTIZED_DIRT_BUCKET = registerBucketItem("molten_concoctized_dirt_bucket", ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT);
     public static final DeferredItem<BucketItem> MOLTEN_COPPER_BUCKET = registerBucketItem("molten_copper_bucket", ConcoctiFluids.MOLTEN_COPPER);
     public static final DeferredItem<BucketItem> MOLTEN_CONDUCTIVIUM_BUCKET = registerBucketItem("molten_conductivium_bucket", ConcoctiFluids.MOLTEN_CONDUCTIVIUM);
@@ -260,6 +261,7 @@ public class ConcoctiItems {
         acceptStack(output, ADVANCED_CONCOCTI_FRAME);
 
         acceptStack(output, MOLTEN_CONCOCTI_BUCKET);
+        acceptStack(output, MOLTEN_TOUGH_CONCOCTI_BUCKET);
         acceptStack(output, MOLTEN_CONCOCTIZED_DIRT_BUCKET);
         acceptStack(output, MOLTEN_COPPER_BUCKET);
         acceptStack(output, MOLTEN_CONDUCTIVIUM_BUCKET);

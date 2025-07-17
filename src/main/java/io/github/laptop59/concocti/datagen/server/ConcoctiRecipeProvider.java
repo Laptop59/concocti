@@ -1,5 +1,6 @@
 package io.github.laptop59.concocti.datagen.server;
 
+import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.item.MoldItem;
@@ -17,6 +18,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -99,17 +102,22 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
         concoctiMelterRecipe(output, Items.BLUE_ICE, 640, new FluidStack(Fluids.WATER, 81000));
 
         // Concocti Solidifier Recipes
-        concoctiSolidifierRecipe(output, null, Items.CAULDRON, new FluidStack(Fluids.WATER, 1000),
-                40, new ItemStack(Items.ICE));
-        concoctiSolidifierRecipe(output, null, Items.CAULDRON,
-                new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_BLOCK), 5 * 8 * 8,
-                new ItemStack(ConcoctiItems.PURIFIED_CONCOCTI_BLOCK.get()));
-        concoctiSolidifierRecipe(output, null, Items.CAULDRON,
-                new FluidStack(ConcoctiFluids.MOLTEN_COPPER, ConcoctiConstants.MOLTEN_BLOCK), 5 * 8 * 8,
-                new ItemStack(Items.COPPER_BLOCK));
-        concoctiSolidifierRecipe(output, null, Items.CAULDRON,
-                new FluidStack(ConcoctiFluids.MOLTEN_CONDUCTIVIUM, ConcoctiConstants.MOLTEN_BLOCK), 20 * 8 * 8,
-                new ItemStack(ConcoctiItems.CONDUCTIVIUM_BLOCK.get()));
+        {
+            concoctiSolidifierRecipe(output, null, Items.CAULDRON, new FluidStack(Fluids.WATER, 1000),
+                    40, new ItemStack(Items.ICE));
+            concoctiSolidifierRecipe(output, null, Items.CAULDRON,
+                    new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_BLOCK), 5 * 8 * 8,
+                    new ItemStack(ConcoctiItems.PURIFIED_CONCOCTI_BLOCK.get()));
+            concoctiSolidifierRecipe(output, null, Items.CAULDRON,
+                    new FluidStack(ConcoctiFluids.MOLTEN_COPPER, ConcoctiConstants.MOLTEN_BLOCK), 5 * 8 * 8,
+                    new ItemStack(Items.COPPER_BLOCK));
+            concoctiSolidifierRecipe(output, null, Items.CAULDRON,
+                    new FluidStack(ConcoctiFluids.MOLTEN_CONDUCTIVIUM, ConcoctiConstants.MOLTEN_BLOCK), 20 * 8 * 8,
+                    new ItemStack(ConcoctiItems.CONDUCTIVIUM_BLOCK.get()));
+            concoctiSolidifierRecipe(output, null, Items.CAULDRON,
+                    new FluidStack(ConcoctiFluids.MOLTEN_TOUGH_CONCOCTI, ConcoctiConstants.MOLTEN_BLOCK), 80 * 8 * 8,
+                    new ItemStack(ConcoctiItems.TOUGH_CONCOCTI_BLOCK.get()));
+        }
 
         // Using a convenient method for registering multiple recipes with same mold type:
         concoctiSolidifierRecipe(output, MoldItem.Type.NUGGET, List.of(
@@ -124,6 +132,12 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                         null,
                         new FluidStack(ConcoctiFluids.MOLTEN_CONDUCTIVIUM, ConcoctiConstants.MOLTEN_NUGGET),
                         20
+                ),
+                new ConcoctiMoldingSolidifierRecipe(
+                        new ItemStack(ConcoctiItems.TOUGH_CONCOCTI_NUGGET.get(), 1),
+                        null,
+                        new FluidStack(ConcoctiFluids.MOLTEN_TOUGH_CONCOCTI, ConcoctiConstants.MOLTEN_NUGGET),
+                        80
                 )
         ));
         concoctiSolidifierRecipe(output, MoldItem.Type.INGOT, List.of(
@@ -144,6 +158,12 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                         null,
                         new FluidStack(ConcoctiFluids.MOLTEN_CONDUCTIVIUM, ConcoctiConstants.MOLTEN_INGOT),
                         20 * 8
+                ),
+                new ConcoctiMoldingSolidifierRecipe(
+                        new ItemStack(ConcoctiItems.TOUGH_CONCOCTI_INGOT.get(), 1),
+                        null,
+                        new FluidStack(ConcoctiFluids.MOLTEN_TOUGH_CONCOCTI, ConcoctiConstants.MOLTEN_INGOT),
+                        80 * 8
                 )
         ));
 
@@ -199,9 +219,49 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 "crystalium_nugget",
                 20 * 45,
                 List.of(),
-                List.of(SizedFluidIngredient.of(ConcoctiFluids.SUPERSATURATED_CRYSTALIUM_SOLUTION.get(), 100)),
+                List.of(SizedFluidIngredient.of(ConcoctiFluids.SUPERSATURATED_CRYSTALIUM_SOLUTION.get(), 200)),
                 new ItemStack(ConcoctiItems.CRYSTALIUM_NUGGET.get(), 1),
                 new FluidStack(Fluids.WATER, 100)
+        );
+
+        concoctiMixerRecipe(output,
+                "crystalium_ore_extraction",
+                20 * 60,
+                List.of(
+                        SizedIngredient.of(ConcoctiBlocks.CRYSTALIUM_ORE.get(), 3)
+                ),
+                List.of(
+                        SizedFluidIngredient.of(Fluids.WATER, 500)
+                ),
+                new ItemStack(Blocks.END_STONE, 2),
+                new FluidStack(ConcoctiFluids.CRYSTALIUM_SOLUTION.get(), 500)
+        );
+
+        concoctiMixerRecipe(output,
+                "boiling_crystalium_solution_to_supersaturation",
+                10 * 15,
+                List.of(
+                        SizedIngredient.of(ConcoctiItems.CRYSTALIUM_NUGGET.get(), 1)
+                ),
+                List.of(
+                        SizedFluidIngredient.of(ConcoctiFluids.CRYSTALIUM_SOLUTION.get(), 300)
+                ),
+                null,
+                new FluidStack(ConcoctiFluids.SUPERSATURATED_CRYSTALIUM_SOLUTION.get(), 200)
+        );
+
+        concoctiMixerRecipe(output,
+                "alloying_tough_concocti_ingot",
+                20 * 20,
+                List.of(
+                        SizedIngredient.of(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_INGOT.get(), 1),
+                        SizedIngredient.of(ConcoctiItems.CRYSTALIUM_INGOT.get(), 1)
+                ),
+                List.of(
+                        SizedFluidIngredient.of(ConcoctiFluids.MOLTEN_CONCOCTI.get(), 2 * ConcoctiConstants.MOLTEN_INGOT)
+                ),
+                null,
+                new FluidStack(ConcoctiFluids.MOLTEN_TOUGH_CONCOCTI.get(), 4 * ConcoctiConstants.MOLTEN_INGOT)
         );
 
         // Mold recipes
@@ -229,6 +289,50 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
 
         // Concocti Electron Collector Recipe
         concoctiElectronCollectorRecipe(output, 30 * 20, 0.5f, new FluidStack(ConcoctiFluids.MOLTEN_LIGHTNING, 1));
+
+        // Concocti Crystallizer Recipes
+        concoctiCrystallizerRecipe(
+                output,
+                Ingredient.of(ConcoctiItems.CRYSTALIUM_NUGGET),
+                new FluidStack(ConcoctiFluids.SUPERSATURATED_CRYSTALIUM_SOLUTION, 50),
+                5 * 20,
+                new ItemStack(ConcoctiItems.CRYSTALIUM_NUGGET.get(), 4)
+        );
+        concoctiCrystallizerRecipe(
+                output,
+                Ingredient.of(ConcoctiItems.CRYSTALIUM_INGOT),
+                new FluidStack(ConcoctiFluids.SUPERSATURATED_CRYSTALIUM_SOLUTION, 50 * 9 * 2/3),
+                5 * 8 * 20,
+                new ItemStack(ConcoctiItems.CRYSTALIUM_INGOT.get(), 3)
+        );
+        concoctiCrystallizerRecipe(
+                output,
+                Ingredient.of(ConcoctiItems.CRYSTALIUM_BLOCK),
+                new FluidStack(ConcoctiFluids.SUPERSATURATED_CRYSTALIUM_SOLUTION, 50 * 81 * 1/3),
+                5 * 64 * 20,
+                new ItemStack(ConcoctiItems.CRYSTALIUM_BLOCK.get(), 2)
+        );
+        concoctiCrystallizerRecipe(
+                output,
+                Ingredient.of(Items.ICE),
+                new FluidStack(Fluids.WATER, 1000),
+                5,
+                new ItemStack(Items.ICE, 2)
+        );
+        concoctiCrystallizerRecipe(
+                output,
+                Ingredient.of(Items.PACKED_ICE),
+                new FluidStack(Fluids.WATER, 9000),
+                15,
+                new ItemStack(Items.PACKED_ICE, 2)
+        );
+        concoctiCrystallizerRecipe(
+                output,
+                Ingredient.of(Items.BLUE_ICE),
+                new FluidStack(Fluids.WATER, 81000),
+                75,
+                new ItemStack(Items.BLUE_ICE, 2)
+        );
     }
 
     private static void concoctiSolidifierRecipe(RecipeOutput output, MoldItem.Type type, List<ConcoctiMoldingSolidifierRecipe> recipeList) {
@@ -342,6 +446,19 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
         new ConcoctiSolidifier.Recipe.Builder(
                 baseItem == null ? Ingredient.EMPTY : baseItem,
                 mold,
+                SizedFluidIngredient.of(inputFluid),
+                outputItem,
+                ticks
+        ).save(output);
+    }
+
+    /**
+     * Generates a Concocti Crystallizer Recipe that uses a seed crystal to crystallize a fluid.
+     */
+    private static void concoctiCrystallizerRecipe(RecipeOutput output, Ingredient seedCrystal,
+                                                   FluidStack inputFluid, int ticks, ItemStack outputItem) {
+        new ConcoctiCrystallizer.Recipe.Builder(
+                seedCrystal,
                 SizedFluidIngredient.of(inputFluid),
                 outputItem,
                 ticks

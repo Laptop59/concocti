@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "#A#",
+    "#S#",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "concocti:purified_concocti_ingot"
+    },
+    "A": {
+      "item": "minecraft:amethyst_shard"
+    },
+    "S": {
+      "item": "minecraft:string"
+    }
+  },
+  "result": {
+    "id": "concocti:concocti_crystallizer",
+    "count": 1
+  }
+}
