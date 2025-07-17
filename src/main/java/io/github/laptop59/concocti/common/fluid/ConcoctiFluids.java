@@ -179,4 +179,24 @@ public class ConcoctiFluids {
     public static final DeferredBlock<LiquidBlock> SUPERSATURATED_CRYSTALIUM_SOLUTION_BLOCK = ConcoctiBlocks.registerFluidBlock("supersaturated_crystalium_solution", SUPERSATURATED_CRYSTALIUM_SOLUTION,
             BlockBehaviour.Properties.ofFullCopy(Blocks.WATER).mapColor(DyeColor.PINK)
     );
+
+    public static final DeferredHolder<Fluid, FlowingFluid> MOLTEN_LATTICIUM = ConcoctiRegisters.FLUIDS.register("molten_latticium", (loc) -> new MoltenLatticiumFluid.Source());
+    public static final DeferredHolder<Fluid, FlowingFluid> FLOWING_MOLTEN_LATTICIUM = ConcoctiRegisters.FLUIDS.register("flowing_molten_latticium", (loc) -> new MoltenLatticiumFluid.Flowing());
+
+    public static final DeferredHolder<FluidType, FluidType> MOLTEN_LATTICIUM_FLUID_TYPE = ConcoctiRegisters.FLUID_TYPES.register("molten_latticium",
+            (loc) -> new FluidType(
+                    FluidType.Properties.create()
+                            .temperature(2500)
+                            .lightLevel(0)
+                            .viscosity(10)
+                            .density(10)
+                            .canConvertToSource(false)
+                            .canDrown(false)
+                            .canSwim(true)
+            )
+    );
+
+    public static final DeferredBlock<LiquidBlock> MOLTEN_LATTICIUM_BLOCK = ConcoctiBlocks.registerFluidBlock("molten_latticium", MOLTEN_LATTICIUM,
+            BlockBehaviour.Properties.ofFullCopy(Blocks.LAVA).mapColor(DyeColor.BLACK)
+    );
 }

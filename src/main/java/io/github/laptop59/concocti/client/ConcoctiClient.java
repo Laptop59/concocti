@@ -115,5 +115,16 @@ public class ConcoctiClient {
                 return ResourceLocation.fromNamespaceAndPath(MODID, "block/supersaturated_crystalium_solution_flow");
             }
         }, ConcoctiFluids.SUPERSATURATED_CRYSTALIUM_SOLUTION_FLUID_TYPE);
+        event.registerFluidType(new IClientFluidTypeExtensions() {
+            @Override
+            public @NotNull ResourceLocation getStillTexture() {
+                return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_latticium_still");
+            }
+
+            @Override
+            public @NotNull ResourceLocation getFlowingTexture() {
+                return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_latticium_flow");
+            }
+        }, ConcoctiFluids.MOLTEN_LATTICIUM_FLUID_TYPE);
     }
 }

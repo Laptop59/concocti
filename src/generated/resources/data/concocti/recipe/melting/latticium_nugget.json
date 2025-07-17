@@ -1,0 +1,13 @@
+{
+  "type": "concocti:concocti_melter",
+  "byproduct_result": {},
+  "ingredient": {
+    "count": 1,
+    "item": "concocti:latticium_nugget"
+  },
+  "pure_result": {
+    "amount": 16,
+    "id": "concocti:molten_latticium"
+  },
+  "ticks": 320
+}

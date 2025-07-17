@@ -21,21 +21,34 @@ public class MoldItem extends Item {
      * Material of a mold.
      */
     public enum Material implements Comparable<Material> {
-        COPPER(16, "copper", 19),
-        DIAMOND(64, "diamond", 184);
+        COPPER(32, "copper", 19),
+        DIAMOND(128, "diamond", 184),
+        LATTICIUM(Integer.MAX_VALUE, "latticium", 0, 0, 0.3f);
 
         public final int durability;
         public final String prefix;
         public final float hue;
+        public final float saturation;
+        public final float brightness;
 
         Material(int durability, String prefix, float hue) {
             this.durability = durability;
             this.prefix = prefix;
             this.hue = hue;
+            this.saturation = 0.40f;
+            this.brightness = 1f;
+        }
+
+        Material(int durability, String prefix, float hue, float saturation, float brightness) {
+            this.durability = durability;
+            this.prefix = prefix;
+            this.hue = hue;
+            this.saturation = saturation;
+            this.brightness = brightness;
         }
 
         public int getColor() {
-            return Color.getHSBColor(hue / 360f, 0.16f, 1f).getRGB();
+            return Color.getHSBColor(hue / 360f, saturation, brightness).getRGB();
         }
     }
 
@@ -96,10 +109,17 @@ public class MoldItem extends Item {
 
         int color = material.getColor();
 
-        tooltipComponents.add(Component.translatable("screen.concocti.durability_info",
-                        Component.literal(String.valueOf(left)).withColor(color),
-                        Component.literal(String.valueOf(total)).withColor(color)
-                ).withStyle(ChatFormatting.DARK_GRAY)
-        );
+        if (material.durability != Integer.MAX_VALUE) {
+            tooltipComponents.add(Component.translatable("screen.concocti.durability_info",
+                            Component.literal(String.valueOf(left)).withColor(color),
+                            Component.literal(String.valueOf(total)).withColor(color)
+                    ).withStyle(ChatFormatting.DARK_GRAY)
+            );
+        } else {
+            tooltipComponents.add(Component.translatable("screen.concocti.infinite_durability_info",
+                            Component.literal("∞").withColor(color)
+                    ).withStyle(ChatFormatting.DARK_GRAY)
+            );
+        }
     }
 }

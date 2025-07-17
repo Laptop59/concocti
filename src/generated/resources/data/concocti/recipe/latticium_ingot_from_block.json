@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "concocti:latticium_block"
+    }
+  ],
+  "result": {
+    "count": 9,
+    "id": "concocti:latticium_ingot"
+  }
+}

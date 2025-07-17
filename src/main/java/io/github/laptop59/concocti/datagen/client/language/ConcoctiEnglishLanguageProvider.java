@@ -58,6 +58,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiBlocks.CONDUCTIVIUM_LIGHTNING_ROD, "Conductivium Lightning Rod");
         add(ConcoctiBlocks.CRYSTALIUM_BLOCK, "Block of Crystalium");
         add(ConcoctiBlocks.CRYSTALIUM_ORE, "Crystalium Ore");
+        add(ConcoctiBlocks.LATTICIUM_BLOCK, "Latticium Block");
 
         // Items go here.
         add(ConcoctiItems.DIAMETHYST_CRYSTAL, "Diamethyst Crystal");
@@ -79,6 +80,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiItems.MOLTEN_CONDUCTIVIUM_BUCKET, "Bucket of Molten Conductivium");
         add(ConcoctiItems.CRYSTALIUM_SOLUTION_BUCKET, "Bucket of Crystalium Solution");
         add(ConcoctiItems.SUPERSATURATED_CRYSTALIUM_SOLUTION_BUCKET, "Bucket of Supersaturated Crystalium Solution");
+        add(ConcoctiItems.MOLTEN_LATTICIUM_BUCKET, "Bucket of Molten Latticium");
         add(ConcoctiItems.COMPACT_CONCOCTI_UPGRADE, "Compact Concocti Upgrade");
         add(ConcoctiItems.COMPACTER_CONCOCTI_UPGRADE, "Compacter Concocti Upgrade");
         add(ConcoctiItems.COMPACTEST_CONCOCTI_UPGRADE, "Compactest Concocti Upgrade");
@@ -87,6 +89,8 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiItems.CRYSTALIUM_NUGGET, "Crystalium Nugget");
         add(ConcoctiItems.CRYSTALIUM_INGOT, "Crystalium Ingot");
         add(ConcoctiItems.RAW_CRYSTALIUM, "Raw Crystalium");
+        add(ConcoctiItems.LATTICIUM_NUGGET, "Latticium Nugget");
+        add(ConcoctiItems.LATTICIUM_INGOT, "Latticium Ingot");
 
         add(ConcoctiItems.Tags.CONCOCTI_UPGRADES, "Concocti Upgrades");
         for (Map.Entry<MoldItem.Type, TagKey<Item>> moldType : ConcoctiItems.Tags.MOLDS.entrySet()) {
@@ -102,6 +106,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiFluids.MOLTEN_LIGHTNING, "Molten Lightning");
         add(ConcoctiFluids.CRYSTALIUM_SOLUTION, "Crystalium Solution");
         add(ConcoctiFluids.SUPERSATURATED_CRYSTALIUM_SOLUTION, "Supersaturated Crystalium Solution");
+        add(ConcoctiFluids.MOLTEN_LATTICIUM, "Molten Latticium");
 
         // Miscellaneous things go here.
         add("effect.concocti.concoctized", "Concoctized");
@@ -129,6 +134,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add("screen.concocti.close_machine_settings", "Close Machine Settings");
         add("screen.concocti.machine_settings", "Settings");
         add("screen.concocti.durability_info", "Durability: %s/%s");
+        add("screen.concocti.infinite_durability_info", "Durability: %s");
         add("screen.concocti.mold_base_durability_info", "Available Durability: %s");
         add("screen.concocti.rate", "Rate: ×%s");
         add("screen.concocti.requirements", "Requirements:");

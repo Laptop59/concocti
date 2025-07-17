@@ -1,10 +1,10 @@
 {
   "values": [
-    "concocti:concocti_energy_generator",
-    "concocti:concocti_melter",
-    "concocti:concocti_crystallizer",
-    "concocti:concocti_mixer",
     "concocti:dirty_concocti_block",
-    "concocti:concocti_solidifier"
+    "concocti:concocti_melter",
+    "concocti:concocti_mixer",
+    "concocti:concocti_crystallizer",
+    "concocti:concocti_solidifier",
+    "concocti:concocti_energy_generator"
   ]
 }
