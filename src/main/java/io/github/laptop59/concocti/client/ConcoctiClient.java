@@ -41,6 +41,17 @@ public class ConcoctiClient {
         event.registerFluidType(new IClientFluidTypeExtensions() {
             @Override
             public @NotNull ResourceLocation getStillTexture() {
+                return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_tough_concocti_still");
+            }
+
+            @Override
+            public @NotNull ResourceLocation getFlowingTexture() {
+                return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_tough_concocti_flow");
+            }
+        }, ConcoctiFluids.MOLTEN_TOUGH_CONCOCTI_FLUID_TYPE);
+        event.registerFluidType(new IClientFluidTypeExtensions() {
+            @Override
+            public @NotNull ResourceLocation getStillTexture() {
                 return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_concoctized_dirt_still");
             }
 

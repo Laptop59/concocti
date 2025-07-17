@@ -8,12 +8,14 @@ import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.material.FluidState;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
 public class ConcoctiFluids {
+
+    //
+
     public static final DeferredHolder<Fluid, FlowingFluid> MOLTEN_CONCOCTI = ConcoctiRegisters.FLUIDS.register("molten_concocti", (loc) -> new MoltenConcoctiFluid.Source());
     public static final DeferredHolder<Fluid, FlowingFluid> FLOWING_MOLTEN_CONCOCTI = ConcoctiRegisters.FLUIDS.register("flowing_molten_concocti", (loc) -> new MoltenConcoctiFluid.Flowing());
 
@@ -33,6 +35,30 @@ public class ConcoctiFluids {
     public static final DeferredBlock<LiquidBlock> MOLTEN_CONCOCTI_BLOCK = ConcoctiBlocks.registerFluidBlock("molten_concocti", MOLTEN_CONCOCTI,
             BlockBehaviour.Properties.ofFullCopy(Blocks.LAVA).mapColor(DyeColor.PURPLE)
     );
+
+    //
+
+    public static final DeferredHolder<Fluid, FlowingFluid> MOLTEN_TOUGH_CONCOCTI = ConcoctiRegisters.FLUIDS.register("molten_tough_concocti", (loc) -> new MoltenToughConcoctiFluid.Source());
+    public static final DeferredHolder<Fluid, FlowingFluid> FLOWING_MOLTEN_TOUGH_CONCOCTI = ConcoctiRegisters.FLUIDS.register("flowing_molten_tough_concocti", (loc) -> new MoltenToughConcoctiFluid.Flowing());
+
+    public static final DeferredHolder<FluidType, FluidType> MOLTEN_TOUGH_CONCOCTI_FLUID_TYPE = ConcoctiRegisters.FLUID_TYPES.register("molten_tough_concocti",
+            (loc) -> new FluidType(
+                    FluidType.Properties.create()
+                            .temperature(500)
+                            .lightLevel(12)
+                            .viscosity(1250)
+                            .density(15)
+                            .canConvertToSource(false)
+                            .canDrown(false)
+                            .canSwim(true)
+            )
+    );
+
+    public static final DeferredBlock<LiquidBlock> MOLTEN_TOUGH_CONCOCTI_BLOCK = ConcoctiBlocks.registerFluidBlock("molten_tough_concocti", MOLTEN_TOUGH_CONCOCTI,
+            BlockBehaviour.Properties.ofFullCopy(Blocks.LAVA).mapColor(DyeColor.PURPLE)
+    );
+
+    //
 
     public static final DeferredHolder<Fluid, FlowingFluid> MOLTEN_CONCOCTIZED_DIRT = ConcoctiRegisters.FLUIDS.register("molten_concoctized_dirt", (loc) -> new MoltenConcoctizedDirtFluid.Source());
     public static final DeferredHolder<Fluid, FlowingFluid> FLOWING_MOLTEN_CONCOCTIZED_DIRT = ConcoctiRegisters.FLUIDS.register("flowing_molten_concoctized_dirt", (loc) -> new MoltenConcoctizedDirtFluid.Flowing());

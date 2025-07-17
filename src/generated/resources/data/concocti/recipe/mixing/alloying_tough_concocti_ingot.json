@@ -1,0 +1,25 @@
+{
+  "type": "concocti:concocti_mixer",
+  "input_fluids": [
+    {
+      "amount": 288,
+      "fluid": "concocti:molten_concocti"
+    }
+  ],
+  "input_items": [
+    {
+      "count": 1,
+      "item": "concocti:electrostatic_conductivium_ingot"
+    },
+    {
+      "count": 1,
+      "item": "concocti:crystalium_ingot"
+    }
+  ],
+  "output_fluid": {
+    "amount": 576,
+    "id": "concocti:molten_tough_concocti"
+  },
+  "output_item": {},
+  "ticks": 400
+}

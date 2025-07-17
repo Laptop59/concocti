@@ -1,6 +1,7 @@
 package io.github.laptop59.concocti.integration.jei;
 
 import io.github.laptop59.concocti.client.gui.components.ArrowProgress;
+import io.github.laptop59.concocti.client.gui.components.EnergyBar;
 import io.github.laptop59.concocti.client.gui.components.RenderInfo;
 import io.github.laptop59.concocti.client.gui.components.Renderable;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
@@ -17,6 +18,7 @@ import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -102,8 +104,21 @@ public abstract class AbstractConcoctiRecipeCategory<T extends ProcessingRecipe<
         long passedTicks = absoluteTicks % tickDuration;
         double progress = (double) passedTicks / tickDuration;
         arrowProgress.setGuiLeft(getTotalArrowLeft(recipe));
+        arrowProgress.setGuiTop(6);
         arrowProgress.update((float) (progress * 23) / 22);
         Renderable.renderChildAbsolute(guiGraphics, RenderInfo.withNullifiedOffset(null), arrowProgress);
+
+        /*
+        String time = (double) getTicks(recipe) / 20 + "s";
+        int width = Minecraft.getInstance().font.width(time);
+        guiGraphics.drawString(
+                Minecraft.getInstance().font,
+                time,
+                getTotalArrowLeft(recipe) + 11 - width / 2,
+                0,
+                0xFF2d3366, false
+        );
+        */
     }
 
     /**

@@ -1,7 +1,7 @@
-// 1.21.1	2025-07-14T16:53:33.094494748	Tags for minecraft:block mod id concocti
+// 1.21.1	2025-07-15T15:39:20.720295344	Tags for minecraft:block mod id concocti
 fbb220c09009c003461aac50bca8f5f2915b6e80 data/concocti/tags/block/guarded_by_endermen.json
-8046eeeb33cff8721ff5946b9aa21d701723dccf data/minecraft/tags/block/mineable/pickaxe.json
-940db2ea050c278fc5cb8497968aed4acbcb69e7 data/minecraft/tags/block/needs_diamond_tool.json
-dd1c89bafb4081d270b9039d0740b993467ebe8b data/minecraft/tags/block/needs_iron_tool.json
-1d49632609760a8ca97a7a7ccd06fa777eff21d1 data/minecraft/tags/block/needs_stone_tool.json
+3a236f4bab8c66507dc03845329930d95f9a3987 data/minecraft/tags/block/mineable/pickaxe.json
+0f043792a9e929ebf8fb6aa37643e5fe7a0278f4 data/minecraft/tags/block/needs_diamond_tool.json
+9f24e31ff39d744e761eb97bfa0625026f5ea275 data/minecraft/tags/block/needs_iron_tool.json
+74329755f7ccaf0f15e9e6ddcd2e6bad872b0070 data/minecraft/tags/block/needs_stone_tool.json
 d037a373c7f253e6566c68f322fa74fee5aab585 data/neoforge/tags/block/needs_netherite_tool.json

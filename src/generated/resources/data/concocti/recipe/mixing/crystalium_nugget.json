@@ -2,7 +2,7 @@
   "type": "concocti:concocti_mixer",
   "input_fluids": [
     {
-      "amount": 100,
+      "amount": 200,
       "fluid": "concocti:supersaturated_crystalium_solution"
     }
   ],

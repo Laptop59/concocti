@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "#H#",
+    "CBC",
+    "UCU"
+  ],
+  "key": {
+    "#": {
+      "item": "concocti:purified_concocti_ingot"
+    },
+    "C": {
+      "item": "concocti:diamethyst_crystal"
+    },
+    "H": {
+      "item": "minecraft:chest"
+    },
+    "B": {
+      "item": "concocti:diamethyst_block"
+    },
+    "U": {
+      "item": "minecraft:bucket"
+    }
+  },
+  "result": {
+    "id": "concocti:concocti_mixer",
+    "count": 1
+  }
+}
