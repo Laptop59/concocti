@@ -114,36 +114,39 @@ public class MachineSettingsComponent<T extends AbstractContainerMenu> extends R
         }
 
         MachineSettingsSlots slots = menu1.getMachineSettingsSlots();
-        Direction currentDirection = menu1.getFacingDirection();
 
-        for (Map.Entry<Direction, SlotType> entry : slots.entrySet()) {
-            Direction direction = entry.getKey();
-            SlotType slotType = entry.getValue();
-            //    #   -1
-            //  # # #  0         v
-            //    # #  1         j
-            // -1 0 1          > i
-            Pos slotPos = getPos(direction, currentDirection);
-            String relativeDirection = getRelativeDirection(direction, currentDirection);
-            int color = slotType.color;
-            RenderSystem.setShaderColor(
-                    ((color >> 16) & 0xFF) / 255f,
-                    ((color >> 8) & 0xFF) / 255f,
-                    (color & 0xFF) / 255f,
-                    ((color >> 24) & 0xFF) / 255f
-            );
-            RenderInfo slotInfo = renderInfo.offset(slotPos.x(), slotPos.y());
-            guiGraphics.blit(SLOT_TEXTURE, slotInfo.left(), slotInfo.top(), 0, 0, 16, 16, 16, 16);
-            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-            guiGraphics.blit(SLOT_OVERLAY_TEXTURE, slotInfo.left(), slotInfo.top(), 0, 0, 16, 16, 16, 16);
-            String slotTypeKey = "screen.concocti.slot_type." + slotType.name().toLowerCase(Locale.ROOT);
-            String relativeDirectionKey = "screen.concocti.slot_" + relativeDirection.toLowerCase(Locale.ROOT);
-            if (slotInfo.isHovering(16, 16))
-                slotInfo.renderTooltip(guiGraphics, Component.translatable(
-                        "screen.concocti.slot_compound",
-                        Component.translatable(slotTypeKey),
-                        Component.translatable(relativeDirectionKey)
-                ).withColor(slotType.color));
+        {
+            Direction currentDirection = menu1.getFacingDirection();
+
+            for (Map.Entry<Direction, SlotType> entry : slots.entrySet()) {
+                Direction direction = entry.getKey();
+                SlotType slotType = entry.getValue();
+                //    #   -1
+                //  # # #  0         v
+                //    # #  1         j
+                // -1 0 1          > i
+                Pos slotPos = getPos(direction, currentDirection);
+                String relativeDirection = getRelativeDirection(direction, currentDirection);
+                int color = slotType.color;
+                RenderSystem.setShaderColor(
+                        ((color >> 16) & 0xFF) / 255f,
+                        ((color >> 8) & 0xFF) / 255f,
+                        (color & 0xFF) / 255f,
+                        ((color >> 24) & 0xFF) / 255f
+                );
+                RenderInfo slotInfo = renderInfo.offset(slotPos.x(), slotPos.y());
+                guiGraphics.blit(SLOT_TEXTURE, slotInfo.left(), slotInfo.top(), 0, 0, 16, 16, 16, 16);
+                RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+                guiGraphics.blit(SLOT_OVERLAY_TEXTURE, slotInfo.left(), slotInfo.top(), 0, 0, 16, 16, 16, 16);
+                String slotTypeKey = "screen.concocti.slot_type." + slotType.name().toLowerCase(Locale.ROOT);
+                String relativeDirectionKey = "screen.concocti.slot_" + relativeDirection.toLowerCase(Locale.ROOT);
+                if (slotInfo.isHovering(16, 16))
+                    slotInfo.renderTooltip(guiGraphics, Component.translatable(
+                            "screen.concocti.slot_compound",
+                            Component.translatable(slotTypeKey),
+                            Component.translatable(relativeDirectionKey)
+                    ).withColor(slotType.color));
+            }
         }
     }
 
@@ -192,12 +195,12 @@ public class MachineSettingsComponent<T extends AbstractContainerMenu> extends R
     private static @NotNull Pos getPos(Direction direction, Direction currentDirection) {
         String relativeDirection = getRelativeDirection(direction, currentDirection);
         Pos pos = switch (relativeDirection) {
-            case "front" -> new Pos(0, 0);
-            case "back" -> new Pos(1, 1);
+            case "front", "north" -> new Pos(0, 0);
+            case "back", "south" -> new Pos(1, 1);
             case "up" -> new Pos(0, -1);
             case "down" -> new Pos(0, 1);
-            case "right" -> new Pos(1, 0);
-            case "left" -> new Pos(-1, 0);
+            case "right", "east" -> new Pos(1, 0);
+            case "left", "west" -> new Pos(-1, 0);
             default ->
                     throw new IllegalStateException("Could not get position of relative direction " + relativeDirection + ".");
         };
@@ -209,6 +212,9 @@ public class MachineSettingsComponent<T extends AbstractContainerMenu> extends R
     }
 
     private static @NotNull String getRelativeDirection(Direction direction, Direction currentDirection) {
+        if (currentDirection == null) {
+            return direction.getName();
+        }
         String relativeDirection;
         if (direction == currentDirection) {
             relativeDirection = "front";

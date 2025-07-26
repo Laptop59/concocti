@@ -2,6 +2,7 @@ package io.github.laptop59.concocti.datagen.client.language;
 
 import io.github.laptop59.concocti.client.gui.components.SlotType;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
+import io.github.laptop59.concocti.common.block.ConcoctiHatchBlock;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.item.MoldItem;
@@ -44,6 +45,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiMachines.MIXER.BLOCK, "Concocti Mixer");
         add(ConcoctiMachines.ELECTRON_COLLECTOR.BLOCK, "Concocti Electron Collector");
         add(ConcoctiMachines.CRYSTALLIZER.BLOCK, "Concocti Crystallizer");
+        add(ConcoctiMachines.COMPRESSOR.BLOCK, "Concocti Compressor");
 
         // Blocks go here.
         add(ConcoctiBlocks.DIAMETHYST_BLOCK, "Block of Diamethyst");
@@ -55,6 +57,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiBlocks.BASIC_CONCOCTI_FRAME, "Basic Concocti Frame");
         add(ConcoctiBlocks.ADVANCED_CONCOCTI_FRAME, "Advanced Concocti Frame");
         add(ConcoctiBlocks.CONCOCTI_BRICKS, "Concocti Bricks");
+        add(ConcoctiBlocks.TOUGH_CONCOCTI_BRICKS, "Tough Concocti Bricks");
         add(ConcoctiBlocks.CONDUCTIVIUM_LIGHTNING_ROD, "Conductivium Lightning Rod");
         add(ConcoctiBlocks.CRYSTALIUM_BLOCK, "Block of Crystalium");
         add(ConcoctiBlocks.CRYSTALIUM_ORE, "Crystalium Ore");
@@ -114,6 +117,11 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add("subtitles.concocti.block.concocti_energy_generator.fire_crackle", "Concocti Energy Generator crackles");
         add("subtitles.concocti.block.concocti_mixer.fire_crackle", "Concocti Mixer crackles");
 
+        addTag("dirty_concocti", "Dirty Concocti");
+        addTag("purified_concocti", "Purified Concocti");
+        addTag("tough_concocti", "Tough Concocti");
+        addTag("compressed_concocti", "Compressed Concocti");
+
         addCommonTag("ingots.concocti", "Concocti Ingots");
         addCommonTag("nuggets.concocti", "Concocti Nuggets");
         addCommonTag("storage_blocks.concocti", "Concocti Storage Blocks");
@@ -148,6 +156,10 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add("screen.concocti.slot_right", "Right");
         add("screen.concocti.slot_front", "Front");
         add("screen.concocti.slot_back", "Back");
+        add("screen.concocti.slot_east", "East");
+        add("screen.concocti.slot_west", "West");
+        add("screen.concocti.slot_north", "North");
+        add("screen.concocti.slot_south", "South");
 
         add("screen.concocti.eject_off", "Eject: OFF");
         add("screen.concocti.eject_on", "Eject: ON");
@@ -168,6 +180,11 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
                 MoldItem item = (MoldItem) entry2.getValue().get();
                 add(item, getName(item));
             }
+        }
+
+        for (DeferredBlock<? extends ConcoctiHatchBlock> deferredBlock : ConcoctiBlocks.HATCHES_LIST) {
+            ConcoctiHatchBlock block = deferredBlock.get();
+            add(block, getName(block));
         }
 
         // Translation key for slot types.
@@ -194,7 +211,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
     }
 
     private void addCommonTag(String tag, String translation) {
-        this.addTag("c." + tag, translation);
+        this.add("tag.c." + tag, translation);
     }
 
     // ADDING TAGS
@@ -205,6 +222,10 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
 
     protected String getName(MoldItem item) {
         return capitalize(item.getMaterial().prefix) + " " + capitalize(item.getType().id) + " Mold";
+    }
+
+    protected String getName(ConcoctiHatchBlock block) {
+        return "Concocti " + capitalize(block.getType().getId()) + " " + capitalize(block.getPurpose().getId()) + " Hatch";
     }
 
     protected String getName(String str) {

@@ -1,11 +1,11 @@
 {
   "values": [
-    "concocti:concocti_bricks",
-    "concocti:diamethyst_block",
-    "concocti:conductivium_block",
-    "concocti:conductivium_lightning_rod",
+    "concocti:basic_concocti_frame",
     "concocti:concocti_electron_collector",
+    "concocti:conductivium_lightning_rod",
     "concocti:purified_concocti_block",
-    "concocti:basic_concocti_frame"
+    "concocti:conductivium_block",
+    "concocti:diamethyst_block",
+    "concocti:concocti_bricks"
   ]
 }

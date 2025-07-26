@@ -1,0 +1,29 @@
+{
+  "type": "concocti:concocti_compressor",
+  "input_fluids": [
+    {
+      "amount": 100,
+      "fluid": "minecraft:lava"
+    },
+    {
+      "amount": 1000,
+      "fluid": "concocti:molten_latticium"
+    }
+  ],
+  "input_items": [
+    {
+      "count": 4,
+      "item": "concocti:tough_concocti_nugget"
+    },
+    {
+      "count": 1,
+      "item": "concocti:diamethyst_block"
+    }
+  ],
+  "output_fluid": {},
+  "output_item": {
+    "count": 1,
+    "id": "concocti:compressed_concocti_nugget"
+  },
+  "ticks": 50
+}

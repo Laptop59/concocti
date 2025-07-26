@@ -1,6 +1,7 @@
 package io.github.laptop59.concocti.network;
 
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
+import io.github.laptop59.concocti.common.machine.FluidTankHolder;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -32,9 +33,9 @@ public class FluidBarInteractionPayloadC2SHandler {
                             IFluidHandlerItem capability = held.getCapability(Capabilities.FluidHandler.ITEM);
                             if (capability == null) return;
                             // Try to fill it.
-                            if (machineMenu.getContainer() instanceof AbstractConcoctiMachineBlockEntity<?, ?, ?, ?, ?> entity) {
-                                // IFluidHandler handler = entity.getFluidTank();
-                                IFluidHandler handler = entity.getIndexedFluidHandlers().get(data.tankId());
+                            if (machineMenu.getContainer() instanceof FluidTankHolder fluidTankHolder) {
+                                // IFluidHandler handler = fluidTankHolder.getFluidTank();
+                                IFluidHandler handler = fluidTankHolder.getIndexedFluidHandlers().get(data.tankId());
                                 if (data.buttonNum() == 0) {
                                     // LEFT CLICK: fill item
                                     FluidStack drained = handler.drain(Integer.MAX_VALUE, IFluidHandler.FluidAction.SIMULATE);

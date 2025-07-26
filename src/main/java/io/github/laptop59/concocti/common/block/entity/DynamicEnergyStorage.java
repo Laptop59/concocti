@@ -16,7 +16,6 @@ public class DynamicEnergyStorage extends EnergyStorage {
     public static int OUTPUT_FLAG = 0x02;
 
     public enum Mode {
-
         NONE(NONE_FLAG),
         INPUT_ONLY(INPUT_FLAG),
         OUTPUT_ONLY(OUTPUT_FLAG),

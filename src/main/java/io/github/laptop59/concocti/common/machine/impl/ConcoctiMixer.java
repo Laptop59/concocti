@@ -686,7 +686,7 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
             if (recipe.getOutputFluid() != null && !recipe.getOutputFluid().isEmpty()) drawnSlots++;
             drawnSlots += recipe.getInputItems().size() + recipe.getInputFluids().size();
             int drawnWidth = drawnSlots * 18 + (11 + 22 + 11);
-            int left = (WIDTH - drawnWidth) / 2;
+            int left = (WIDTH - drawnWidth) / 2 - 3;
             ArrayList<Integer> toBeDrawnSlots = new ArrayList<>(drawnSlots);
             // Add the recipe inputs.
             int drawnInputSlots = recipe.getInputItems().size() + recipe.getInputFluids().size();
@@ -714,7 +714,7 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
             if (recipe.getOutputFluid() != null && !recipe.getOutputFluid().isEmpty()) drawnSlots++;
             drawnSlots += recipe.getInputItems().size() + recipe.getInputFluids().size();
             int drawnWidth = drawnSlots * 18 + (11 + 22 + 11);
-            int left = (WIDTH - drawnWidth) / 2;
+            int left = (WIDTH - drawnWidth) / 2 - 3;
             // Add the recipe inputs.
             int i = 1;
             for (SizedIngredient ingredient : recipe.getInputItems()) {

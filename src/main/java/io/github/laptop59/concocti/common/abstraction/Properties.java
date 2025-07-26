@@ -29,6 +29,8 @@ public final class Properties {
     public static final Property<FluidStack> FLUID_INPUT_4 = ComplexionCodec.FLUID_STACK.unique();
     public static final Property<FluidStack> FLUID_OUTPUT = ComplexionCodec.FLUID_STACK.unique();
 
+    public static final Property<FluidStack> FLUID_TANK = ComplexionCodec.FLUID_STACK.unique();
+
     public static final Property<LightningState> LIGHTNING_STATE = ComplexionCodec.LIGHTNING_STATE.unique();
 
     private Properties() {}

@@ -99,9 +99,6 @@ public abstract class AbstractConcoctiMachineScreen<M extends AbstractConcoctiMa
      */
     @Override
     public void render(@NotNull GuiGraphics guiGraphics, RenderInfo renderInfo) {
-        ConcoctiUpgradeSlot upgradeSlot = menu.getUpgradeSlot();
-        ConcoctiFrameSlot frameSlot = menu.getFrameSlot();
-
         // First, render the background.
         guiGraphics.blit(getBgTexture(), leftPos, topPos, 0, 0, this.imageWidth, this.imageHeight);
 
@@ -117,13 +114,6 @@ public abstract class AbstractConcoctiMachineScreen<M extends AbstractConcoctiMa
                 extraIcon = ResourceLocation.fromNamespaceAndPath(MODID, "container/slot_icons/" + iconSlot.getIcon().path);
             }
             if (extraIcon != null) guiGraphics.blitSprite(extraIcon, x + 1, y + 1, 16, 16);
-        }
-
-        if (isHovering(upgradeSlot.x, upgradeSlot.y, 16, 16, renderInfo.mouseX(), renderInfo.mouseY()) && !upgradeSlot.hasItem()) {
-            guiGraphics.renderTooltip(font, Component.translatable("screen.concocti.no_upgrade"), renderInfo.mouseX(), renderInfo.mouseY());
-        }
-        if (isHovering(frameSlot.x, frameSlot.y, 16, 16, renderInfo.mouseX(), renderInfo.mouseY()) && !frameSlot.hasItem()) {
-            guiGraphics.renderTooltip(font, Component.translatable("screen.concocti.no_frame"), renderInfo.mouseX(), renderInfo.mouseY());
         }
 
         cogwheel.update(machineSettingsVisibility);
