@@ -2,6 +2,7 @@ package io.github.laptop59.concocti.common.item;
 
 import io.github.laptop59.concocti.common.ConcoctiRegisters;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
+import io.github.laptop59.concocti.common.block.ConcoctiHatchBlock;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachines;
 import net.minecraft.core.registries.Registries;
@@ -9,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.registries.DeferredBlock;
@@ -27,7 +29,7 @@ public class ConcoctiItems {
     // Now, we can register!
 
     public static final DeferredItem<Item> DIAMETHYST_CRYSTAL = registerItem("diamethyst_crystal", new Item.Properties());
-    public static final DeferredItem<BlockItem> DIAMETHYST_CRYSTAL_BLOCK = registerBlockItem(ConcoctiBlocks.DIAMETHYST_BLOCK);
+    public static final DeferredItem<BlockItem> DIAMETHYST_BLOCK = registerBlockItem(ConcoctiBlocks.DIAMETHYST_BLOCK);
 
     public static final DeferredItem<Item> CONCOCTI_SEEDS = registerItem("concocti_seeds", new Item.Properties());
 
@@ -83,6 +85,11 @@ public class ConcoctiItems {
     public static final DeferredItem<BlockItem> ADVANCED_CONCOCTI_FRAME = registerBlockItem(ConcoctiBlocks.ADVANCED_CONCOCTI_FRAME);
 
     public static final DeferredItem<BlockItem> CONCOCTI_BRICKS = registerBlockItem(ConcoctiBlocks.CONCOCTI_BRICKS);
+    public static final DeferredItem<BlockItem> TOUGH_CONCOCTI_BRICKS = registerBlockItem(ConcoctiBlocks.TOUGH_CONCOCTI_BRICKS);
+
+    public static final List<DeferredItem<BlockItem>> HATCHES =
+            ConcoctiBlocks.HATCHES_LIST.stream().map(ConcoctiItems::registerBlockItem).toList();
+
 
     public static final Set<DeferredItem<? extends Item>> DISABLED_DURABILITY_TOOLTIP_ITEMS = new HashSet<>();
 
@@ -170,7 +177,7 @@ public class ConcoctiItems {
      * @param block The block to create an item for.
      * @return A {@link DeferredItem} for the registered item.
      */
-    public static DeferredItem<BlockItem> registerBlockItem(DeferredBlock<Block> block) {
+    public static DeferredItem<BlockItem> registerBlockItem(DeferredBlock<? extends Block> block) {
         DeferredItem<BlockItem> item = ConcoctiRegisters.ITEMS.registerSimpleBlockItem(block.getId().getPath(), block);
         addToItemList(item);
         return item;
@@ -223,10 +230,11 @@ public class ConcoctiItems {
 
     public static void addItemsToCreativeTab(CreativeModeTab.Output output) {
         acceptStack(output, DIAMETHYST_CRYSTAL);
-        acceptStack(output, DIAMETHYST_CRYSTAL_BLOCK);
+        acceptStack(output, DIAMETHYST_BLOCK);
 
         acceptStack(output, CONCOCTI_SEEDS);
         acceptStack(output, CONCOCTI_BRICKS);
+        acceptStack(output, TOUGH_CONCOCTI_BRICKS);
 
         acceptStack(output, DIRTY_CONCOCTI_NUGGET);
         acceptStack(output, DIRTY_CONCOCTI_INGOT);
@@ -285,6 +293,10 @@ public class ConcoctiItems {
             for (Map.Entry<MoldItem.Type, DeferredItem<? extends Item>> entry2 : entry.getValue().entrySet()) {
                 acceptStack(output, entry2.getValue());
             }
+        }
+
+        for (DeferredItem<BlockItem> hatch : HATCHES) {
+            acceptStack(output, hatch);
         }
     }
 

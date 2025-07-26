@@ -1,6 +1,7 @@
 package io.github.laptop59.concocti.network;
 
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
+import io.github.laptop59.concocti.common.machine.SettingsHolder;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -16,9 +17,8 @@ public class ConcoctiMachineSettingsEjectOnChangeC2SHandler {
                         AbstractContainerMenu menu = target.containerMenu;
                         if (menu instanceof AbstractConcoctiMachineMenu<?> machineMenu) {
                             if (machineMenu.containerId != data.containerId()) return; // just in case
-                            AbstractConcoctiMachineBlockEntity<?, ?, ?, ?, ?> blockEntity
-                                    = (AbstractConcoctiMachineBlockEntity<?, ?, ?, ?, ?>) machineMenu.getContainer();
-                            blockEntity.changeEjectOn();
+                            SettingsHolder settingsHolder = (SettingsHolder) machineMenu.getContainer();
+                            settingsHolder.changeEjectOn();
                         }
                     }
                 })

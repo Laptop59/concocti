@@ -44,7 +44,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
     @Override
     protected void buildRecipes(@NotNull RecipeOutput output) {
         // Crafting Recipes
-        twoStageStorageRecipes(output, ConcoctiItems.DIAMETHYST_CRYSTAL, ConcoctiItems.DIAMETHYST_CRYSTAL_BLOCK);
+        twoStageStorageRecipes(output, ConcoctiItems.DIAMETHYST_CRYSTAL, ConcoctiItems.DIAMETHYST_BLOCK);
         threeStageStorageRecipes(output, ConcoctiItems.DIRTY_CONCOCTI_NUGGET, ConcoctiItems.DIRTY_CONCOCTI_INGOT, ConcoctiItems.DIRTY_CONCOCTI_BLOCK);
         threeStageStorageRecipes(output, ConcoctiItems.PURIFIED_CONCOCTI_NUGGET, ConcoctiItems.PURIFIED_CONCOCTI_INGOT, ConcoctiItems.PURIFIED_CONCOCTI_BLOCK);
         threeStageStorageRecipes(output, ConcoctiItems.TOUGH_CONCOCTI_NUGGET, ConcoctiItems.TOUGH_CONCOCTI_INGOT, ConcoctiItems.TOUGH_CONCOCTI_BLOCK);
@@ -379,6 +379,57 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 75,
                 new ItemStack(Items.BLUE_ICE, 2)
         );
+
+        // Concocti Compressor recipes
+        concoctiCompressorRecipe(
+            output,
+            "compressed_concocti_nugget",
+            50,
+            List.of(
+                SizedIngredient.of(ConcoctiItems.TOUGH_CONCOCTI_NUGGET, 4),
+                SizedIngredient.of(ConcoctiItems.DIAMETHYST_BLOCK, 1)
+            ),
+            List.of(
+                SizedFluidIngredient.of(Fluids.LAVA, 100),
+                SizedFluidIngredient.of(ConcoctiFluids.MOLTEN_LATTICIUM.get(), 1_000)
+            ),
+            new ItemStack(ConcoctiItems.COMPRESSED_CONCOCTI_NUGGET.get(), 1),
+            null
+        );
+        concoctiCompressorRecipe(
+                output,
+                "compressed_concocti_ingot",
+                200,
+                List.of(
+                        SizedIngredient.of(ConcoctiItems.COMPRESSED_CONCOCTI_NUGGET, 9),
+                        SizedIngredient.of(ConcoctiItems.TOUGH_CONCOCTI_INGOT, 4),
+                        SizedIngredient.of(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_INGOT, 9),
+                        SizedIngredient.of(ConcoctiItems.DIAMETHYST_BLOCK, 9)
+                ),
+                List.of(
+                        SizedFluidIngredient.of(Fluids.LAVA, 1000),
+                        SizedFluidIngredient.of(ConcoctiFluids.MOLTEN_LATTICIUM.get(), 8_000)
+                ),
+                new ItemStack(ConcoctiItems.COMPRESSED_CONCOCTI_INGOT.get(), 1),
+                null
+        );
+        concoctiCompressorRecipe(
+                output,
+                "compressed_concocti_block",
+                800,
+                List.of(
+                        SizedIngredient.of(ConcoctiItems.COMPRESSED_CONCOCTI_INGOT, 9),
+                        SizedIngredient.of(ConcoctiItems.TOUGH_CONCOCTI_BLOCK, 4),
+                        SizedIngredient.of(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_INGOT, 64),
+                        SizedIngredient.of(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_INGOT, 81 - 64)
+                ),
+                List.of(
+                        SizedFluidIngredient.of(Fluids.LAVA, 10000),
+                        SizedFluidIngredient.of(ConcoctiFluids.MOLTEN_LATTICIUM.get(), 64_000)
+                ),
+                new ItemStack(ConcoctiItems.COMPRESSED_CONCOCTI_BLOCK.get(), 1),
+                null
+        );
     }
 
     private static void concoctiSolidifierRecipe(RecipeOutput output, MoldItem.Type type, List<ConcoctiMoldingSolidifierRecipe> recipeList) {
@@ -545,6 +596,28 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
     ) {
         new ConcoctiMixer.Recipe.Builder(
                 ResourceLocation.fromNamespaceAndPath(MODID, "mixing/" + name),
+                inputItems,
+                outputItem,
+                inputFluids,
+                outputFluid,
+                ticks
+        ).save(output);
+    }
+
+    /**
+     * Generates a Concocti Compressor Recipe.
+     */
+    private static void concoctiCompressorRecipe(
+            RecipeOutput output,
+            String name,
+            int ticks,
+            List<SizedIngredient> inputItems,
+            List<SizedFluidIngredient> inputFluids,
+            ItemStack outputItem,
+            FluidStack outputFluid
+    ) {
+        new ConcoctiCompressor.Recipe.Builder(
+                ResourceLocation.fromNamespaceAndPath(MODID, "compressing/" + name),
                 inputItems,
                 outputItem,
                 inputFluids,

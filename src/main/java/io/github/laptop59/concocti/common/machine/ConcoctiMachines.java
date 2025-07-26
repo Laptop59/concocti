@@ -14,6 +14,7 @@ public final class ConcoctiMachines {
     public static ConcoctiMixer MIXER;
     public static ConcoctiElectronCollector ELECTRON_COLLECTOR;
     public static ConcoctiCrystallizer CRYSTALLIZER;
+    public static ConcoctiCompressor COMPRESSOR;
 
     private static <T extends ConcoctiMachine<?, ?, ?, ?, ?, ?, ?, ?, ?>> T register(T machine) {
         MACHINES.add(machine);
@@ -27,6 +28,7 @@ public final class ConcoctiMachines {
         MIXER = register(new ConcoctiMixer());
         ELECTRON_COLLECTOR = register(new ConcoctiElectronCollector());
         CRYSTALLIZER = register(new ConcoctiCrystallizer());
+        COMPRESSOR = register(new ConcoctiCompressor());
     }
 
     public static void forEach(Consumer<ConcoctiMachine<?, ?, ?, ?, ?, ?, ?, ?, ?>> consumer) {

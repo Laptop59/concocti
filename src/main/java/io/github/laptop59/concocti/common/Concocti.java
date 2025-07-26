@@ -2,6 +2,7 @@ package io.github.laptop59.concocti.common;
 
 import com.mojang.logging.LogUtils;
 import io.github.laptop59.concocti.client.gui.AbstractConcoctiMachineScreen;
+import io.github.laptop59.concocti.client.gui.ConcoctiFluidHatchScreen;
 import io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
@@ -14,6 +15,9 @@ import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachines;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
+import io.github.laptop59.concocti.client.gui.ConcoctiItemHatchScreen;
+import io.github.laptop59.concocti.client.gui.ConcoctiEnergyHatchScreen;
+import io.github.laptop59.concocti.common.menu.ConcoctiMenus;
 import io.github.laptop59.concocti.common.poi.ConcoctiPoiTypes;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
 import io.github.laptop59.concocti.integration.jei.AbstractConcoctiRecipeCategory;
@@ -77,6 +81,9 @@ public class Concocti {
         for (var machine : ConcoctiMachines.MACHINES) {
             registerScreen(event, machine);
         }
+        event.register(ConcoctiMenus.CONCOCTI_ITEM_HATCH_MENU.get(), ConcoctiItemHatchScreen::new);
+        event.register(ConcoctiMenus.CONCOCTI_FLUID_HATCH_MENU.get(), ConcoctiFluidHatchScreen::new);
+        event.register(ConcoctiMenus.CONCOCTI_ENERGY_HATCH_MENU.get(), ConcoctiEnergyHatchScreen::new);
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -126,7 +133,8 @@ public class Concocti {
                 ConcoctiItems.class,
                 ConcoctiSounds.class,
                 ConcoctiFluids.class,
-                ConcoctiPoiTypes.class
+                ConcoctiPoiTypes.class,
+                ConcoctiMenus.class
         );
 
         // Register ourselves for server and other game events we are interested in.

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "II ",
+    "II ",
+    "   "
+  ],
+  "key": {
+    "I": {
+      "item": "concocti:tough_concocti_ingot"
+    }
+  },
+  "result": {
+    "id": "concocti:tough_concocti_bricks",
+    "count": 1
+  }
+}

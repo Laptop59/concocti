@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "###",
+    "LPL",
+    "LLL"
+  ],
+  "key": {
+    "#": {
+      "item": "concocti:purified_concocti_ingot"
+    },
+    "B": {
+      "item": "minecraft:blast_furnace"
+    },
+    "L": {
+      "item": "concocti:latticium_ingot"
+    },
+    "P": {
+      "item": "minecraft:piston"
+    }
+  },
+  "result": {
+    "id": "concocti:concocti_compressor",
+    "count": 1
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "type": "concocti:concocti_compressor",
+  "input_fluids": [
+    {
+      "amount": 1000,
+      "fluid": "minecraft:lava"
+    },
+    {
+      "amount": 8000,
+      "fluid": "concocti:molten_latticium"
+    }
+  ],
+  "input_items": [
+    {
+      "count": 9,
+      "item": "concocti:compressed_concocti_nugget"
+    },
+    {
+      "count": 4,
+      "item": "concocti:tough_concocti_ingot"
+    },
+    {
+      "count": 9,
+      "item": "concocti:electrostatic_conductivium_ingot"
+    },
+    {
+      "count": 9,
+      "item": "concocti:diamethyst_block"
+    }
+  ],
+  "output_fluid": {},
+  "output_item": {
+    "count": 1,
+    "id": "concocti:compressed_concocti_ingot"
+  },
+  "ticks": 200
+}

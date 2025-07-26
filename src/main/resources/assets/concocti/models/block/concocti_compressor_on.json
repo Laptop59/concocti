@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "concocti:block/concocti_melter_top",
+    "front": "concocti:block/concocti_compressor_front_on",
+    "side": "concocti:block/concocti_melter_side"
+  }
+}

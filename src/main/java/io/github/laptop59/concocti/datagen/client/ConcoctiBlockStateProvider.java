@@ -25,5 +25,6 @@ public class ConcoctiBlockStateProvider extends BlockStateProvider {
         this.simpleBlock(ConcoctiBlocks.ADVANCED_CONCOCTI_FRAME.get());
 
         this.simpleBlock(ConcoctiBlocks.CONCOCTI_BRICKS.get());
+        this.simpleBlock(ConcoctiBlocks.TOUGH_CONCOCTI_BRICKS.get());
     }
 }

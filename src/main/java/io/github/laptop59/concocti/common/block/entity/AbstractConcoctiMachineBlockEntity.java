@@ -17,6 +17,8 @@ import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTankSlotTypedHandle
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachineDetails;
+import io.github.laptop59.concocti.common.machine.FluidTankHolder;
+import io.github.laptop59.concocti.common.machine.SettingsHolder;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.menu.ConcoctiFrameSlot;
 import io.github.laptop59.concocti.common.menu.ConcoctiUpgradeSlot;
@@ -77,7 +79,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
         <T extends AbstractConcoctiMachineBlockEntity<T, M, V, I, R>,
                 M extends AbstractConcoctiMachineMenu<M>, V, I extends RecipeInput, R extends ProcessingRecipe<R, I>>
         extends AbstractPoweredBlockEntity
-        implements ItemHandlerBlockEntity, FluidHandlerBlockEntity, Details {
+        implements ItemHandlerBlockEntity, FluidHandlerBlockEntity, Details, SettingsHolder, FluidTankHolder {
 
     public int ticksLeft = 0;
     public int totalTicks = 0;
@@ -826,5 +828,10 @@ public abstract class AbstractConcoctiMachineBlockEntity
     @Override
     public void deserialize(DetailContext context) {
         detailHolders.deserialize(context);
+    }
+
+    @Override
+    public MachineSettings getMachineSettings() {
+        return machineSettings;
     }
 }
