@@ -4,7 +4,6 @@ import io.github.laptop59.concocti.client.gui.components.MachineSettings;
 import io.github.laptop59.concocti.client.gui.components.MachineSettingsSlots;
 import io.github.laptop59.concocti.client.gui.components.SlotFlag;
 import io.github.laptop59.concocti.client.gui.components.SlotType;
-import io.github.laptop59.concocti.common.Concocti;
 import io.github.laptop59.concocti.common.abstraction.Properties;
 import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.frame.FrameAttributes;
@@ -24,6 +23,7 @@ import io.github.laptop59.concocti.common.menu.ConcoctiFrameSlot;
 import io.github.laptop59.concocti.common.menu.ConcoctiUpgradeSlot;
 import io.github.laptop59.concocti.common.menu.MenuServerConstructor;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
+import io.github.laptop59.concocti.common.util.ConcoctiTransferrer;
 import io.github.laptop59.concocti.common.util.Lazy;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -47,12 +47,9 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
-import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -122,10 +119,10 @@ public abstract class AbstractConcoctiMachineBlockEntity
     public final Property<MachineSettingsSlots> MACHINE_SETTINGS_SLOTS =
             Properties.MACHINE_SETTINGS_SLOTS.newWithLinker(() -> machineSettings.slots);
 
-    protected final Lazy<IItemHandler> inputItemHandler;
-    protected final Lazy<IFluidHandler> inputFluidHandler;
-    protected final Lazy<IItemHandler> outputItemHandler;
-    protected final Lazy<IFluidHandler> outputFluidHandler;
+    protected Lazy<IItemHandler> inputItemHandler;
+    protected Lazy<IFluidHandler> inputFluidHandler;
+    protected Lazy<IItemHandler> outputItemHandler;
+    protected Lazy<IFluidHandler> outputFluidHandler;
 
     /**
      * Get the machine-specific details of this machine, uncached. Do not use this function for normal use.
@@ -238,7 +235,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
                     direction.getOpposite()
             );
             if (output == null) continue;
-            transfer(input, output, false);
+            ConcoctiTransferrer.transfer(input, output, false);
         }
     }
 
@@ -255,7 +252,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
                     direction.getOpposite()
             );
             if (output == null) continue;
-            transfer(input, output);
+            ConcoctiTransferrer.transfer(input, output);
         }
     }
 
@@ -274,7 +271,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
                     direction.getOpposite()
             );
             if (output == null) continue;
-            transfer(input, output);
+            ConcoctiTransferrer.transfer(input, output);
         }
     }
 
@@ -291,7 +288,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
                     direction.getOpposite()
             );
             if (input == null) continue;
-            transfer(input, output, true);
+            ConcoctiTransferrer.transfer(input, output, true);
         }
     }
 
@@ -308,113 +305,8 @@ public abstract class AbstractConcoctiMachineBlockEntity
                     direction.getOpposite()
             );
             if (input == null) continue;
-            transfer(input, output);
+            ConcoctiTransferrer.transfer(input, output);
         }
-    }
-
-    /**
-     * Transfer items from one handler to another.
-     *
-     * @param from Handler to take items from.
-     * @param to   Handler to put items to.
-     */
-    protected static void transfer(@NotNull IItemHandler from, @NotNull IItemHandler to, boolean fillExistingStacks) {
-        // Transfer all the items possible from `from` to `to`.
-        // Taken from MI.
-        // https://github.com/AztechMC/Modern-Industrialization/blob/c5a997baf3be596049c031bc0b4a7915def7b99d/src/main/java/aztech/modern_industrialization/util/TransferHelper.java#L38
-        for (int i = 0; i < from.getSlots(); i++) {
-            // First, simulate.
-            ItemStack toTake = from.extractItem(i, Integer.MAX_VALUE, true);
-            if (toTake.isEmpty()) continue;
-            int extractCount = toTake.getCount();
-            ItemStack left = fillExistingStacks ?
-                    ItemHandlerHelper.insertItemStacked(to, toTake, true) :
-                    ItemHandlerHelper.insertItem(to, toTake, true);
-            int insertCount = extractCount - left.getCount();
-            if (insertCount <= 0) continue;
-            // Now we can execute the action.
-            toTake = from.extractItem(i, insertCount, false);
-            if (toTake.isEmpty()) continue;
-            left = fillExistingStacks ?
-                    ItemHandlerHelper.insertItemStacked(to, toTake, false) :
-                    ItemHandlerHelper.insertItem(to, toTake, false);
-            if (!left.isEmpty()) {
-                // Try to give the taken items back if possible.
-                left = from.insertItem(i, left, false);
-                if (!left.isEmpty()) {
-                    Concocti.LOGGER.warn("Could not provide back {} to item handler {}, voiding.", left, to);
-                }
-            }
-        }
-    }
-
-    /**
-     * Transfer fluids from one handler to another.
-     *
-     * @param from Handler to take fluids from.
-     * @param to   Handler to put fluids to.
-     */
-    protected static void transfer(@NotNull IFluidHandler from, @NotNull IFluidHandler to) {
-        int iterations = 0;
-        final int MAX_FLUID_ITERATIONS = 8192;
-        while (!transfer(from, to, Integer.MAX_VALUE, false).isEmpty()) {
-            if (++iterations > MAX_FLUID_ITERATIONS) {
-                Concocti.LOGGER.warn("Iterating fluid transfer took more than {} iterations!", MAX_FLUID_ITERATIONS);
-                break;
-            }
-        }
-    }
-
-    /**
-     * Transfer energy from one storage to another.
-     *
-     * @param from Storage to extract energy from.
-     * @param to   Storage to insert energy to.
-     */
-    protected static void transfer(@NotNull IEnergyStorage from, @NotNull IEnergyStorage to) {
-        if (!from.canExtract() || !to.canReceive()) return;
-        int energy = Math.min(from.extractEnergy(Integer.MAX_VALUE, true), to.receiveEnergy(Integer.MAX_VALUE, true));
-        // Now try to extract and put.
-        to.receiveEnergy(from.extractEnergy(energy, false), false);
-    }
-
-    /**
-     * Transfer fluids from one handler to another. This function is a fixed version of NeoForge's handler, which does
-     * not handle multi-tank to multi-tank transactions properly.
-     *
-     * @param from      Handler to take fluids from.
-     * @param to        Handler to put fluids to.
-     * @param maxAmount The maximum amount of fluid from a tank to take from the {@code from} handler.
-     * @param simulated Whether the transfer is simulated or not.
-     */
-    public static FluidStack transfer(@NotNull IFluidHandler from, @NotNull IFluidHandler to, int maxAmount, boolean simulated) {
-        // Taken from MI.
-        // https://github.com/AztechMC/Modern-Industrialization/blob/c5a997baf3be596049c031bc0b4a7915def7b99d/src/main/java/aztech/modern_industrialization/util/TransferHelper.java#L147
-        int tanks = from.getTanks();
-        for (int i = 0; i < tanks; ++i) {
-            FluidStack toTry = from.getFluidInTank(i).copy();
-            if (toTry.getAmount() > maxAmount) {
-                toTry.setAmount(maxAmount);
-            }
-            FluidStack drainable = from.drain(toTry, IFluidHandler.FluidAction.SIMULATE);
-            if (drainable.isEmpty()) {
-                continue;
-            }
-            int fillableAmount = to.fill(drainable, IFluidHandler.FluidAction.SIMULATE);
-            if (fillableAmount > 0) {
-                drainable.setAmount(fillableAmount);
-                if (!simulated) {
-                    FluidStack drained = from.drain(drainable, IFluidHandler.FluidAction.EXECUTE);
-                    if (!drained.isEmpty()) {
-                        drained.setAmount(to.fill(drained, IFluidHandler.FluidAction.EXECUTE));
-                        return drained;
-                    }
-                } else {
-                    return drainable;
-                }
-            }
-        }
-        return FluidStack.EMPTY;
     }
 
     /**
@@ -444,8 +336,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
      */
     abstract protected boolean isItemValidInMachine(int slot, @NotNull ItemStack stack);
 
-    @SuppressWarnings("unchecked")
-    public AbstractConcoctiMachineBlockEntity(Supplier<BlockEntityType<T>> blockEntityType, BlockPos pos, BlockState blockState) {
+    public AbstractConcoctiMachineBlockEntity(Supplier<BlockEntityType<T>> blockEntityType, BlockPos pos, BlockState blockState, Object... extraData) {
         super(
                 blockEntityType.get(),
                 pos,
@@ -455,6 +346,11 @@ public abstract class AbstractConcoctiMachineBlockEntity
                 0,
                 () -> DynamicEnergyStorage.Mode.NONE
         );
+        postConstructor(blockEntityType, pos, blockState, extraData);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void postConstructor(Supplier<BlockEntityType<T>> blockEntityType, BlockPos pos, BlockState blockState, Object... extraData) {
         AbstractConcoctiMachineBlockEntity<T, M, V, I, R> blockEntity = this;
         T blockEntityT = (T) blockEntity;
 
@@ -472,16 +368,16 @@ public abstract class AbstractConcoctiMachineBlockEntity
         this.fluidHandler = new ConcoctiFluidTankHandler(blockEntity::getFluidTanks);
 
         inputItemHandler = new Lazy<>(() -> itemHandler.whitelistSlots(
-            details.inputOutputSlots().getInputs().apply(blockEntityT)
+                details.inputOutputSlots().getInputs().apply(blockEntityT)
         ));
         inputFluidHandler = new Lazy<>(() -> fluidHandler.whitelistTanks(
-            details.inputOutputFluids().getInputs().apply(blockEntityT)
+                details.inputOutputFluids().getInputs().apply(blockEntityT)
         ));
         outputItemHandler = new Lazy<>(() -> itemHandler.whitelistSlots(
-            details.inputOutputSlots().getOutputs().apply(blockEntityT)
+                details.inputOutputSlots().getOutputs().apply(blockEntityT)
         ));
         outputFluidHandler = new Lazy<>(() -> fluidHandler.whitelistTanks(
-            details.inputOutputFluids().getOutputs().apply(blockEntityT)
+                details.inputOutputFluids().getOutputs().apply(blockEntityT)
         ));
 
         if (details.slots() < 2)
@@ -795,18 +691,6 @@ public abstract class AbstractConcoctiMachineBlockEntity
     }
 
     abstract public List<IFluidTank> getFluidTanks();
-
-    protected FluidStack parseFluidStack(CompoundTag tag, HolderLookup.@NotNull Provider registries) {
-        if (tag != null)
-            return FluidStack.parseOptional(registries, tag);
-        else
-            return FluidStack.EMPTY.copy();
-    }
-
-    protected void saveFluidStack(String key, @NotNull CompoundTag tag, FluidTank tank, HolderLookup.@NotNull Provider registries) {
-        if (tank.isEmpty()) return;
-        tag.put(key, tank.getFluid().save(registries));
-    }
 
     abstract protected ConcoctiMachine<T, M, V, I, R, ?, ?, ?, ?> getMachineInstance();
 

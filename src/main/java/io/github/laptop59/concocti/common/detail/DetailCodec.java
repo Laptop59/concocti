@@ -18,7 +18,7 @@ public class DetailCodec<T> implements DetailSerializer<T>, DetailDeserializer<T
             FluidTank tank = holder.get();
             CompoundTag subTag = (CompoundTag) context.tag().get(context.id());
             if (subTag != null)
-                tank.setFluid(FluidStack.parseOptional(context.registries(), subTag));
+                tank.setFluid(FluidStack.parseOptional(context.registries(), subTag).copy());
             else
                 tank.setFluid(FluidStack.EMPTY.copy());
         }

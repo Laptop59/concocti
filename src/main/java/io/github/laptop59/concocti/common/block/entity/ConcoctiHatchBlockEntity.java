@@ -10,6 +10,8 @@ import io.github.laptop59.concocti.common.abstraction.Properties;
 import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.ConcoctiHatchBlock;
+import io.github.laptop59.concocti.common.block.HatchPurpose;
+import io.github.laptop59.concocti.common.block.HatchType;
 import io.github.laptop59.concocti.common.detail.*;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTankHandler;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTankSlotTypedHandler;
@@ -18,6 +20,7 @@ import io.github.laptop59.concocti.common.machine.SettingsHolder;
 import io.github.laptop59.concocti.common.menu.ConcoctiEnergyHatchMenu;
 import io.github.laptop59.concocti.common.menu.ConcoctiFluidHatchMenu;
 import io.github.laptop59.concocti.common.menu.ConcoctiItemHatchMenu;
+import io.github.laptop59.concocti.common.util.ConcoctiTransferrer;
 import io.github.laptop59.concocti.common.util.Lazy;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -63,7 +66,7 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
 
     // Details
     private final DetailHolder<FluidTank> fluidTank = new DetailHolder<>(
-            DetailCodec.FLUID_TANK, "fluid_tank", new FluidTank(0), this
+            DetailCodec.FLUID_TANK, "fluid_tank", new FluidTank(TANK_CAPACITY), this
     );
 
     // Properties
@@ -77,7 +80,7 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
             Properties.ENERGY_STORED.newWithLinker(() -> energy.getEnergyStored());
     public final Property<Integer> MAX_ENERGY_STORED =
             Properties.MAX_ENERGY_STORED.newWithLinker(() -> energy.getMaxEnergyStored());
-    public final Property<FluidStack> FLUID_TANK = Properties.PURE_FLUID_OUTPUT.newWithLinker(() -> fluidTank.get().getFluid());
+    public final Property<FluidStack> FLUID_TANK = Properties.FLUID_TANK.newWithLinker(() -> fluidTank.get().getFluid());
 
     protected final Lazy<IItemHandler> inputItemHandler;
     protected final Lazy<IFluidHandler> inputFluidHandler;
@@ -189,7 +192,7 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
                     direction.getOpposite()
             );
             if (output == null) continue;
-            transfer(input, output, false);
+            ConcoctiTransferrer.transfer(input, output, false);
         }
     }
 
@@ -206,7 +209,7 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
                     direction.getOpposite()
             );
             if (output == null) continue;
-            transfer(input, output);
+            ConcoctiTransferrer.transfer(input, output);
         }
     }
 
@@ -225,7 +228,7 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
                     direction.getOpposite()
             );
             if (output == null) continue;
-            transfer(input, output);
+            ConcoctiTransferrer.transfer(input, output);
         }
     }
 
@@ -242,7 +245,7 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
                     direction.getOpposite()
             );
             if (input == null) continue;
-            transfer(input, output, true);
+            ConcoctiTransferrer.transfer(input, output, true);
         }
     }
 
@@ -259,113 +262,8 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
                     direction.getOpposite()
             );
             if (input == null) continue;
-            transfer(input, output);
+            ConcoctiTransferrer.transfer(input, output);
         }
-    }
-
-    /**
-     * Transfer items from one handler to another.
-     *
-     * @param from Handler to take items from.
-     * @param to   Handler to put items to.
-     */
-    protected static void transfer(@NotNull IItemHandler from, @NotNull IItemHandler to, boolean fillExistingStacks) {
-        // Transfer all the items possible from `from` to `to`.
-        // Taken from MI.
-        // https://github.com/AztechMC/Modern-Industrialization/blob/c5a997baf3be596049c031bc0b4a7915def7b99d/src/main/java/aztech/modern_industrialization/util/TransferHelper.java#L38
-        for (int i = 0; i < from.getSlots(); i++) {
-            // First, simulate.
-            ItemStack toTake = from.extractItem(i, Integer.MAX_VALUE, true);
-            if (toTake.isEmpty()) continue;
-            int extractCount = toTake.getCount();
-            ItemStack left = fillExistingStacks ?
-                    ItemHandlerHelper.insertItemStacked(to, toTake, true) :
-                    ItemHandlerHelper.insertItem(to, toTake, true);
-            int insertCount = extractCount - left.getCount();
-            if (insertCount <= 0) continue;
-            // Now we can execute the action.
-            toTake = from.extractItem(i, insertCount, false);
-            if (toTake.isEmpty()) continue;
-            left = fillExistingStacks ?
-                    ItemHandlerHelper.insertItemStacked(to, toTake, false) :
-                    ItemHandlerHelper.insertItem(to, toTake, false);
-            if (!left.isEmpty()) {
-                // Try to give the taken items back if possible.
-                left = from.insertItem(i, left, false);
-                if (!left.isEmpty()) {
-                    Concocti.LOGGER.warn("Could not provide back {} to item handler {}, voiding.", left, to);
-                }
-            }
-        }
-    }
-
-    /**
-     * Transfer fluids from one handler to another.
-     *
-     * @param from Handler to take fluids from.
-     * @param to   Handler to put fluids to.
-     */
-    protected static void transfer(@NotNull IFluidHandler from, @NotNull IFluidHandler to) {
-        int iterations = 0;
-        final int MAX_FLUID_ITERATIONS = 8192;
-        while (!transfer(from, to, Integer.MAX_VALUE, false).isEmpty()) {
-            if (++iterations > MAX_FLUID_ITERATIONS) {
-                Concocti.LOGGER.warn("Iterating fluid transfer took more than {} iterations!", MAX_FLUID_ITERATIONS);
-                break;
-            }
-        }
-    }
-
-    /**
-     * Transfer energy from one storage to another.
-     *
-     * @param from Storage to extract energy from.
-     * @param to   Storage to insert energy to.
-     */
-    protected static void transfer(@NotNull IEnergyStorage from, @NotNull IEnergyStorage to) {
-        if (!from.canExtract() || !to.canReceive()) return;
-        int energy = Math.min(from.extractEnergy(Integer.MAX_VALUE, true), to.receiveEnergy(Integer.MAX_VALUE, true));
-        // Now try to extract and put.
-        to.receiveEnergy(from.extractEnergy(energy, false), false);
-    }
-
-    /**
-     * Transfer fluids from one handler to another. This function is a fixed version of NeoForge's handler, which does
-     * not handle multi-tank to multi-tank transactions properly.
-     *
-     * @param from      Handler to take fluids from.
-     * @param to        Handler to put fluids to.
-     * @param maxAmount The maximum amount of fluid from a tank to take from the {@code from} handler.
-     * @param simulated Whether the transfer is simulated or not.
-     */
-    public static FluidStack transfer(@NotNull IFluidHandler from, @NotNull IFluidHandler to, int maxAmount, boolean simulated) {
-        // Taken from MI.
-        // https://github.com/AztechMC/Modern-Industrialization/blob/c5a997baf3be596049c031bc0b4a7915def7b99d/src/main/java/aztech/modern_industrialization/util/TransferHelper.java#L147
-        int tanks = from.getTanks();
-        for (int i = 0; i < tanks; ++i) {
-            FluidStack toTry = from.getFluidInTank(i).copy();
-            if (toTry.getAmount() > maxAmount) {
-                toTry.setAmount(maxAmount);
-            }
-            FluidStack drainable = from.drain(toTry, IFluidHandler.FluidAction.SIMULATE);
-            if (drainable.isEmpty()) {
-                continue;
-            }
-            int fillableAmount = to.fill(drainable, IFluidHandler.FluidAction.SIMULATE);
-            if (fillableAmount > 0) {
-                drainable.setAmount(fillableAmount);
-                if (!simulated) {
-                    FluidStack drained = from.drain(drainable, IFluidHandler.FluidAction.EXECUTE);
-                    if (!drained.isEmpty()) {
-                        drained.setAmount(to.fill(drained, IFluidHandler.FluidAction.EXECUTE));
-                        return drained;
-                    }
-                } else {
-                    return drainable;
-                }
-            }
-        }
-        return FluidStack.EMPTY;
     }
 
     /**
@@ -396,17 +294,18 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
 
         ConcoctiHatchBlock block = (ConcoctiHatchBlock) blockState.getBlock();
 
-        ConcoctiHatchBlock.Type type = block.getType();
-        ConcoctiHatchBlock.Purpose purpose = block.getPurpose();
+        HatchType type = block.getType();
+        HatchPurpose purpose = block.getPurpose();
 
-        if (type == ConcoctiHatchBlock.Type.ITEM) {
+        if (type == HatchType.ITEM) {
             this.resetItemHandler(9);
         }
 
-        if (type == ConcoctiHatchBlock.Type.FLUID)
-            fluidTank.set(new FluidTank(TANK_CAPACITY));
+        if (type != HatchType.FLUID) {
+            fluidTank.get().setCapacity(0);
+        }
 
-        if (type == ConcoctiHatchBlock.Type.ENERGY) {
+        if (type == HatchType.ENERGY) {
             energy.setMaxEnergy(ENERGY_CAPACITY);
             energy.setMaxEnergyTransfer(ENERGY_CAPACITY);
         }
@@ -415,10 +314,10 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
         this.machineSettings.availableTypes.addFirst(SlotType.NONE);
 
         DynamicEnergyStorage.Mode mode = DynamicEnergyStorage.Mode.NONE;
-        if (type == ConcoctiHatchBlock.Type.ENERGY) {
-            if (purpose == ConcoctiHatchBlock.Purpose.INPUT)
+        if (type == HatchType.ENERGY) {
+            if (purpose == HatchPurpose.INPUT)
                 mode = DynamicEnergyStorage.Mode.INPUT_ONLY;
-            else if (purpose == ConcoctiHatchBlock.Purpose.OUTPUT)
+            else if (purpose == HatchPurpose.OUTPUT)
                 mode = DynamicEnergyStorage.Mode.OUTPUT_ONLY;
         }
 
@@ -427,18 +326,18 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
         this.fluidHandler = new ConcoctiFluidTankHandler(() -> List.of(fluidTank.get()));
 
         inputItemHandler = new Lazy<>(() -> itemHandler.whitelistSlots(
-                type == ConcoctiHatchBlock.Type.ITEM && purpose == ConcoctiHatchBlock.Purpose.INPUT ?
+                type == HatchType.ITEM && purpose == HatchPurpose.INPUT ?
                         List.of(0, 1, 2, 3, 4, 5, 6, 7, 8) : List.of()
         ));
         inputFluidHandler = new Lazy<>(() -> fluidHandler.whitelistTanks(
-                purpose == ConcoctiHatchBlock.Purpose.INPUT ? List.of(fluidTank.get()) : List.of()
+                purpose == HatchPurpose.INPUT ? List.of(fluidTank.get()) : List.of()
         ));
         outputItemHandler = new Lazy<>(() -> itemHandler.whitelistSlots(
-                type == ConcoctiHatchBlock.Type.ITEM && purpose == ConcoctiHatchBlock.Purpose.OUTPUT ?
+                type == HatchType.ITEM && purpose == HatchPurpose.OUTPUT ?
                         List.of(0, 1, 2, 3, 4, 5, 6, 7, 8) : List.of()
         ));
         outputFluidHandler = new Lazy<>(() -> fluidHandler.whitelistTanks(
-                purpose == ConcoctiHatchBlock.Purpose.OUTPUT ? List.of(fluidTank.get()) : List.of()
+                purpose == HatchPurpose.OUTPUT ? List.of(fluidTank.get()) : List.of()
         ));
     }
 
@@ -446,24 +345,24 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
     protected @NotNull List<SlotType> getAllowedSlotTypes() {
         ConcoctiHatchBlock block = (ConcoctiHatchBlock) getBlockState().getBlock();
 
-        ConcoctiHatchBlock.Type type = block.getType();
-        ConcoctiHatchBlock.Purpose purpose = block.getPurpose();
+        HatchType type = block.getType();
+        HatchPurpose purpose = block.getPurpose();
 
         switch (type) {
             case ITEM -> {
-                if (purpose == ConcoctiHatchBlock.Purpose.INPUT)
+                if (purpose == HatchPurpose.INPUT)
                     return List.of(SlotType.ITEM_INPUT);
-                if (purpose == ConcoctiHatchBlock.Purpose.OUTPUT)
+                if (purpose == HatchPurpose.OUTPUT)
                     return List.of(SlotType.ITEM_OUTPUT);
             }
             case FLUID -> {
-                if (purpose == ConcoctiHatchBlock.Purpose.INPUT)
+                if (purpose == HatchPurpose.INPUT)
                     return List.of(SlotType.FLUID_INPUT);
-                if (purpose == ConcoctiHatchBlock.Purpose.OUTPUT)
+                if (purpose == HatchPurpose.OUTPUT)
                     return List.of(SlotType.FLUID_OUTPUT);
             }
             case ENERGY -> {
-                if (purpose == ConcoctiHatchBlock.Purpose.OUTPUT)
+                if (purpose == HatchPurpose.OUTPUT)
                     return List.of(SlotType.ENERGY_OUTPUT);
             }
         }

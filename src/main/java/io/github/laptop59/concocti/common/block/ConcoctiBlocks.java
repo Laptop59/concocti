@@ -113,7 +113,7 @@ public class ConcoctiBlocks {
             BlockBehaviour.Properties.of().mapColor(DyeColor.MAGENTA).requiresCorrectToolForDrops().explosionResistance(400).strength(4f),
             new BlockData(BlockToolRank.DIAMOND, BlockToolType.PICKAXE));
 
-    public static final Map<ConcoctiHatchBlock.Type, Map<ConcoctiHatchBlock.Purpose, DeferredBlock<? extends ConcoctiHatchBlock>>> HATCHES = registerHatches(
+    public static final Map<HatchType, Map<HatchPurpose, DeferredBlock<? extends ConcoctiHatchBlock>>> HATCHES = registerHatches(
             BlockBehaviour.Properties.of().mapColor(DyeColor.MAGENTA).requiresCorrectToolForDrops().explosionResistance(500).strength(5f),
             new BlockData(BlockToolRank.DIAMOND, BlockToolType.PICKAXE)
     );
@@ -122,6 +122,14 @@ public class ConcoctiBlocks {
             HATCHES.values().stream().flatMap(map -> map.values().stream()).toList();
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ConcoctiHatchBlockEntity>> HATCH_BLOCK_ENTITY = registerHatchBlockEntity();
+
+    public static DeferredBlock<? extends ConcoctiHatchBlock> getDeferredHatch(HatchPurpose purpose, HatchType type) {
+        return HATCHES.get(type).get(purpose);
+    }
+
+    public static ConcoctiHatchBlock getHatch(HatchPurpose purpose, HatchType type) {
+        return getDeferredHatch(purpose, type).get();
+    }
 
     // REGISTERING METHODS
 
@@ -135,11 +143,11 @@ public class ConcoctiBlocks {
         return ConcoctiRegisters.BLOCKS.registerBlock(name, (p) -> new LiquidBlock(flowingFluid.get(), p), props);
     }
 
-    public static Map<ConcoctiHatchBlock.Type, Map<ConcoctiHatchBlock.Purpose, DeferredBlock<? extends ConcoctiHatchBlock>>> registerHatches(BlockBehaviour.Properties props, BlockData data) {
-        Map<ConcoctiHatchBlock.Type, Map<ConcoctiHatchBlock.Purpose, DeferredBlock<? extends ConcoctiHatchBlock>>> map = new EnumMap<>(ConcoctiHatchBlock.Type.class);
-        for (ConcoctiHatchBlock.Type type : ConcoctiHatchBlock.Type.values()) {
-            Map<ConcoctiHatchBlock.Purpose, DeferredBlock<? extends ConcoctiHatchBlock>> innerMap = new EnumMap<>(ConcoctiHatchBlock.Purpose.class);
-            for (ConcoctiHatchBlock.Purpose purpose : ConcoctiHatchBlock.Purpose.values()) {
+    public static Map<HatchType, Map<HatchPurpose, DeferredBlock<? extends ConcoctiHatchBlock>>> registerHatches(BlockBehaviour.Properties props, BlockData data) {
+        Map<HatchType, Map<HatchPurpose, DeferredBlock<? extends ConcoctiHatchBlock>>> map = new EnumMap<>(HatchType.class);
+        for (HatchType type : HatchType.values()) {
+            Map<HatchPurpose, DeferredBlock<? extends ConcoctiHatchBlock>> innerMap = new EnumMap<>(HatchPurpose.class);
+            for (HatchPurpose purpose : HatchPurpose.values()) {
                 String id = "concocti_" + type.id + "_" + purpose.id + "_hatch";
                 Function<BlockBehaviour.Properties, ConcoctiHatchBlock> func = p -> new ConcoctiHatchBlock(p, type, purpose);
                 var block = ConcoctiRegisters.BLOCKS.registerBlock(id, func, props);

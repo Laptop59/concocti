@@ -1,0 +1,443 @@
+package io.github.laptop59.concocti.common.block.entity;
+
+import io.github.laptop59.concocti.common.abstraction.Complexion;
+import io.github.laptop59.concocti.common.abstraction.Properties;
+import io.github.laptop59.concocti.common.abstraction.Property;
+import io.github.laptop59.concocti.common.block.ConcoctiHatchBlock;
+import io.github.laptop59.concocti.common.block.HatchPurpose;
+import io.github.laptop59.concocti.common.block.HatchType;
+import io.github.laptop59.concocti.common.block.frame.FrameAttributes;
+import io.github.laptop59.concocti.common.detail.DetailContext;
+import io.github.laptop59.concocti.common.detail.DetailHolder;
+import io.github.laptop59.concocti.common.detail.DetailHolders;
+import io.github.laptop59.concocti.common.detail.Details;
+import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTankHandler;
+import io.github.laptop59.concocti.common.fluid.MergedEnergyStorage;
+import io.github.laptop59.concocti.common.fluid.MergedItemHandler;
+import io.github.laptop59.concocti.common.item.ConcoctiItemStackHandler;
+import io.github.laptop59.concocti.common.machine.FluidTankHolder;
+import io.github.laptop59.concocti.common.machine.ItemsFluidsInputValue;
+import io.github.laptop59.concocti.common.machine.SettingsHolder;
+import io.github.laptop59.concocti.common.menu.*;
+import io.github.laptop59.concocti.common.multiblock.MultiblockStructure;
+import io.github.laptop59.concocti.common.multiblock.MultiblockToughConcoctiBrickLikePredicate;
+import io.github.laptop59.concocti.common.recipe.AbstractConcoctiMultiblockRecipe;
+import io.github.laptop59.concocti.common.recipe.ItemsFluidsRecipeInput;
+import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
+import io.github.laptop59.concocti.common.util.ConcoctiTransferrer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.IFluidTank;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.*;
+import java.util.function.Supplier;
+
+import static io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock.LIT;
+
+/**
+ * A class that serves as a base for Concocti Machines. <p>
+ * Any {@link ContainerData} will have to be stored by the extending classes.
+ *
+ * @param <T> The type of block entity (should be itself.)
+ * @param <R> The recipe type of this block entity.
+ */
+public abstract class AbstractConcoctiMultiblockBlockEntity
+        <T extends AbstractConcoctiMultiblockBlockEntity<T, R>, R extends AbstractConcoctiMultiblockRecipe<R>>
+        extends AbstractConcoctiMachineOnlyItemsFluidsBlockEntity<T, ConcoctiMultiblockMenu, R>
+        implements Details, SettingsHolder, FluidTankHolder {
+    public int autoCooldown = 0;
+    public static final int AUTO_COOLDOWN = 20;
+    public boolean valid = false;
+
+    public DetailHolders detailHolders = new DetailHolders();
+    public MultiblockStructure structure = getStructure();
+
+    // Slots
+    public static final int UPGRADE_SLOT = 0;
+    public static final int FRAME_SLOT = 1;
+
+    // Properties
+    public final Property<Boolean> VALID =
+            Properties.VALID.newWithLinker(() -> valid);
+    public final Property<Integer> TICKS_LEFT =
+            Properties.TICKS_LEFT.newWithLinker(() -> ticksLeft);
+    public final Property<Integer> TOTAL_TICKS =
+            Properties.TOTAL_TICKS.newWithLinker(() -> totalTicks);
+
+    public IItemHandler itemStackInputHandler = null;
+    public IFluidHandler fluidStackInputHandler = null;
+    public IEnergyStorage energyInputStorage = null;
+    public IItemHandler itemStackOutputHandler = null;
+    public IFluidHandler fluidStackOutputHandler = null;
+    public IEnergyStorage energyOutputStorage = null;
+
+    protected final Complexion dataAccess = new Complexion(
+            VALID.of(false),
+            TICKS_LEFT.of(0),
+            TOTAL_TICKS.of(0)
+    );
+
+    /**
+     * Tells whether an item is valid in a specific slot index.
+     *
+     * @param slot  The slot index.
+     * @param stack The item stack.
+     * @return The item's validity.
+     */
+    abstract protected boolean isItemValidInMachine(int slot, @NotNull ItemStack stack);
+
+    public AbstractConcoctiMultiblockBlockEntity(Supplier<BlockEntityType<T>> blockEntityType, BlockPos pos, BlockState blockState, Object... extraData) {
+        super(
+                blockEntityType,
+                pos,
+                blockState,
+                extraData
+        );
+    }
+
+    /**
+     * Creates a menu for this block entity.
+     */
+    @Override
+    protected @NotNull ConcoctiMultiblockMenu createMenu(int containerId, @NotNull Inventory inventory) {
+        return new ConcoctiMultiblockMenu(getMachineInstance().MENU, containerId, inventory, this, dataAccess);
+    }
+
+    /**
+     * Gives the amount of energy (in FE) that this block entity consumes per tick.
+     */
+    protected int getTickEnergyIntake() {
+        return (int) (getTickMultiplier() * rateConsumption);
+    }
+
+    /**
+     * Gives the amount of energy (in FE) that this block entity consumes per tick.
+     */
+    protected float getEnergyMultiplier() {
+        return (float) (getTickEnergyIntake()) * (1 - getEfficiency()) / rateConsumption;
+    }
+
+    /**
+     * Gives the amount of energy (in FE) that this block entity consumes per tick without considering efficiency.
+     */
+    protected float getInefficientEnergyMultiplier() {
+        return (float) (getTickEnergyIntake()) / rateConsumption;
+    }
+
+    /**
+     * Gives the tick process multiplier (tells how must faster a recipe is for this block entity).
+     */
+    protected int getTickMultiplier() {
+        return (int) (getTickMultiplier(ConcoctiUpgradeSlot.getUpgradeUnits(getItem(UPGRADE_SLOT))) * getFrameMultiplier());
+    }
+
+    /**
+     * Gives the tick process multiplier (tells how must faster a recipe is for this block entity) from upgrade units.
+     */
+    public static int getTickMultiplier(int upgradeUnits) {
+        double ticks = Math.pow(1.2, upgradeUnits);
+        return (int) ticks + upgradeUnits;
+    }
+
+    /**
+     * Gives the multiplier caused by an upgradable frame in this machine.
+     */
+    protected float getFrameMultiplier() {
+        Optional<FrameAttributes> optionalFrameAttributes = ConcoctiFrameSlot.getFrameAttributes(getItem(FRAME_SLOT).getItem());
+        if (optionalFrameAttributes.isPresent()) {
+            FrameAttributes attributes = optionalFrameAttributes.get();
+            return attributes.rate();
+        }
+        return 1.0f;
+    }
+
+    /**
+     * Gives the energy efficiency caused by an upgradable frame in this machine.
+     */
+    protected float getEfficiency() {
+        Optional<FrameAttributes> optionalFrameAttributes = ConcoctiFrameSlot.getFrameAttributes(getItem(FRAME_SLOT).getItem());
+        if (optionalFrameAttributes.isPresent()) {
+            FrameAttributes attributes = optionalFrameAttributes.get();
+            return attributes.efficiency();
+        }
+        return 0.0f;
+    }
+
+    /**
+     * Gives this block entity's recipe type.
+     */
+    public abstract Supplier<RecipeType<R>> getRecipeType();
+
+    /**
+     * Tells whether this block entity can process an input. This should check for all conditions. <p>
+     * This default implementation only includes general, recipe-specific checks,
+     * and does not include checks for overflowing. Use {@code super.canProcess()} to handle
+     * everything this implementation does.
+     */
+    public boolean canProcess() {
+        if (!valid) return false;
+        // Check if enough energy is left.
+        if (energyInputStorage.extractEnergy(getTickEnergyIntake(), true) < getTickEnergyIntake()) return false;
+        // Query the recipe.
+        ItemsFluidsInputValue input = getInput();
+        R recipe = getRecipe(input);
+        if (recipe == null) return false;
+        return lastRecipe == null || lastRecipe == recipe;
+    }
+
+    @Override
+    protected ItemsFluidsInputValue getInput() {
+        return new ItemsFluidsInputValue(itemStackInputHandler, fluidStackInputHandler);
+    }
+
+    @Override
+    protected abstract @NotNull Component getDefaultName();
+
+    /**
+     * Called when a recipe has finished. This should account for any products being made.
+     *
+     * @param recipe The recipe that has completed.
+     */
+    protected void onRecipeCompleted(R recipe) {
+        // Check for state again.
+        updateMultiblockState();
+        if (!valid) return;
+        ItemsFluidsInputValue input = getInput();
+        ItemsFluidsRecipeInput recipeInput = recipeInputFrom(input);
+        recipeInput.consume(recipe.getInputItems(), recipe.getInputFluids());
+        // Now add the finished products.
+        for (ItemStack result : recipe.getOutputItems())
+            ItemHandlerHelper.insertItem(itemStackOutputHandler, result.copy(), false);
+        for (FluidStack result : recipe.getOutputFluids())
+            fluidStackInputHandler.fill(result, IFluidHandler.FluidAction.EXECUTE);
+    }
+
+    /**
+     * Gets all the separate handlers of fluid stacks of this machine, which are indexed consistently.
+     */
+    public List<IFluidHandler> getIndexedFluidHandlers() {
+        return List.of();
+    }
+
+    protected void nullifyHandlers() {
+        itemStackInputHandler = null;
+        fluidStackInputHandler = null;
+        energyInputStorage = null;
+        itemStackOutputHandler = null;
+        fluidStackOutputHandler = null;
+        energyOutputStorage = null;
+    }
+
+    public void updateMultiblockState() {
+        Direction direction = getBlockState().getValue(HorizontalDirectionalBlock.FACING);
+        valid = structure.match(getLevel(), getBlockPos(), direction);
+        if (!valid) {
+            ticksLeft = totalTicks;
+            lastRecipe = null;
+
+            nullifyHandlers();
+            return;
+        }
+        // Create the handlers.
+        Map<BlockPos, Object> dataMap = structure.getExtraData(getLevel(), getBlockPos(), direction);
+        List<IItemHandler> itemInputHandlers = new ArrayList<>();
+        List<IFluidTank> fluidInputTanks = new ArrayList<>();
+        List<IEnergyStorage> energyInputStorages = new ArrayList<>();
+        List<IItemHandler> itemOutputHandlers = new ArrayList<>();
+        List<IFluidTank> fluidOutputTanks = new ArrayList<>();
+        List<IEnergyStorage> energyOutputStorages = new ArrayList<>();
+        for (Map.Entry<BlockPos, Object> entry : dataMap.entrySet()) {
+            BlockPos pos = entry.getKey();
+            Object data = entry.getValue();
+            if (data instanceof MultiblockToughConcoctiBrickLikePredicate.Data(ConcoctiHatchBlockEntity entity)) {
+                // Get the entity.
+                ConcoctiHatchBlock block = entity.getBlock();
+                HatchType type = block.getType();
+                HatchPurpose purpose = block.getPurpose();
+                switch (type) {
+                    case ITEM -> {
+                        if (purpose == HatchPurpose.INPUT)
+                            itemInputHandlers.add(entity.inputItemHandler.get());
+                        else if (purpose == HatchPurpose.OUTPUT)
+                            itemOutputHandlers.add(entity.outputItemHandler.get());
+                    }
+                    case FLUID -> {
+                        if (purpose == HatchPurpose.INPUT)
+                            fluidInputTanks.add(entity.getFluidTank());
+                        else if (purpose == HatchPurpose.OUTPUT)
+                            fluidOutputTanks.add(entity.getFluidTank());
+                    }
+                    case ENERGY -> {
+                        if (purpose == HatchPurpose.INPUT)
+                            energyInputStorages.add(entity.energy);
+                        else if (purpose == HatchPurpose.OUTPUT)
+                            energyOutputStorages.add(entity.energy);
+                    }
+                }
+            }
+        }
+
+        ConcoctiFluidTankHandler fluidInputHandler = new ConcoctiFluidTankHandler(() -> fluidInputTanks);
+        ConcoctiFluidTankHandler fluidOutputHandler = new ConcoctiFluidTankHandler(() -> fluidOutputTanks);
+        MergedItemHandler itemInputHandler = new MergedItemHandler(itemInputHandlers);
+        MergedItemHandler itemOutputHandler = new MergedItemHandler(itemOutputHandlers);
+        MergedEnergyStorage energyInputStorageLocal = new MergedEnergyStorage(energyInputStorages);
+        MergedEnergyStorage energyOutputStorageLocal = new MergedEnergyStorage(energyOutputStorages);
+
+        itemStackInputHandler = itemInputHandler;
+        itemStackOutputHandler = itemOutputHandler;
+        fluidStackInputHandler = fluidInputHandler;
+        fluidStackOutputHandler = fluidOutputHandler;
+        energyInputStorage = energyInputStorageLocal;
+        energyOutputStorage = energyOutputStorageLocal;
+    }
+
+    public abstract MultiblockStructure getStructure();
+
+    /**
+     * A basic implementation of a Concocti Machine's server tick.
+     */
+    public void tick(Level level, BlockPos pos, BlockState state) {
+        AbstractConcoctiMultiblockBlockEntity<T, R> entity = this;
+        int currentUpgradeUnits = ConcoctiUpgradeSlot.getUpgradeUnits(entity.getItem(UPGRADE_SLOT));
+        if (currentUpgradeUnits != entity.lastUpgradeUnits) {
+            entity.lastUpgradeUnits = currentUpgradeUnits;
+            entity.setNewEnergyMultiplier(entity.getInefficientEnergyMultiplier());
+        }
+        if (entity.ticksLeft >= entity.totalTicks) entity.lastRecipe = null;
+        int consumableTicks = getTickMultiplier();
+        // int subticks = 0;
+        autoCooldown--;
+        if (autoCooldown <= 0) {
+            autoCooldown = AUTO_COOLDOWN;
+            updateMultiblockState();
+        }
+        while (consumableTicks > 0) {
+            if (entity.canProcess()) {
+                ItemsFluidsInputValue input = entity.getInput();
+                R recipe = entity.getRecipe(input);
+                if (recipe != null && (entity.lastRecipe == null || !entity.lastRecipe.equals(recipe))) {
+                    entity.lastRecipe = recipe;
+                    entity.totalTicks = recipe.getTicks();
+                    entity.ticksLeft = entity.totalTicks;
+                }
+                int ticksConsumed = Math.min(consumableTicks, entity.ticksLeft);
+                entity.ticksLeft -= ticksConsumed;
+                consumableTicks -= ticksConsumed;
+                entity.energyInputStorage.extractEnergy((int) (rateConsumption * ticksConsumed), false);
+                if (recipe != null && entity.ticksLeft <= 0) {
+                    // Produce the result.
+                    entity.onRecipeCompleted(recipe);
+                    // subticks++;
+                    entity.totalTicks = recipe.getTicks();
+                    entity.ticksLeft = entity.totalTicks;
+                }
+            } else {
+                if (entity.ticksLeft < entity.totalTicks) entity.ticksLeft += entity.getTickMultiplier();
+                break;
+            }
+        }
+        if (state.getValue(LIT) != entity.canProcess()) {
+            level.setBlock(pos, state.setValue(LIT, entity.canProcess()), 1 | 2);
+        }
+    }
+
+    /**
+     * Loads the last recipe ID, ticks left and total ticks for this block entity, along with items.
+     * <p> This method should call {@code super.loadAdditional()} at the beginning and load everything else
+     * specific to this block entity.
+     */
+    @Override
+    protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
+        super.loadAdditional(tag, registries);
+        this.ticksLeft = tag.getInt("ticks_left");
+        this.lastRecipe = null;
+        if (tag.contains("last_recipe_id", Tag.STRING_SIZE)) {
+            ResourceLocation id = ResourceLocation.tryParse(tag.getString("last_recipe_id"));
+            if (id != null) {
+                Recipe<?> ungenericRecipe = getLevel()
+                        .getRecipeManager()
+                        .byKey(id)
+                        .map(RecipeHolder::value)
+                        .orElse(null);
+                Class<R> recipeClass = getRecipeClass();
+                if (recipeClass.isInstance(ungenericRecipe)) {
+                    this.lastRecipe = recipeClass.cast(ungenericRecipe);
+                }
+            }
+        } else this.lastRecipe = null;
+        // Fill in the total ticks.
+        this.totalTicks = tag.getInt("total_ticks");
+        deserialize(new DetailContext(tag, registries, null));
+    }
+
+    /** Get the recipe class of this multiblock. */
+    protected abstract Class<R> getRecipeClass();
+
+    /**
+     * Saves the last recipe ID, ticks left and total ticks for this block entity, along with items.
+     * <p> This method should call {@code super.saveAdditional()} at the beginning and save everything else
+     * specific to this block entity.
+     */
+    @Override
+    protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
+        super.saveAdditional(tag, registries);
+        tag.putInt("ticks_left", this.ticksLeft);
+        // Fetch the appropriate item ID.
+        if (this.lastRecipe != null) tag.putString("last_recipe_id", this.lastRecipe.toString());
+        tag.putInt("total_ticks", this.totalTicks);
+        serialize(new DetailContext(tag, registries, null));
+    }
+
+    @Override
+    public boolean canPlaceItem(int index, @NotNull ItemStack stack) {
+        return isItemValid(index, stack);
+    }
+
+    @Override
+    public boolean canTakeItem(@NotNull Container target, int index, @NotNull ItemStack stack) {
+        return isItemValid(index, stack);
+    }
+
+    @Override
+    public <HT> void add(DetailHolder<HT> holder) {
+        detailHolders.add(holder);
+    }
+
+    @Override
+    public void addAll(List<DetailHolder<?>> holderList) {
+        detailHolders.addAll(holderList);
+    }
+
+    @Override
+    public void serialize(DetailContext context) {
+        detailHolders.serialize(context);
+    }
+
+    @Override
+    public void deserialize(DetailContext context) {
+        detailHolders.deserialize(context);
+    }
+}

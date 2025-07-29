@@ -16,22 +16,22 @@ public abstract class AbstractConcoctiMachineOnlyItemsFluidsBlockEntity<
         M extends AbstractConcoctiMachineMenu<M>,
         R extends ProcessingRecipe<R, ItemsFluidsRecipeInput>
         > extends AbstractConcoctiMachineBlockEntity<T, M, ItemsFluidsInputValue, ItemsFluidsRecipeInput, R> {
-    public AbstractConcoctiMachineOnlyItemsFluidsBlockEntity(Supplier<BlockEntityType<T>> blockEntityType, BlockPos pos, BlockState blockState) {
-        super(blockEntityType, pos, blockState);
+    public AbstractConcoctiMachineOnlyItemsFluidsBlockEntity(Supplier<BlockEntityType<T>> blockEntityType, BlockPos pos, BlockState blockState, Object... extraData) {
+        super(blockEntityType, pos, blockState, extraData);
     }
 
     @Override
-    protected final ItemsFluidsInputValue getInput() {
+    protected ItemsFluidsInputValue getInput() {
         return new ItemsFluidsInputValue(inputItemHandler.get(), inputFluidHandler.get());
     }
 
     @Override
-    protected final ItemsFluidsRecipeInput recipeInputFrom(ItemsFluidsInputValue input) {
+    protected ItemsFluidsRecipeInput recipeInputFrom(ItemsFluidsInputValue input) {
         return new ItemsFluidsRecipeInput(input.getItemHandler(), input.getFluidHandler());
     }
 
     @Override
-    public final Supplier<ConcoctiMachineDetails<T, M, ItemsFluidsInputValue, ItemsFluidsRecipeInput, R>> getUncachedMachineDetails() {
+    public Supplier<ConcoctiMachineDetails<T, M, ItemsFluidsInputValue, ItemsFluidsRecipeInput, R>> getUncachedMachineDetails() {
         return getMachineInstance().getDetails();
     }
 }

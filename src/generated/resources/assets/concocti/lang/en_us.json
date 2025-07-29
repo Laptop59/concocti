@@ -13,6 +13,7 @@
   "block.concocti.concocti_fluid_output_hatch": "Concocti Fluid Output Hatch",
   "block.concocti.concocti_item_input_hatch": "Concocti Item Input Hatch",
   "block.concocti.concocti_item_output_hatch": "Concocti Item Output Hatch",
+  "block.concocti.concocti_magnetic_separator": "Concocti Magnetic Separator",
   "block.concocti.concocti_melter": "Concocti Melter",
   "block.concocti.concocti_mixer": "Concocti Mixer",
   "block.concocti.concocti_solidifier": "Concocti Solidifier",
