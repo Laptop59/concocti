@@ -1,4 +1,4 @@
-// 1.21.1	2025-07-25T23:26:39.861617041	Item Models: concocti
+// 1.21.1	2025-07-29T21:17:27.677184587	Item Models: concocti
 9860ec1d2840f2feb3028da96207cecc0c5e3f62 assets/concocti/models/item/advanced_concocti_frame.json
 dd158e01c0d63b3f0b51a1b83e0a0dd4bb49c1c5 assets/concocti/models/item/basic_concocti_frame.json
 cf580921ecb218d04b6901c60c3a8ac60a25b83e assets/concocti/models/item/compact_concocti_upgrade.json
@@ -18,6 +18,7 @@ e3a05b422cc5c9cf8347d5af9e2bab2042c5394c assets/concocti/models/item/compressed_
 14cb4d6aff5f1f08833d53447661106ce6bfa092 assets/concocti/models/item/concocti_fluid_output_hatch.json
 6f3f89579b34957daab3e7bdc87e76cc78f9ad7d assets/concocti/models/item/concocti_item_input_hatch.json
 76ad084a53322036f8f9da37006a07c5a2c1b028 assets/concocti/models/item/concocti_item_output_hatch.json
+53a27be61315a42b7c1e81987e2bd0db9636b396 assets/concocti/models/item/concocti_magnetic_separator.json
 0c8bca9d0cf449a7a6350656ebedbefc2159cdd0 assets/concocti/models/item/concocti_melter.json
 25d6c2179b2d572221f01c665005cdad027ae08d assets/concocti/models/item/concocti_mixer.json
 46ff62fb9fa8827749b9dcfc741f7cfcea8ee6e5 assets/concocti/models/item/concocti_seeds.json

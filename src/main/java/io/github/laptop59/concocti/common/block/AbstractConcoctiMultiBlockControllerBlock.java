@@ -2,6 +2,7 @@ package io.github.laptop59.concocti.common.block;
 
 import com.mojang.serialization.MapCodec;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
+import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMultiblockBlockEntity;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
 import io.github.laptop59.concocti.common.menu.ConcoctiFrameSlot;
 import io.github.laptop59.concocti.common.menu.ConcoctiUpgradeSlot;
@@ -42,11 +43,8 @@ import static io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMa
 /**
  * A class to represent the block of a Concocti Machine.
  */
-public abstract class AbstractConcoctiMachineBlock<B extends AbstractConcoctiMachineBlock<B>> extends BaseEntityBlock implements EntityBlock {
-    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
-    public static final BooleanProperty LIT = BlockStateProperties.LIT;
-
-    protected AbstractConcoctiMachineBlock(Properties properties) {
+public abstract class AbstractConcoctiMultiBlockControllerBlock<B extends AbstractConcoctiMultiBlockControllerBlock<B>> extends AbstractConcoctiMachineBlock<B> implements EntityBlock {
+    protected AbstractConcoctiMultiBlockControllerBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(LIT, Boolean.FALSE));
     }
@@ -101,13 +99,7 @@ public abstract class AbstractConcoctiMachineBlock<B extends AbstractConcoctiMac
 
     abstract protected Function<Properties, B> getBlockConstructor();
 
-    abstract protected ConcoctiMachine<?, ?, ?, ?, ?, ?, B, ?, ?> getMachineInstance();
-
-    protected @Nullable SoundEvent getCracklingSoundEvent() {
-        return getMachineInstance().getDetails().get().cracklingSoundEvent();
-    }
-
-    ;
+    abstract protected @Nullable SoundEvent getCracklingSoundEvent();
 
     public final MapCodec<B> CODEC = simpleCodec(getBlockConstructor());
 
@@ -118,9 +110,7 @@ public abstract class AbstractConcoctiMachineBlock<B extends AbstractConcoctiMac
 
     // Return a new instance of our block entity here.
     @Override
-    public BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
-        return getMachineInstance().newBlockEntity(pos, state);
-    }
+    public abstract BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state);
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<net.minecraft.world.level.block.Block, BlockState> builder) {
@@ -170,29 +160,20 @@ public abstract class AbstractConcoctiMachineBlock<B extends AbstractConcoctiMac
         }
     }
 
+    public abstract BlockEntityType<? extends BlockEntity> getBlockEntityType();
+
+    public AbstractConcoctiMultiblockBlockEntity<?, ?> getBlockEntity(@NotNull Level level, @NotNull BlockPos blockPos) {
+        return (AbstractConcoctiMultiblockBlockEntity<?, ?>) level.getBlockEntity(blockPos);
+    }
+
     @Override
-    public MenuProvider getMenuProvider(@NotNull BlockState state, Level level, @NotNull BlockPos pos) {
-        BlockEntity blockEntity = level.getBlockEntity(pos);
-        return canBeCast(blockEntity) ? cast(blockEntity) : null;
+    public MenuProvider getMenuProvider(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos) {
+        return getBlockEntity(level, pos);
     }
 
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> blockEntityType) {
-        return level.isClientSide ? null : createTickerHelper(blockEntityType, getMachineInstance().BLOCK_ENTITY.get(), (level1, pos, state1, blockEntity) -> {
-            cast(blockEntity).tick(level1, pos, state1);
+        return level.isClientSide ? null : createTickerHelper(blockEntityType, getBlockEntityType(), (level1, pos, state1, blockEntity) -> {
+            getBlockEntity(level, pos).tick(level1, pos, state1);
         });
-    }
-
-    public AbstractConcoctiMachineBlockEntity<?, ?, ?, ?, ?> cast(Object blockEntity) {
-        Class<? extends AbstractConcoctiMachineBlockEntity<?, ?, ?, ?, ?>> blockEntityClass = getMachineInstance().getBlockEntityClass();
-        if (blockEntityClass.isInstance(blockEntity)) {
-            return blockEntityClass.cast(blockEntity);
-        } else {
-            throw new IllegalStateException("Object " + blockEntity + " is not an instance of " + blockEntityClass + "!");
-        }
-    }
-
-    public boolean canBeCast(Object blockEntity) {
-        Class<? extends AbstractConcoctiMachineBlockEntity<?, ?, ?, ?, ?>> blockEntityClass = getMachineInstance().getBlockEntityClass();
-        return blockEntityClass.isInstance(blockEntity);
     }
 }

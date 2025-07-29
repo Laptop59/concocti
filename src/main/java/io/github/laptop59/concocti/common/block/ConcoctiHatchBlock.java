@@ -5,64 +5,26 @@ import io.github.laptop59.concocti.common.block.entity.ConcoctiHatchBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.*;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.function.Function;
 
 /**
  * A class to represent the block of a Concocti Machine.
  */
 public class ConcoctiHatchBlock extends BaseEntityBlock implements EntityBlock {
-    protected Type type;
-    protected Purpose purpose;
+    protected HatchType type;
+    protected HatchPurpose purpose;
 
-    protected ConcoctiHatchBlock(Properties properties, @NotNull Type type, @NotNull Purpose purpose) {
+    protected ConcoctiHatchBlock(Properties properties, @NotNull HatchType type, @NotNull HatchPurpose purpose) {
         super(properties);
         this.type = type;
         this.purpose = purpose;
-    }
-
-    public enum Type {
-        ITEM("item"),
-        FLUID("fluid"),
-        ENERGY("energy");
-
-        final String id;
-
-        Type(String id) {
-            this.id = id;
-        }
-
-        public String getId() {
-            return id;
-        }
-    }
-
-    public enum Purpose {
-        INPUT("input"),
-        OUTPUT("output");
-
-        final String id;
-
-        Purpose(String id) {
-            this.id = id;
-        }
-
-        public String getId() {
-            return id;
-        }
     }
 
     @Override
@@ -72,11 +34,11 @@ public class ConcoctiHatchBlock extends BaseEntityBlock implements EntityBlock {
         super.onRemove(state, level, pos, newState, isMoving);
     }
 
-    public Type getType() {
+    public HatchType getType() {
         return type;
     }
 
-    public Purpose getPurpose() {
+    public HatchPurpose getPurpose() {
         return purpose;
     }
 

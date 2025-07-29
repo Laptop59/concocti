@@ -46,6 +46,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiMachines.ELECTRON_COLLECTOR.BLOCK, "Concocti Electron Collector");
         add(ConcoctiMachines.CRYSTALLIZER.BLOCK, "Concocti Crystallizer");
         add(ConcoctiMachines.COMPRESSOR.BLOCK, "Concocti Compressor");
+        add(ConcoctiMachines.MAGNETIC_SEPARATOR.BLOCK, "Concocti Magnetic Separator");
 
         // Blocks go here.
         add(ConcoctiBlocks.DIAMETHYST_BLOCK, "Block of Diamethyst");
