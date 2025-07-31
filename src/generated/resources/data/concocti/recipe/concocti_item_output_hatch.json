@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": {
+      "item": "concocti:tough_concocti_bricks"
+    },
+    "X": {
+      "item": "minecraft:hopper"
+    }
+  },
+  "pattern": [
+    "   ",
+    " # ",
+    " X "
+  ],
+  "result": {
+    "count": 1,
+    "id": "concocti:concocti_item_output_hatch"
+  }
+}

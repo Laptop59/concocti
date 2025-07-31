@@ -1,0 +1,19 @@
+{
+  "type": "concocti:concocti_mixer",
+  "input_fluids": [],
+  "input_items": [
+    {
+      "count": 1,
+      "item": "concocti:infinity_concocti_seeds"
+    }
+  ],
+  "output_fluid": {
+    "amount": 1944,
+    "id": "concocti:molten_concocti"
+  },
+  "output_item": {
+    "count": 1,
+    "id": "concocti:infinity_concocti_seeds"
+  },
+  "ticks": 640
+}
