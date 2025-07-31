@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": {
+      "item": "concocti:tough_concocti_bricks"
+    },
+    "X": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    " X ",
+    " # ",
+    "   "
+  ],
+  "result": {
+    "count": 1,
+    "id": "concocti:concocti_energy_input_hatch"
+  }
+}
