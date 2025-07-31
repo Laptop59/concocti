@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import io.github.laptop59.concocti.common.Concocti;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMultiblockBlockEntity;
 import io.github.laptop59.concocti.common.machine.ConcoctiMultiBlockMachine;
+import io.github.laptop59.concocti.common.multiblock.MultiblockResult;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -38,14 +39,12 @@ public class ConcoctiMultiblockBlockEntityRenderer implements BlockEntityRendere
         var unmatching = blockEntity.unmatchingBlockStates;
         if (unmatching == null) return;
         // Now render the blocks.
-        for (Map.Entry<BlockPos, BlockState> entry : unmatching.entrySet()) {
+        for (Map.Entry<BlockPos, MultiblockResult> entry : unmatching.entrySet()) {
             BlockPos pos = entry.getKey();
-            BlockState required = entry.getValue();
+            BlockState required = entry.getValue().blockState();
+            boolean isAir = entry.getValue().insteadWasAir();
             Level level = blockEntity.getLevel();
             assert level != null;
-            BlockState foundBlockState = blockEntity.getLevel().getBlockState(pos);
-            boolean isAir = foundBlockState.getBlock() == Blocks.AIR || foundBlockState.canBeReplaced();
-
             poseStack.pushPose();
             poseStack.translate(pos.getX() - blockEntity.getBlockPos().getX(), pos.getY() - blockEntity.getBlockPos().getY(), pos.getZ() - blockEntity.getBlockPos().getZ());
             BlockState rendered = isAir ? required : Blocks.RED_STAINED_GLASS.defaultBlockState();

@@ -1,5 +1,7 @@
 package io.github.laptop59.concocti.datagen.server;
 
+import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
+import io.github.laptop59.concocti.common.block.ConcoctiHatchBlock;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.item.MoldItem;
 import net.minecraft.core.HolderLookup;
@@ -9,6 +11,7 @@ import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredItem;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -30,6 +33,10 @@ public class ConcoctiItemTagsProvider extends ItemTagsProvider {
             for (Map.Entry<MoldItem.Type, DeferredItem<? extends Item>> entry2 : entry.getValue().entrySet()) {
                 this.tag(ConcoctiItems.Tags.MOLDS.get(entry2.getKey())).add(entry2.getValue().get());
             }
+        }
+        for (DeferredBlock<? extends ConcoctiHatchBlock> deferredBlock : ConcoctiBlocks.HATCHES_LIST) {
+            ConcoctiHatchBlock block = deferredBlock.get();
+            this.tag(ConcoctiItems.Tags.CONCOCTI_HATCHES).add(block.asItem());
         }
     }
 }

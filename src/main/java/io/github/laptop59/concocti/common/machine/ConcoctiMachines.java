@@ -1,12 +1,12 @@
 package io.github.laptop59.concocti.common.machine;
 
+import io.github.laptop59.concocti.common.Concocti;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.HatchPurpose;
 import io.github.laptop59.concocti.common.block.HatchType;
 import io.github.laptop59.concocti.common.machine.impl.*;
 import io.github.laptop59.concocti.common.multiblock.*;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.world.level.block.Blocks;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -24,10 +24,23 @@ public final class ConcoctiMachines {
     public static ConcoctiCompressor COMPRESSOR;
 
     public static ConcoctiMultiBlockMachine MAGNETIC_SEPARATOR;
+    public static int MAX_RADIUS_SEARCHABLE = 0;
 
     private static <T extends ConcoctiMachine<?, ?, ?, ?, ?, ?, ?, ?, ?>> T register(T machine) {
         MACHINES.add(machine);
         return machine;
+    }
+
+    private static <T extends ConcoctiMultiBlockMachine> T registerMultiblock(T machine) {
+        // Get the max radius to search for.
+        MultiblockStructure structure = machine.STRUCTURE;
+        int xLen = structure.xLength(), yLen = structure.yLength(), zLen = structure.zLength();
+        int squaredRadius = xLen * xLen + yLen * yLen + zLen * zLen;
+        squaredRadius += 1; // Just in case
+        int radius = (int) Math.ceil(Math.sqrt(squaredRadius));
+        if (radius > MAX_RADIUS_SEARCHABLE)
+            MAX_RADIUS_SEARCHABLE = radius;
+        return register(machine);
     }
 
     public static void register() {
@@ -42,7 +55,7 @@ public final class ConcoctiMachines {
         // Multiblocks
         // Note: we do not need a predicate in the controller position.
 
-        MAGNETIC_SEPARATOR = register(new ConcoctiMultiBlockMachine(
+        MAGNETIC_SEPARATOR = registerMultiblock(new ConcoctiMultiBlockMachine(
                 "concocti_magnetic_separator",
                 100.0f,
                 MultiblockStructure.from(MultiblockStructure.Builder.create(-1, -1, -2, 2, 4, 1), builder -> builder.load(
@@ -63,20 +76,7 @@ public final class ConcoctiMachines {
                 )
         ));
 
-        MultiblockStructure structure = MAGNETIC_SEPARATOR.STRUCTURE;
-        for (int y = structure.yStart(); y < structure.yEnd(); y++) {
-            System.out.println("Level y = " + y);
-            for (int z = structure.zStart(); z < structure.zEnd(); z++) {
-                for (int x = structure.xStart(); x < structure.xEnd(); x++) {
-                    MultiblockBlockPredicate predicate = structure.at(x, y, z);
-                    char c = '.';
-                    if (predicate != null) c = (char) predicate.hashCode();
-                    System.out.print(c);
-                }
-                System.out.println();
-            }
-            System.out.println();
-        }
+        Concocti.LOGGER.info("MAX_RADIUS_SEARCHABLE calculated is {}.", MAX_RADIUS_SEARCHABLE);
     }
 
     public static void forEach(Consumer<ConcoctiMachine<?, ?, ?, ?, ?, ?, ?, ?, ?>> consumer) {

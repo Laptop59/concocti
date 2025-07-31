@@ -22,13 +22,17 @@ public record MultiblockToughConcoctiBrickLikePredicate(Supplier<? extends Conco
     public MultiblockToughConcoctiBrickLikePredicate {}
 
     @Override
-    public BlockState getResult(Level level, BlockPos absolutePos, Direction controllerDirection) {
+    public MultiblockResult getResult(Level level, BlockPos absolutePos, Direction controllerDirection) {
         BlockState blockState = level.getBlockState(absolutePos);
         Block currentBlock = blockState.getBlock();
+        boolean insteadWasAir = currentBlock == Blocks.AIR;
         if (currentBlock == ConcoctiBlocks.TOUGH_CONCOCTI_BRICKS.get() ||
                Arrays.stream(blocks).anyMatch(block -> block.get() == currentBlock))
             return null;
-        return ConcoctiBlocks.TOUGH_CONCOCTI_BRICKS.get().defaultBlockState();
+        return new MultiblockResult(
+                ConcoctiBlocks.TOUGH_CONCOCTI_BRICKS.get().defaultBlockState(),
+                insteadWasAir
+        );
     }
 
     @Override

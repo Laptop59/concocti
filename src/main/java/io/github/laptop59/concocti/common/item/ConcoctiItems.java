@@ -32,6 +32,7 @@ public class ConcoctiItems {
     public static final DeferredItem<BlockItem> DIAMETHYST_BLOCK = registerBlockItem(ConcoctiBlocks.DIAMETHYST_BLOCK);
 
     public static final DeferredItem<Item> CONCOCTI_SEEDS = registerItem("concocti_seeds", new Item.Properties());
+    public static final DeferredItem<Item> INFINITY_CONCOCTI_SEEDS = registerItem("infinity_concocti_seeds", new Item.Properties());
 
     public static final DeferredItem<Item> DIRTY_CONCOCTI_NUGGET = registerItem("dirty_concocti_nugget", new Item.Properties());
     public static final DeferredItem<Item> DIRTY_CONCOCTI_INGOT = registerItem("dirty_concocti_ingot", new Item.Properties());
@@ -99,6 +100,9 @@ public class ConcoctiItems {
         /// ITEM TAGS
         public static final TagKey<Item> CONCOCTI_UPGRADES = TagKey.create(
                 Registries.ITEM, ResourceLocation.fromNamespaceAndPath(MODID, "concocti_upgrades")
+        );
+        public static final TagKey<Item> CONCOCTI_HATCHES = TagKey.create(
+                Registries.ITEM, ResourceLocation.fromNamespaceAndPath(MODID, "concocti_hatches")
         );
         public static final Map<MoldItem.Type, TagKey<Item>> MOLDS = new TreeMap<>();
     }
@@ -235,6 +239,7 @@ public class ConcoctiItems {
         acceptStack(output, DIAMETHYST_BLOCK);
 
         acceptStack(output, CONCOCTI_SEEDS);
+        acceptStack(output, INFINITY_CONCOCTI_SEEDS);
         acceptStack(output, CONCOCTI_BRICKS);
         acceptStack(output, TOUGH_CONCOCTI_BRICKS);
 

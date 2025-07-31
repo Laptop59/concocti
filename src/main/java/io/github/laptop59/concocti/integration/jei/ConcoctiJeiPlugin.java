@@ -142,6 +142,7 @@ public class ConcoctiJeiPlugin implements IModPlugin {
     private void registerInfos(@NotNull IRecipeRegistration registration) {
         List<String> items = Arrays.asList(
                 "concocti_seeds",
+                "infinity_concocti_seeds",
                 "dirty_concocti_nugget",
                 "dirty_concocti_ingot",
                 "conductivium_lightning_rod",

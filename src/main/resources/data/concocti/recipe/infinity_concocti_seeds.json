@@ -1,0 +1,37 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "concocti:dirty_concocti_nugget"
+    },
+    {
+      "item": "concocti:crystalium_nugget"
+    },
+    {
+      "item": "concocti:purified_concocti_nugget"
+    },
+    {
+      "item": "concocti:electrostatic_conductivium_nugget"
+    },
+    {
+      "item": "concocti:concocti_seeds"
+    },
+    {
+      "item": "concocti:electrostatic_conductivium_nugget"
+    },
+    {
+      "item": "concocti:tough_concocti_nugget"
+    },
+    {
+      "item": "concocti:latticium_nugget"
+    },
+    {
+      "item": "concocti:compressed_concocti_nugget"
+    }
+  ],
+  "result": {
+    "id": "concocti:infinity_concocti_seeds",
+    "count": 1
+  }
+}

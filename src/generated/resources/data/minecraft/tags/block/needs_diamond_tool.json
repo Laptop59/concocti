@@ -1,16 +1,16 @@
 {
   "values": [
-    "concocti:concocti_item_output_hatch",
-    "concocti:concocti_fluid_output_hatch",
-    "concocti:concocti_energy_output_hatch",
-    "concocti:crystalium_ore",
-    "concocti:concocti_magnetic_separator",
-    "concocti:tough_concocti_bricks",
     "concocti:tough_concocti_block",
-    "concocti:concocti_item_input_hatch",
-    "concocti:concocti_fluid_input_hatch",
-    "concocti:crystalium_block",
+    "concocti:tough_concocti_bricks",
+    "concocti:concocti_energy_input_hatch",
     "concocti:advanced_concocti_frame",
-    "concocti:concocti_energy_input_hatch"
+    "concocti:concocti_magnetic_separator",
+    "concocti:concocti_fluid_input_hatch",
+    "concocti:concocti_fluid_output_hatch",
+    "concocti:crystalium_ore",
+    "concocti:crystalium_block",
+    "concocti:concocti_item_input_hatch",
+    "concocti:concocti_energy_output_hatch",
+    "concocti:concocti_item_output_hatch"
   ]
 }

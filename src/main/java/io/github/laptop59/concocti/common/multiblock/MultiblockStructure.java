@@ -88,7 +88,7 @@ public record MultiblockStructure(
      * @param direction The direction of the structure to qualify for.
      * @return The result of the predicate.
      */
-    public BlockState result(Level level, BlockPos blockPos, int x, int y, int z, Direction direction) {
+    public MultiblockResult result(Level level, BlockPos blockPos, int x, int y, int z, Direction direction) {
         MultiblockBlockPredicate predicate = at(x, y, z);
         return predicate == null ? null : predicate.getResult(level, blockPos, direction);
     }
@@ -105,7 +105,7 @@ public record MultiblockStructure(
             for (int y = yStart; y < yEnd; y++)
                 for (int z = zStart; z < zEnd; z++) {
                     BlockPos absolutePos = origin.offset(x, y, z);
-                    BlockState result = result(level, absolutePos, x, y, z, direction);
+                    MultiblockResult result = result(level, absolutePos, x, y, z, direction);
                     if (result != null) return false;
                 }
         return true;
@@ -118,14 +118,14 @@ public record MultiblockStructure(
      * @param direction The direction of the structure.
      * @return The unmatched entries aforementioned <strong>whose keys are ABSOLUTE</strong>, or none if completely satisfied. It is guaranteed that all {@link BlockState}s returned are not {@code null}.
      */
-    public Map<BlockPos, BlockState> getUnmatched(Level level, BlockPos origin, Direction direction) {
-        HashMap<BlockPos, BlockState> resultHashMap = new HashMap<>();
+    public Map<BlockPos, MultiblockResult> getUnmatched(Level level, BlockPos origin, Direction direction) {
+        HashMap<BlockPos, MultiblockResult> resultHashMap = new HashMap<>();
         for (int x = xStart; x < xEnd; x++)
             for (int y = yStart; y < yEnd; y++)
                 for (int z = zStart; z < zEnd; z++) {
                     BlockPos rotatedRelativePos = rotateAccordingToNorth(new BlockPos(x, y, z), direction);
                     BlockPos absolutePos = origin.offset(rotatedRelativePos);
-                    BlockState result = result(level, absolutePos, x, y, z, direction);
+                    MultiblockResult result = result(level, absolutePos, x, y, z, direction);
                     if (result == null) continue;
                     resultHashMap.put(absolutePos, result);
                 }
@@ -314,7 +314,7 @@ public record MultiblockStructure(
                         char symbol = schematicLine.charAt(charIndex);
                         MultiblockBlockPredicate predicate = legend.get(symbol);
                         BlockPos blockPos = new BlockPos(X, Y, Z);
-                        System.out.println(x + "," + y + "," + z + " -> " + blockPos + " -> " + symbol);
+                        // System.out.println(x + "," + y + "," + z + " -> " + blockPos + " -> " + symbol);
                         set(blockPos, predicate);
                     }
                 }

@@ -9,14 +9,14 @@ import org.jetbrains.annotations.Nullable;
 
 public interface MultiblockBlockPredicate {
     /** Gets the result of this predicate. */
-    BlockState getResult(Level level, BlockPos absolutePos, Direction controllerDirection);
+    MultiblockResult getResult(Level level, BlockPos absolutePos, Direction controllerDirection);
 
     /**
      * Gets the result of this predicate.
      * If this function returns {@code null}, then the predicate is fully (100%) satisfied.
      * Otherwise, the block state returned is the one required for satisfaction.
      */
-    default BlockState getResult(Level level, int x, int y, int z, Direction controllerDirection) {
+    default MultiblockResult getResult(Level level, int x, int y, int z, Direction controllerDirection) {
         return getResult(level, new BlockPos(x, y, z), controllerDirection);
     }
 

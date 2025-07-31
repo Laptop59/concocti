@@ -14,6 +14,27 @@ public class ConcoctiTransferrer {
     private ConcoctiTransferrer() {}
 
     /**
+     * Simulate transferring items from one handler to another.
+     *
+     * @param from Handler to take items from.
+     * @param to   Handler to put items to.
+     * @return The total number of items that can be transferred summed up from each slot.
+     */
+    public static int simulatePossibleItemsToTransfer(@NotNull IItemHandler from, @NotNull IItemHandler to, boolean fillExistingStacks) {
+        int insertCount = 0;
+        for (int i = 0; i < from.getSlots(); i++) {
+            ItemStack toTake = from.extractItem(i, Integer.MAX_VALUE, true);
+            if (toTake.isEmpty()) continue;
+            int extractCount = toTake.getCount();
+            ItemStack left = fillExistingStacks ?
+                    ItemHandlerHelper.insertItemStacked(to, toTake, true) :
+                    ItemHandlerHelper.insertItem(to, toTake, true);
+            insertCount += extractCount - left.getCount();
+        }
+        return insertCount;
+    }
+
+    /**
      * Transfer items from one handler to another.
      *
      * @param from Handler to take items from.
