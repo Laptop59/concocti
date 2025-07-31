@@ -1,8 +1,6 @@
-package io.github.laptop59.concocti.common.fluid;
+package io.github.laptop59.concocti.common.energy;
 
-import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.energy.IEnergyStorage;
-import net.neoforged.neoforge.items.IItemHandler;
 
 import java.util.List;
 

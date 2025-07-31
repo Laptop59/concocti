@@ -56,5 +56,13 @@ public final class ConcoctiPayloads {
                         ConcoctiMachineSettingsPullOnChangeC2SHandler::handleData
                 )
         );
+        registrar.playToServer(
+                ConcoctiMachineSettingsBuildPreviewChangeC2S.TYPE,
+                ConcoctiMachineSettingsBuildPreviewChangeC2S.STREAM_CODEC,
+                new DirectionalPayloadHandler<>(
+                        ConcoctiMachineSettingsBuildPreviewChangeC2SHandler::handleData,
+                        ConcoctiMachineSettingsBuildPreviewChangeC2SHandler::handleData
+                )
+        );
     }
 }

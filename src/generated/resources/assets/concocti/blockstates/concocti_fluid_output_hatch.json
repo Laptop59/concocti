@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "concocti:block/concocti_fluid_output_hatch"
+    }
+  }
+}

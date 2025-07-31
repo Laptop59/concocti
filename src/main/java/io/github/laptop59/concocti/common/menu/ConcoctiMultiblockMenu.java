@@ -4,6 +4,7 @@ import io.github.laptop59.concocti.common.abstraction.Complexion;
 import io.github.laptop59.concocti.common.abstraction.ComplexionViewer;
 import io.github.laptop59.concocti.common.abstraction.Properties;
 import io.github.laptop59.concocti.common.abstraction.Property;
+import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMultiblockBlockEntity;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
@@ -26,6 +27,7 @@ import java.util.function.Supplier;
 public class ConcoctiMultiblockMenu extends AbstractConcoctiMachineMenu<ConcoctiMultiblockMenu> {
     protected static final List<Property<?>> BASE_PROPERTIES = List.of(
             Properties.VALID,
+            Properties.BUILD_PREVIEW,
             Properties.TICKS_LEFT,
             Properties.TOTAL_TICKS
     );
@@ -134,12 +136,12 @@ public class ConcoctiMultiblockMenu extends AbstractConcoctiMachineMenu<Concocti
                     return ItemStack.EMPTY;
                 }
             } else if (movedStack.is(ConcoctiItems.Tags.CONCOCTI_UPGRADES)) {
-                // index 0 - upgrade slot
+                // index 0 - upgrade tank
                 if (!this.moveItemStackTo(movedStack, 0, 1, true)) {
                     return ItemStack.EMPTY;
                 }
             } else if (ConcoctiFrameSlot.getFrameAttributes(movedStack.getItem()).isPresent()) {
-                // index 1 - frame slot
+                // index 1 - frame tank
                 if (!this.moveItemStackTo(movedStack, 1, 2, true)) {
                     return ItemStack.EMPTY;
                 }
@@ -178,5 +180,13 @@ public class ConcoctiMultiblockMenu extends AbstractConcoctiMachineMenu<Concocti
 
     public boolean isValid() {
         return viewer.get(Properties.VALID);
+    }
+
+    public boolean showBuildPreview() {
+        return viewer.get(Properties.BUILD_PREVIEW);
+    }
+
+    public void changeBuildPreview() {
+        ((AbstractConcoctiMultiblockBlockEntity<?, ?>) getContainer()).changeBuildPreview();
     }
 }

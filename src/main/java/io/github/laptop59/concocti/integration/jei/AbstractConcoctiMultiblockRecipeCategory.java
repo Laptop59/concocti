@@ -1,5 +1,6 @@
 package io.github.laptop59.concocti.integration.jei;
 
+import io.github.laptop59.concocti.common.machine.impl.ConcoctiMixer;
 import io.github.laptop59.concocti.common.recipe.AbstractConcoctiMultiblockRecipe;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;

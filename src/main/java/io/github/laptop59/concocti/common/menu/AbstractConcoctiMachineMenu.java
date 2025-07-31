@@ -186,12 +186,12 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
                     return ItemStack.EMPTY;
                 }
             } else if (movedStack.is(ConcoctiItems.Tags.CONCOCTI_UPGRADES)) {
-                // index 0 - upgrade slot
+                // index 0 - upgrade tank
                 if (!this.moveItemStackTo(movedStack, 0, 1, true)) {
                     return ItemStack.EMPTY;
                 }
             } else if (ConcoctiFrameSlot.getFrameAttributes(movedStack.getItem()).isPresent()) {
-                // index 1 - frame slot
+                // index 1 - frame tank
                 if (!this.moveItemStackTo(movedStack, 1, 2, true)) {
                     return ItemStack.EMPTY;
                 }

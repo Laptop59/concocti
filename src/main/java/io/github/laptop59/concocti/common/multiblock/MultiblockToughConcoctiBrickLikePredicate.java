@@ -3,8 +3,10 @@ package io.github.laptop59.concocti.common.multiblock;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.ConcoctiHatchBlock;
 import io.github.laptop59.concocti.common.block.entity.ConcoctiHatchBlockEntity;
+import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -17,18 +19,16 @@ import java.util.function.Supplier;
 
 public record MultiblockToughConcoctiBrickLikePredicate(Supplier<? extends ConcoctiHatchBlock>... blocks) implements MultiblockBlockPredicate {
     @SafeVarargs
-    public MultiblockToughConcoctiBrickLikePredicate {
-    }
+    public MultiblockToughConcoctiBrickLikePredicate {}
 
     @Override
-    public MultiBlockBlockResult getResult(Level level, BlockPos absolutePos, Direction controllerDirection) {
+    public BlockState getResult(Level level, BlockPos absolutePos, Direction controllerDirection) {
         BlockState blockState = level.getBlockState(absolutePos);
         Block currentBlock = blockState.getBlock();
-        if (currentBlock == ConcoctiBlocks.CONCOCTI_BRICKS.get() ||
-               Arrays.stream(blocks).anyMatch(block -> block == currentBlock))
-            return MultiBlockBlockResult.SATISFIED;
-        if (currentBlock == Blocks.AIR) return MultiBlockBlockResult.AIR;
-        return MultiBlockBlockResult.UNMATCHED;
+        if (currentBlock == ConcoctiBlocks.TOUGH_CONCOCTI_BRICKS.get() ||
+               Arrays.stream(blocks).anyMatch(block -> block.get() == currentBlock))
+            return null;
+        return ConcoctiBlocks.TOUGH_CONCOCTI_BRICKS.get().defaultBlockState();
     }
 
     @Override
@@ -39,4 +39,9 @@ public record MultiblockToughConcoctiBrickLikePredicate(Supplier<? extends Conco
     }
 
     public record Data(ConcoctiHatchBlockEntity entity) {}
+
+    @Override
+    public Item getIcon() {
+        return ConcoctiItems.TOUGH_CONCOCTI_BRICKS.get();
+    }
 }

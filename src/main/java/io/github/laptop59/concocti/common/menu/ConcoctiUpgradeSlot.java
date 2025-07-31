@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.function.Supplier;
 
 /**
- * A type of slot which only allows Concocti upgrades, or only items
+ * A type of tank which only allows Concocti upgrades, or only items
  * specified in the {@code #concocti:concocti_upgrade} item tag.
  */
 public class ConcoctiUpgradeSlot extends Slot implements IconSlot {

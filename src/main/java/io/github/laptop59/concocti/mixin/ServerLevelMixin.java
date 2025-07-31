@@ -3,7 +3,6 @@ package io.github.laptop59.concocti.mixin;
 import com.llamalad7.mixinextras.sugar.Local;
 import io.github.laptop59.concocti.common.poi.ConcoctiPoiTypes;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
@@ -65,12 +64,12 @@ public abstract class ServerLevelMixin {
             LevelChunk chunk,
             int randomTickSpeed,
             CallbackInfo ci,
-            @Local boolean flag,
-            @Local(name = "i", ordinal = 0, argsOnly = true) int i,
-            @Local(name = "j", ordinal = 0, argsOnly = true) int j) {
+            @Local boolean flag) {
+        int concocti$i = chunk.getPos().getMinBlockX();
+        int concocti$j = chunk.getPos().getMinBlockZ();
         ServerLevel concocti$serverLevel = (ServerLevel) (Object) this;
         if (concocti$serverLevel.random.nextInt(1000) == 0) {
-            BlockPos concocti$blockposBeforeChance = concocti$findLightningTargetAroundOnlyConductivium(concocti$serverLevel.getBlockRandomPos(i, 0, j, 15));
+            BlockPos concocti$blockposBeforeChance = concocti$findLightningTargetAroundOnlyConductivium(concocti$serverLevel.getBlockRandomPos(concocti$i, 0, concocti$j, 15));
             long concocti$rods = concocti$serverLevel.getPoiManager().findAllWithType(
                 holder -> {
                     PoiType a = holder.value();
@@ -92,9 +91,9 @@ public abstract class ServerLevelMixin {
                  This is what we want:
 
                  1 rod   -> 1 in 5000
-                 2 rods  -> 1 in 400
-                 3 rods  -> 1 in 300
-                 4 rods  -> 1 in 200  (capped)
+                 2 rods  -> 1 in 4000
+                 3 rods  -> 1 in 3000
+                 4 rods  -> 1 in 2000  (capped)
 
                  If we take the common chance first we get:
 

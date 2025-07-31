@@ -195,7 +195,7 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
         public boolean canProcess() {
             if (!super.canProcess()) return false;
             Recipe recipe = getRecipe(getInput());
-            // Check whether the resulting item can be placed in the slot.
+            // Check whether the resulting item can be placed in the tank.
             ItemStack output = getItem(OUTPUT_SLOT);
             if (!output.isEmpty()) {
                 return output.getCount() + recipe.getOutputItem().getCount() <= output.getMaxStackSize();
@@ -387,7 +387,7 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
                 return switch (index) {
                     case 0 -> this.mold;
                     case 1 -> this.base;
-                    default -> throw new IllegalArgumentException("Recipe does not contain item slot " + index);
+                    default -> throw new IllegalArgumentException("Recipe does not contain item tank " + index);
                 };
             }
 
@@ -514,17 +514,17 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
 
         @Override
         protected void addOtherSlots() {
-            // Mold slot
+            // Mold tank
             this.addSlot(new IconSlot.Generic(container, 2, 88, 60, IconSlot.Icon.MOLD));
-            // Base item slot
+            // Base item tank
             this.addSlot(new Slot(container, 3, 55, 37));
-            // Output slot
+            // Output tank
             this.addSlot(new ResultSlot(null, container, 4, 120, 37));
         }
 
         @Override
         public @org.jetbrains.annotations.Nullable ItemStack handleOtherQuickMoves(ItemStack movedStack) {
-            // index 3 - base slot
+            // index 3 - base tank
             if (this.moveItemStackTo(movedStack, 2, 4, true))
                 return ItemStack.EMPTY;
             else
@@ -610,7 +610,7 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
 
         @Override
         public void setRecipe(@NotNull IRecipeLayoutBuilder builder, Recipe recipe, @NotNull IFocusGroup focuses) {
-            // Add the recipe inputs (fluid + slot + base item).
+            // Add the recipe inputs (fluid + tank + base item).
             addSizedFluidIngredientSlot(builder, RecipeIngredientRole.INPUT, 12, 6, "input_fluid", recipe.getInputFluid());
             builder.addSlot(RecipeIngredientRole.CATALYST, 30, 6)
                     .addItemStacks(Arrays.asList(recipe.getMold().getItems()))

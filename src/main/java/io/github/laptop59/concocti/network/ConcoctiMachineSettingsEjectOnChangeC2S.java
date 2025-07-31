@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import static io.github.laptop59.concocti.common.Concocti.MODID;
 
 /**
- * A payload called when a player attempts to change a slot of a {@code MachineSettings}.
+ * A payload called when a player attempts to change a tank of a {@code MachineSettings}.
  * <p></p>
  * For the direction, false indicates previous while true indicates next.
  */

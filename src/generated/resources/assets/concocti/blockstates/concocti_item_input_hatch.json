@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "concocti:block/concocti_item_input_hatch"
+    }
+  }
+}

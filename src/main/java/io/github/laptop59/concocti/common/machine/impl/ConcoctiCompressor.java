@@ -559,7 +559,7 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
                 int slot = i + 2;
                 this.addSlot(new Slot(container, slot, 30 + i * 18, y));
             }
-            // Output slot
+            // Output tank
             this.addSlot(new ResultSlot(null, container, 6, 30 + 104, y));
         }
 

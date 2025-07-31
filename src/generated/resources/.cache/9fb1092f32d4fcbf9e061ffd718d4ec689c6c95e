@@ -1,4 +1,4 @@
-// 1.21.1	2025-07-18T18:23:49.515188618	Recipes
+// 1.21.1	2025-07-31T12:20:16.991434966	Recipes
 90818d4b9c0e764f6897e56d5c5a79129193a5d6 data/concocti/advancement/recipes/building_blocks/conductivium_block_from_ingots.json
 ffa62f547b2bc4e35fe9c1557f5c00d3c2f7e6a0 data/concocti/advancement/recipes/building_blocks/crystalium_block_from_ingots.json
 b3d231f12bc4fe3b8fa8f7278aaf5d1320650259 data/concocti/advancement/recipes/building_blocks/diamethyst_block.json
@@ -106,6 +106,7 @@ e42e61e77ac5b66a313e5fca992077f04b183a4c data/concocti/recipe/mixing/latticium_i
 50fab8821ca244ec746e5f44f0942fd0ad46e0a3 data/concocti/recipe/mixing/latticium_nugget_mold_from_latticium_mold_base.json
 db0f2c78f662901acf61e5988d461df0b35f2fc2 data/concocti/recipe/mixing/molten_conductivium.json
 42fc07e914703840d700cded688b8937f5216b45 data/concocti/recipe/mixing/supersaturated_crystalium_solution.json
+31bcf04b263909a2d91cc9bb72a38b4dce0527f1 data/concocti/recipe/multiblock/magnetic_extraction_of_iron_nugget.json
 d6124d143b72c5bf1b5d6493b27a4bb681f99eee data/concocti/recipe/purified_concocti_block_from_ingots.json
 54756d34e701ed7508769a836c953c3fef24d5ee data/concocti/recipe/purified_concocti_ingot_from_block.json
 2d650f088b3c9a57077d798634caa3cc3de8d8ab data/concocti/recipe/purified_concocti_ingot_from_nuggets.json

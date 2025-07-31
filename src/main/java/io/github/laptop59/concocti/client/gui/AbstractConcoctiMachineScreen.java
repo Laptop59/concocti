@@ -117,7 +117,13 @@ public abstract class AbstractConcoctiMachineScreen<M extends AbstractConcoctiMa
         }
 
         cogwheel.update(machineSettingsVisibility);
-        renderChild(guiGraphics, renderInfo, cogwheel);
+
+        if (isMachineSettingsCogwheelUsable())
+            renderChild(guiGraphics, renderInfo, cogwheel);
+    }
+
+    protected boolean isMachineSettingsCogwheelUsable() {
+        return true;
     }
 
     /**
@@ -139,6 +145,7 @@ public abstract class AbstractConcoctiMachineScreen<M extends AbstractConcoctiMa
         for (Renderable renderable : getChildren()) {
             // Only check for clickable components.
             if (renderable instanceof ClickableComponent clickable) {
+                if (clickable instanceof Cogwheel && !isMachineSettingsCogwheelUsable()) continue;
                 if (renderable.getActualRenderInfo(renderInfo).isHovering(renderable.getWidth(), renderable.getHeight()) &&
                         clickable.onMouseClick(mouseX - leftPos, mouseY - topPos, button, this, menu)) return true;
             }

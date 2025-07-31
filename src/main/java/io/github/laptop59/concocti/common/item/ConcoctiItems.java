@@ -87,6 +87,8 @@ public class ConcoctiItems {
     public static final DeferredItem<BlockItem> CONCOCTI_BRICKS = registerBlockItem(ConcoctiBlocks.CONCOCTI_BRICKS);
     public static final DeferredItem<BlockItem> TOUGH_CONCOCTI_BRICKS = registerBlockItem(ConcoctiBlocks.TOUGH_CONCOCTI_BRICKS);
 
+    public static final DeferredItem<Item> DENSE_CONCOCTI_PELLET = registerItem("dense_concocti_pellet", new Item.Properties());
+
     public static final List<DeferredItem<BlockItem>> HATCHES =
             ConcoctiBlocks.HATCHES_LIST.stream().map(ConcoctiItems::registerBlockItem).toList();
 

@@ -7,24 +7,26 @@ import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Optional;
 
 public record MultiblockBlockTagPredicate(TagKey<Block> tagKey) implements MultiblockBlockPredicate {
     @Override
-    public MultiBlockBlockResult getResult(Level level, BlockPos absolutePos, Direction controllerDirection) {
+    public BlockState getResult(Level level, BlockPos absolutePos, Direction controllerDirection) {
         Block currentBlock = level.getBlockState(absolutePos).getBlock();
         Optional<HolderSet.Named<Block>> blocksInTagOpt = BuiltInRegistries.BLOCK.getTag(tagKey);
         if (blocksInTagOpt.isPresent()) {
             HolderSet.Named<Block> blocksInTag = blocksInTagOpt.get();
             for (Holder<Block> holder : blocksInTag) {
-                if (holder.value() == currentBlock) return MultiBlockBlockResult.SATISFIED;
+                if (holder.value() == currentBlock) return null;
             }
+            return blocksInTag.size() == 0 ? Blocks.BARRIER.defaultBlockState() : blocksInTag.get(0).value().defaultBlockState();
         }
-        if (currentBlock == Blocks.AIR) return MultiBlockBlockResult.AIR;
-        return MultiBlockBlockResult.UNMATCHED;
+        return Blocks.BARRIER.defaultBlockState();
     }
 }

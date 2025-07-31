@@ -295,7 +295,7 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
 
         @Override
         protected void addOtherSlots() {
-            // Fuel item slot
+            // Fuel item tank
             this.addSlot(new Slot(container, 2, 75, 28));
         }
 
