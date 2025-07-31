@@ -562,8 +562,8 @@ public abstract class AbstractConcoctiMachineBlockEntity
         if (entity.ticksLeft >= entity.totalTicks) entity.lastRecipe = null;
         if (--entity.autoCooldown <= 0) {
             entity.autoCooldown = AUTO_COOLDOWN;
-            entity.attemptToPull();
             entity.attemptToEject();
+            entity.attemptToPull();
         }
         int consumableTicks = getTickMultiplier();
         int subticks = 0;
@@ -599,6 +599,10 @@ public abstract class AbstractConcoctiMachineBlockEntity
         }
         if (state.getValue(LIT) != entity.canProcess()) {
             level.setBlock(pos, state.setValue(LIT, entity.canProcess()), 1 | 2);
+        }
+        if (entity.autoCooldown == AUTO_COOLDOWN) {
+            entity.attemptToEject();
+            entity.attemptToPull();
         }
     }
 

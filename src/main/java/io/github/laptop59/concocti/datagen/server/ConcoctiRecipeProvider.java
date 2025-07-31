@@ -1,6 +1,9 @@
 package io.github.laptop59.concocti.datagen.server;
 
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
+import io.github.laptop59.concocti.common.block.ConcoctiHatchBlock;
+import io.github.laptop59.concocti.common.block.HatchPurpose;
+import io.github.laptop59.concocti.common.block.HatchType;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.item.MoldItem;
@@ -312,6 +315,28 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 new FluidStack(ConcoctiFluids.MOLTEN_LATTICIUM.get(), 4 * ConcoctiConstants.MOLTEN_NUGGET)
         );
 
+        concoctiMixerRecipe(output,
+                "generating_concocti_with_concocti_seeds",
+                20 * 32,
+                List.of(
+                        SizedIngredient.of(ConcoctiItems.CONCOCTI_SEEDS, 1)
+                ),
+                List.of(),
+                null,
+                new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_BLOCK_PURIFIED)
+        );
+
+        concoctiMixerRecipe(output,
+                "generating_concocti_with_infinity_concocti_seeds",
+                20 * 32,
+                List.of(
+                        SizedIngredient.of(ConcoctiItems.INFINITY_CONCOCTI_SEEDS, 1)
+                ),
+                List.of(),
+                new ItemStack(ConcoctiItems.INFINITY_CONCOCTI_SEEDS.get(), 1),
+                new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_BLOCK_PURIFIED * 2)
+        );
+
         // Mold recipes
         for (var entryMaterial : ConcoctiItems.MOLDS.entrySet()) {
             MoldItem.Material material = entryMaterial.getKey();
@@ -444,6 +469,36 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 List.of(new ItemStack(Items.IRON_NUGGET, 4), new ItemStack(ConcoctiItems.DENSE_CONCOCTI_PELLET.get(), 1)),
                 List.of()
         );
+
+        // Hatch Recipes
+        for (HatchType type : HatchType.values()) {
+            var map = ConcoctiBlocks.HATCHES.get(type);
+            ConcoctiHatchBlock inputHatch = map.get(HatchPurpose.INPUT).get();
+            ConcoctiHatchBlock outputHatch = map.get(HatchPurpose.OUTPUT).get();
+            Item subIngredient = switch (type) {
+                case ITEM -> Items.HOPPER;
+                case FLUID -> Items.CAULDRON;
+                case ENERGY -> Items.REDSTONE;
+            };
+            ShapedRecipeBuilder.shaped(RecipeCategory.MISC, inputHatch.asItem())
+                    .define('#', ConcoctiBlocks.TOUGH_CONCOCTI_BRICKS)
+                    .define('X', subIngredient)
+                    .pattern(" X ")
+                    .pattern(" # ")
+                    .pattern("   ")
+                    .group(null)
+                    .unlockedBy(getHasName(ConcoctiBlocks.TOUGH_CONCOCTI_BRICKS), has(subIngredient))
+                    .save(output, BuiltInRegistries.ITEM.getKey(inputHatch.asItem()));
+            ShapedRecipeBuilder.shaped(RecipeCategory.MISC, outputHatch.asItem())
+                    .define('#', ConcoctiBlocks.TOUGH_CONCOCTI_BRICKS)
+                    .define('X', subIngredient)
+                    .pattern("   ")
+                    .pattern(" # ")
+                    .pattern(" X ")
+                    .group(null)
+                    .unlockedBy(getHasName(ConcoctiBlocks.TOUGH_CONCOCTI_BRICKS), has(subIngredient))
+                    .save(output, BuiltInRegistries.ITEM.getKey(outputHatch.asItem()));
+        }
     }
 
     private static void concoctiSolidifierRecipe(RecipeOutput output, MoldItem.Type type, List<ConcoctiMoldingSolidifierRecipe> recipeList) {

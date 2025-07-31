@@ -26,7 +26,10 @@ public enum SlotType {
     ALL_ITEM_INPUTS(801, 0xffcccc, SlotFlag.ITEM | SlotFlag.INPUT),
     ALL_FLUID_INPUTS(802, 0xaad7ff, SlotFlag.FLUID | SlotFlag.INPUT),
     SEED_CRYSTAL_ITEM_INPUT(901, 0xadff8c, SlotFlag.ITEM | SlotFlag.INPUT),
-    CATALYST_ITEM_INPUT(1000, 0xeeeeee, SlotFlag.ITEM | SlotFlag.INPUT);
+    CATALYST_ITEM_INPUT(1000, 0xeeeeee, SlotFlag.ITEM | SlotFlag.INPUT),
+    ALL_ITEM_INPUTS_AND_OUTPUTS(1100, 0xffeeee, SlotFlag.ITEM | SlotFlag.INPUT | SlotFlag.OUTPUT),
+    ALL_FLUID_INPUTS_AND_OUTPUTS(1101, 0xfeeddff, SlotFlag.FLUID | SlotFlag.INPUT | SlotFlag.OUTPUT),
+    ALL_INPUTS_AND_OUTPUTS(1102, 0xffffff, SlotFlag.ITEM | SlotFlag.FLUID | SlotFlag.INPUT | SlotFlag.OUTPUT);
 
     public static final Codec<SlotType> CODEC = Codec.INT.xmap(
             SlotType::byId,

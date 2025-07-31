@@ -119,7 +119,10 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
                         SlotType.ITEM_OUTPUT,
                         SlotType.FLUID_OUTPUT,
                         SlotType.ALL_ITEM_INPUTS,
-                        SlotType.ALL_FLUID_INPUTS
+                        SlotType.ALL_FLUID_INPUTS,
+                        SlotType.ALL_ITEM_INPUTS_AND_OUTPUTS,
+                        SlotType.ALL_FLUID_INPUTS_AND_OUTPUTS,
+                        SlotType.ALL_INPUTS_AND_OUTPUTS
                 ),
                 Menu::new,
                 blockEntity -> blockEntity.dataAccess,
@@ -130,7 +133,9 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
                                 SlotType.ITEM_INPUT_3, List.of(INPUT_SLOT_3),
                                 SlotType.ITEM_INPUT_4, List.of(INPUT_SLOT_4),
                                 SlotType.ALL_ITEM_INPUTS, List.of(INPUT_SLOT_1, INPUT_SLOT_2, INPUT_SLOT_3, INPUT_SLOT_4),
-                                SlotType.ITEM_OUTPUT, List.of(OUTPUT_SLOT)
+                                SlotType.ITEM_OUTPUT, List.of(OUTPUT_SLOT),
+                                SlotType.ALL_ITEM_INPUTS_AND_OUTPUTS, List.of(INPUT_SLOT_1, INPUT_SLOT_2, INPUT_SLOT_3, INPUT_SLOT_4, OUTPUT_SLOT),
+                                SlotType.ALL_INPUTS_AND_OUTPUTS, List.of(INPUT_SLOT_1, INPUT_SLOT_2, INPUT_SLOT_3, INPUT_SLOT_4, OUTPUT_SLOT)
                         )
                 ),
                 new EnumMap<>(
@@ -145,7 +150,19 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
                                         blockEntity -> blockEntity.fluidInput3.get(),
                                         blockEntity -> blockEntity.fluidInput4.get()
                                 ),
-                                SlotType.FLUID_OUTPUT, List.of(blockEntity -> blockEntity.fluidOutput.get())
+                                SlotType.FLUID_OUTPUT, List.of(blockEntity -> blockEntity.fluidOutput.get()),
+                                SlotType.ALL_FLUID_INPUTS_AND_OUTPUTS, List.of(
+                                        blockEntity -> blockEntity.fluidInput1.get(),
+                                        blockEntity -> blockEntity.fluidInput2.get(),
+                                        blockEntity -> blockEntity.fluidInput3.get(),
+                                        blockEntity -> blockEntity.fluidInput4.get()
+                                ),
+                                SlotType.ALL_INPUTS_AND_OUTPUTS, List.of(
+                                        blockEntity -> blockEntity.fluidInput1.get(),
+                                        blockEntity -> blockEntity.fluidInput2.get(),
+                                        blockEntity -> blockEntity.fluidInput3.get(),
+                                        blockEntity -> blockEntity.fluidInput4.get()
+                                )
                         )
                 ),
                 InputOutput.of(

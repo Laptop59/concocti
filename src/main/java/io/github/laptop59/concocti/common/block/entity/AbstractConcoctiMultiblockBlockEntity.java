@@ -22,6 +22,7 @@ import io.github.laptop59.concocti.common.machine.FluidTankHolder;
 import io.github.laptop59.concocti.common.machine.ItemsFluidsInputValue;
 import io.github.laptop59.concocti.common.machine.SettingsHolder;
 import io.github.laptop59.concocti.common.menu.*;
+import io.github.laptop59.concocti.common.multiblock.MultiblockResult;
 import io.github.laptop59.concocti.common.multiblock.MultiblockStructure;
 import io.github.laptop59.concocti.common.multiblock.MultiblockToughConcoctiBrickLikePredicate;
 import io.github.laptop59.concocti.common.recipe.AbstractConcoctiMultiblockRecipe;
@@ -30,10 +31,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtUtils;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -83,7 +81,7 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
 
     public DetailHolders detailHolders = new DetailHolders();
     public MultiblockStructure structure;
-    public Map<BlockPos, BlockState> unmatchingBlockStates = null;
+    public Map<BlockPos, MultiblockResult> unmatchingBlockStates = null;
 
     // Slots
     public static final int UPGRADE_SLOT = 0;
@@ -244,6 +242,7 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
         ItemsFluidsInputValue input = getInput();
         R recipe = getRecipe(input);
         if (recipe == null) return false;
+        if (!canInsertOutputsSeparately(recipe)) return false;
         return lastRecipe == null || lastRecipe == recipe;
     }
 
@@ -254,6 +253,14 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
 
     @Override
     protected abstract @NotNull Component getDefaultName();
+
+    protected boolean canInsertOutputsSeparately(R recipe) {
+        for (ItemStack result : recipe.getOutputItems())
+            if (!ItemHandlerHelper.insertItem(itemStackOutputHandler, result.copy(), true).isEmpty()) return false;
+        for (FluidStack result : recipe.getOutputFluids())
+            if (fluidStackInputHandler.fill(result, IFluidHandler.FluidAction.SIMULATE) < result.getAmount()) return false;
+        return true;
+    }
 
     /**
      * Called when a recipe has finished. This should account for any products being made.
@@ -465,14 +472,21 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
         saveAdditional(tag, registries);
         ListTag listTagKeys = new ListTag();
         ListTag listTagValues = new ListTag();
+        byte[] listTagInsteadWasAirBytes = new byte[0];
         if (unmatchingBlockStates != null) {
-            for (Map.Entry<BlockPos, BlockState> entry : unmatchingBlockStates.entrySet()) {
+            listTagInsteadWasAirBytes = new byte[unmatchingBlockStates.size()];
+            int i = 0;
+            for (Map.Entry<BlockPos, MultiblockResult> entry : unmatchingBlockStates.entrySet()) {
                 listTagKeys.add(NbtUtils.writeBlockPos(entry.getKey()));
-                listTagValues.add(NbtUtils.writeBlockState(entry.getValue()));
+                listTagValues.add(NbtUtils.writeBlockState(entry.getValue().blockState()));
+                listTagInsteadWasAirBytes[i] = entry.getValue().insteadWasAir() ? (byte) 1 : (byte) 0;
+
+                i++;
             }
         }
         tag.put("unmatched_block_states_keys", listTagKeys);
         tag.put("unmatched_block_states_values", listTagValues);
+        tag.put("unmatched_block_states_instead_was_air", new ByteArrayTag(listTagInsteadWasAirBytes));
         return tag;
     }
 
@@ -494,13 +508,15 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
         if (tag.contains("unmatched_block_states_keys") && tag.contains("unmatched_block_states_values")) {
             ListTag listTagKeys = tag.getList("unmatched_block_states_keys", Tag.TAG_INT_ARRAY);
             ListTag listTagValues = tag.getList("unmatched_block_states_values", Tag.TAG_COMPOUND);
-            Map<BlockPos, BlockState> map = new HashMap<>();
+            byte[] listTagInsteadWasAirBytes = tag.getByteArray("unmatched_block_states_instead_was_air");
+            Map<BlockPos, MultiblockResult> map = new HashMap<>();
             for (int i = 0; i < listTagKeys.size(); i++) {
                 int[] blockPosTag = listTagKeys.getIntArray(i);
                 CompoundTag blockStateTag = listTagValues.getCompound(i);
                 BlockPos blockPos = new BlockPos(blockPosTag[0], blockPosTag[1], blockPosTag[2]);
                 BlockState blockState = NbtUtils.readBlockState(level.holderLookup(Registries.BLOCK), blockStateTag);
-                map.put(blockPos, blockState);
+                boolean insteadWasAir = listTagInsteadWasAirBytes[i] != (byte) 0;
+                map.put(blockPos, new MultiblockResult(blockState, insteadWasAir));
             }
             this.unmatchingBlockStates = map;
         }

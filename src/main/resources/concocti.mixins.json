@@ -5,6 +5,7 @@
   "mixins": [
     "BlockMixin",
     "DisableDurabilityTooltipMixin",
+    "LevelMixin",
     "LightningBoltMixin",
     "LivingEntityMixin",
     "PlayerMixin",

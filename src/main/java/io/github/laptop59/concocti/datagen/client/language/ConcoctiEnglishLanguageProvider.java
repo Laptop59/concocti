@@ -67,6 +67,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         // Items go here.
         add(ConcoctiItems.DIAMETHYST_CRYSTAL, "Diamethyst Crystal");
         add(ConcoctiItems.CONCOCTI_SEEDS, "Concocti Seeds");
+        add(ConcoctiItems.INFINITY_CONCOCTI_SEEDS, "Infinity Concocti Seeds");
         add(ConcoctiItems.DIRTY_CONCOCTI_INGOT, "Dirty Concocti Ingot");
         add(ConcoctiItems.DIRTY_CONCOCTI_NUGGET, "Dirty Concocti Nugget");
         add(ConcoctiItems.PURIFIED_CONCOCTI_INGOT, "Purified Concocti Ingot");
@@ -98,6 +99,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiItems.DENSE_CONCOCTI_PELLET, "Dense Concocti Pellet");
 
         add(ConcoctiItems.Tags.CONCOCTI_UPGRADES, "Concocti Upgrades");
+        add(ConcoctiItems.Tags.CONCOCTI_HATCHES, "Concocti Hatches");
         for (Map.Entry<MoldItem.Type, TagKey<Item>> moldType : ConcoctiItems.Tags.MOLDS.entrySet()) {
             add(moldType.getValue(), capitalize(moldType.getKey().id + "_molds"));
         }
@@ -173,6 +175,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
 
         // Information of items go here.
         add("info.concocti.concocti_seeds", "Hitting a mob with this item usually provides it a status effect of Concoctized, which allows Dirty Concocti Nuggets and Ingots to start dropping upon taking damage while losing less health.");
+        add("info.concocti.infinity_concocti_seeds", "A superior version to the generic Concocti Seeds which provide an infinite effect and are not consumed upon use.");
         add("info.concocti.dirty_concocti_nugget", "Drop from hitting a mob with the Concoctized status effect, induced by hitting it with Concoctized Seeds.");
         add("info.concocti.dirty_concocti_ingot", "Lucky drop from hitting a mob with the Concoctized status effect, induced by hitting it with Concoctized Seeds.");
         add("info.concocti.conductivium_lightning_rod", "Being more conductive than the copper variant of this block, even without thunderstorms or rain, lightning strikes can still hit this rod.");
