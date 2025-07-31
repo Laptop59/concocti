@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * A basic slot only for outputs, i.e., items cannot be put inside the slot.
+ * A basic tank only for outputs, i.e., items cannot be put inside the tank.
  */
 public class ResultSlot extends Slot {
     private final @Nullable Player player;

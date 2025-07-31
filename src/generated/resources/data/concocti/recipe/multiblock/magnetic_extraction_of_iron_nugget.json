@@ -1,0 +1,22 @@
+{
+  "type": "concocti:concocti_magnetic_separator",
+  "input_fluids": [
+    {
+      "amount": 288,
+      "fluid": "concocti:molten_concocti"
+    }
+  ],
+  "input_items": [],
+  "output_fluid": [],
+  "output_item": [
+    {
+      "count": 4,
+      "id": "minecraft:iron_nugget"
+    },
+    {
+      "count": 1,
+      "id": "concocti:dense_concocti_pellet"
+    }
+  ],
+  "ticks": 10
+}

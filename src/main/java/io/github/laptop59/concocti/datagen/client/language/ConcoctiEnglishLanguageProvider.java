@@ -95,6 +95,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiItems.RAW_CRYSTALIUM, "Raw Crystalium");
         add(ConcoctiItems.LATTICIUM_NUGGET, "Latticium Nugget");
         add(ConcoctiItems.LATTICIUM_INGOT, "Latticium Ingot");
+        add(ConcoctiItems.DENSE_CONCOCTI_PELLET, "Dense Concocti Pellet");
 
         add(ConcoctiItems.Tags.CONCOCTI_UPGRADES, "Concocti Upgrades");
         for (Map.Entry<MoldItem.Type, TagKey<Item>> moldType : ConcoctiItems.Tags.MOLDS.entrySet()) {
@@ -102,6 +103,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         }
 
         // Fluid types go here.
+        add("fluid.concocti.empty", "Empty");
         add(ConcoctiFluids.MOLTEN_CONCOCTI, "Molten Concocti");
         add(ConcoctiFluids.MOLTEN_TOUGH_CONCOCTI, "Molten Tough Concocti");
         add(ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT, "Molten Concoctized Dirt");
@@ -166,6 +168,8 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add("screen.concocti.eject_on", "Eject: ON");
         add("screen.concocti.pull_off", "Pull: OFF");
         add("screen.concocti.pull_on", "Pull: ON");
+        add("screen.concocti.build_preview_off", "Build Preview: OFF");
+        add("screen.concocti.build_preview_on", "Build Preview: ON");
 
         // Information of items go here.
         add("info.concocti.concocti_seeds", "Hitting a mob with this item usually provides it a status effect of Concoctized, which allows Dirty Concocti Nuggets and Ingots to start dropping upon taking damage while losing less health.");
@@ -188,7 +192,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
             add(block, getName(block));
         }
 
-        // Translation key for slot types.
+        // Translation key for tank types.
         for (SlotType slotType : SlotType.values()) {
             String key = "screen.concocti.slot_type." + slotType.name().toLowerCase(Locale.ROOT);
             add(key, capitalize(slotType.name()));

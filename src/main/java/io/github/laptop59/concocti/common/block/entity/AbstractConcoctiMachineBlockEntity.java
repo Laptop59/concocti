@@ -76,7 +76,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
         <T extends AbstractConcoctiMachineBlockEntity<T, M, V, I, R>,
                 M extends AbstractConcoctiMachineMenu<M>, V, I extends RecipeInput, R extends ProcessingRecipe<R, I>>
         extends AbstractPoweredBlockEntity
-        implements ItemHandlerBlockEntity, FluidHandlerBlockEntity, Details, SettingsHolder, FluidTankHolder {
+        implements ItemHandlerBlockEntity, FluidHandlerBlockEntity, EnergyStorageBlockEntity, Details, SettingsHolder, FluidTankHolder {
 
     public int ticksLeft = 0;
     public int totalTicks = 0;
@@ -137,6 +137,13 @@ public abstract class AbstractConcoctiMachineBlockEntity
         ConcoctiMachineDetails<T, M, V, I, R> details = getUncachedMachineDetails().get();
         this.machineDetails = details;
         return details;
+    }
+
+    /**
+     * Gets the energy storage from a particular direction.
+     */
+    public @Nullable IEnergyStorage getSidedEnergyStorage(Direction direction) {
+        return energy;
     }
 
     /**
@@ -328,9 +335,9 @@ public abstract class AbstractConcoctiMachineBlockEntity
     }
 
     /**
-     * Tells whether an item is valid in a specific slot index.
+     * Tells whether an item is valid in a specific tank index.
      *
-     * @param slot  The slot index.
+     * @param slot  The tank index.
      * @param stack The item stack.
      * @return The item's validity.
      */
@@ -524,7 +531,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
     }
 
     /**
-     * Gets an input (e.g. item) from this block entity. This can rely on a slot, fluid stack or something else.
+     * Gets an input (e.g. item) from this block entity. This can rely on a tank, fluid stack or something else.
      */
     abstract protected V getInput();
 

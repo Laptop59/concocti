@@ -1,14 +1,13 @@
 package io.github.laptop59.concocti.common;
 
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.logging.LogUtils;
 import io.github.laptop59.concocti.client.gui.AbstractConcoctiMachineScreen;
 import io.github.laptop59.concocti.client.gui.ConcoctiFluidHatchScreen;
 import io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
-import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
-import io.github.laptop59.concocti.common.block.entity.AbstractPoweredBlockEntity;
-import io.github.laptop59.concocti.common.block.entity.FluidHandlerBlockEntity;
-import io.github.laptop59.concocti.common.block.entity.ItemHandlerBlockEntity;
+import io.github.laptop59.concocti.common.block.entity.*;
 import io.github.laptop59.concocti.common.effect.ConcoctizedMobEffect;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
@@ -22,6 +21,9 @@ import io.github.laptop59.concocti.common.poi.ConcoctiPoiTypes;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
 import io.github.laptop59.concocti.integration.jei.AbstractConcoctiRecipeCategory;
 import io.github.laptop59.concocti.network.ConcoctiPayloads;
+import net.minecraft.client.renderer.RenderStateShard;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -69,6 +71,26 @@ public class Concocti {
 
     public static final DeferredHolder<MobEffect, MobEffect> CONCOCTIZED = ConcoctiRegisters.MOB_EFFECTS.register("concoctized",
             () -> new ConcoctizedMobEffect(MobEffectCategory.NEUTRAL, 0x9d57db)
+    );
+
+    // For rendering through walls
+    public static final RenderType GHOST_RENDER_TYPE = RenderType.create(
+            "concocti:ghost_block",
+            DefaultVertexFormat.BLOCK,
+            VertexFormat.Mode.QUADS,
+            256,
+            false,
+            true, // needs sorting for translucency
+            RenderType.CompositeState.builder()
+                    .setShaderState(RenderStateShard.RENDERTYPE_TRANSLUCENT_SHADER)
+                    .setTextureState(new RenderStateShard.TextureStateShard(TextureAtlas.LOCATION_BLOCKS, false, false))
+                    .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+                    .setDepthTestState(RenderStateShard.NO_DEPTH_TEST)
+                    .setCullState(RenderStateShard.NO_CULL)
+                    .setLightmapState(RenderStateShard.LIGHTMAP)
+                    .setOverlayState(RenderStateShard.OVERLAY)
+                    .setLayeringState(RenderStateShard.POLYGON_OFFSET_LAYERING)
+                    .createCompositeState(true)
     );
 
     @SubscribeEvent
@@ -171,8 +193,11 @@ public class Concocti {
     private static void registerCapabilities(RegisterCapabilitiesEvent event) {
         ConcoctiRegisters.BLOCK_ENTITY_TYPES.getEntries().forEach(blockEntityTypeDeferredHolder -> {
             BlockEntityType<?> type = blockEntityTypeDeferredHolder.get();
-            event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, type,
-                    (o, direction) -> ((AbstractPoweredBlockEntity) o).energy);
+            event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, type, (o, direction) -> {
+                if (o instanceof EnergyStorageBlockEntity energyStorageBlockEntity)
+                    return energyStorageBlockEntity.getSidedEnergyStorage(direction);
+                return null; // Nothing happens if null is returned, at least that's what I think.
+            });
             event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, type, (o, direction) -> {
                 if (o instanceof FluidHandlerBlockEntity fluidHandlerBlockEntity)
                     return fluidHandlerBlockEntity.getSidedFluidHandler(direction);

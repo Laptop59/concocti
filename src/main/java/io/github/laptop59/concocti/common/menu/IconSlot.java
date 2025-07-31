@@ -4,14 +4,14 @@ import net.minecraft.world.Container;
 import net.minecraft.world.inventory.Slot;
 
 /**
- * A interface for a slot which allows some custom icons to be placed on top.
+ * A interface for a tank which allows some custom icons to be placed on top.
  */
 public interface IconSlot {
 
     Icon getIcon();
 
     /**
-     * A simple slot class that adds a custom icon as a class.
+     * A simple tank class that adds a custom icon as a class.
      */
     class Generic extends Slot implements IconSlot {
 
@@ -29,7 +29,7 @@ public interface IconSlot {
     }
 
     /**
-     * A list of icons that can be placed on a slot.
+     * A list of icons that can be placed on a tank.
      */
     enum Icon {
         CONCOCTI_UPGRADE("concocti_upgrade"),

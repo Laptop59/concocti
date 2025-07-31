@@ -50,7 +50,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity implements ItemHandlerBlockEntity, FluidHandlerBlockEntity, Details, SettingsHolder, FluidTankHolder {
+public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity implements ItemHandlerBlockEntity, FluidHandlerBlockEntity, EnergyStorageBlockEntity, Details, SettingsHolder, FluidTankHolder {
     public boolean ejectOn;
     public boolean pullOn;
     public ConcoctiFluidTankHandler fluidHandler;
@@ -313,31 +313,23 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
         this.machineSettings.availableTypes = new ArrayList<>(getAllowedSlotTypes());
         this.machineSettings.availableTypes.addFirst(SlotType.NONE);
 
-        DynamicEnergyStorage.Mode mode = DynamicEnergyStorage.Mode.NONE;
-        if (type == HatchType.ENERGY) {
-            if (purpose == HatchPurpose.INPUT)
-                mode = DynamicEnergyStorage.Mode.INPUT_ONLY;
-            else if (purpose == HatchPurpose.OUTPUT)
-                mode = DynamicEnergyStorage.Mode.OUTPUT_ONLY;
-        }
-
-        this.setEnergyModeSupplier(mode.toSupplier());
+        this.setEnergyModeSupplier(DynamicEnergyStorage.Mode.INPUT_OUTPUT.toSupplier());
 
         this.fluidHandler = new ConcoctiFluidTankHandler(() -> List.of(fluidTank.get()));
 
         inputItemHandler = new Lazy<>(() -> itemHandler.whitelistSlots(
-                type == HatchType.ITEM && purpose == HatchPurpose.INPUT ?
+                type == HatchType.ITEM ?
                         List.of(0, 1, 2, 3, 4, 5, 6, 7, 8) : List.of()
         ));
         inputFluidHandler = new Lazy<>(() -> fluidHandler.whitelistTanks(
-                purpose == HatchPurpose.INPUT ? List.of(fluidTank.get()) : List.of()
+                type == HatchType.FLUID ? List.of(fluidTank.get()) : List.of()
         ));
         outputItemHandler = new Lazy<>(() -> itemHandler.whitelistSlots(
-                type == HatchType.ITEM && purpose == HatchPurpose.OUTPUT ?
+                type == HatchType.ITEM ?
                         List.of(0, 1, 2, 3, 4, 5, 6, 7, 8) : List.of()
         ));
         outputFluidHandler = new Lazy<>(() -> fluidHandler.whitelistTanks(
-                purpose == HatchPurpose.OUTPUT ? List.of(fluidTank.get()) : List.of()
+                type == HatchType.FLUID ? List.of(fluidTank.get()) : List.of()
         ));
     }
 
@@ -498,5 +490,10 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
     @Override
     public List<IFluidHandler> getIndexedFluidHandlers() {
         return List.of(fluidTank.get());
+    }
+
+    @Override
+    public @Nullable IEnergyStorage getSidedEnergyStorage(Direction direction) {
+        return energy;
     }
 }

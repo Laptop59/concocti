@@ -17,6 +17,7 @@ public final class Properties {
     public static final Property<MachineSettingsSlots> MACHINE_SETTINGS_SLOTS = ComplexionCodec.MACHINE_SETTINGS_SLOTS.unique();
     public static final Property<Boolean> EJECT_ON = ComplexionCodec.BOOLEAN.unique();
     public static final Property<Boolean> PULL_ON = ComplexionCodec.BOOLEAN.unique();
+    public static final Property<Boolean> BUILD_PREVIEW = ComplexionCodec.BOOLEAN.unique();
     public static final Property<Boolean> VALID = ComplexionCodec.BOOLEAN.unique();
 
     public static final Property<FluidStack> PURE_FLUID_OUTPUT = ComplexionCodec.FLUID_STACK.unique();

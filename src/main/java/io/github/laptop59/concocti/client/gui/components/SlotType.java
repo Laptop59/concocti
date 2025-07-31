@@ -48,7 +48,7 @@ public enum SlotType {
     }
 
     /**
-     * Gets the internal integral ID of this slot type.
+     * Gets the internal integral ID of this tank type.
      */
     public int getId() {
         return id;

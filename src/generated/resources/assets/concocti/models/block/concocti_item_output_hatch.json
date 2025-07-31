@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "concocti:block/concocti_item_output_hatch"
+  }
+}

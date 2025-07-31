@@ -44,10 +44,7 @@ public abstract class AbstractConcoctiRecipeCategory<T extends ProcessingRecipe<
 
     private final ArrowProgress arrowProgress;
     private final Lazy<ResourceLocation> texture =
-            new Lazy<>(() -> ResourceLocation.fromNamespaceAndPath(
-                    MODID,
-                    "textures/gui/jei/" + getMachineInstance().ID + ".png"
-            ));
+            new Lazy<>(this::getTexturePath);
 
     public AbstractConcoctiRecipeCategory(IGuiHelper guiHelper, ItemStack icon) {
         this.icon = guiHelper.createDrawableIngredient(VanillaTypes.ITEM_STACK, icon);
@@ -56,6 +53,13 @@ public abstract class AbstractConcoctiRecipeCategory<T extends ProcessingRecipe<
 
     public AbstractConcoctiRecipeCategory(IGuiHelper guiHelper, DeferredItem<Item> item) {
         this(guiHelper, item.toStack());
+    }
+
+    public ResourceLocation getTexturePath() {
+        return ResourceLocation.fromNamespaceAndPath(
+                MODID,
+                "textures/gui/jei/" + getMachineInstance().ID + ".png"
+        );
     }
 
     /**
@@ -156,7 +160,7 @@ public abstract class AbstractConcoctiRecipeCategory<T extends ProcessingRecipe<
     public abstract void setRecipe(@NotNull IRecipeLayoutBuilder builder, @NotNull T recipe, @NotNull IFocusGroup focuses);
 
     /**
-     * A helper method to create a {@link net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient} slot.
+     * A helper method to create a {@link net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient} tank.
      */
     protected final IRecipeLayoutBuilder addSizedFluidIngredientSlot(IRecipeLayoutBuilder builder, RecipeIngredientRole role,
                                                                      int x, int y, String name, SizedFluidIngredient ingredient) {

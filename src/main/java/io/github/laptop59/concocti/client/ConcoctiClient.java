@@ -1,12 +1,16 @@
 package io.github.laptop59.concocti.client;
 
+import io.github.laptop59.concocti.common.Concocti;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
+import io.github.laptop59.concocti.common.machine.ConcoctiMachines;
+import io.github.laptop59.concocti.common.machine.ConcoctiMultiBlockMachine;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import org.jetbrains.annotations.NotNull;
@@ -22,6 +26,19 @@ public class ConcoctiClient {
 
     public ConcoctiClient(IEventBus modEventBus, ModContainer modContainer) {
         modEventBus.register(ConcoctiClient.class);
+    }
+
+    @SubscribeEvent
+    public static void onRegisterRenderer(EntityRenderersEvent.RegisterRenderers event) {
+        for (var machine : ConcoctiMachines.MACHINES) {
+            if (machine instanceof ConcoctiMultiBlockMachine multiBlockMachine) {
+                event.registerBlockEntityRenderer(
+                        multiBlockMachine.BLOCK_ENTITY.get(),
+                        ConcoctiMultiblockBlockEntityRenderer::new
+                );
+                Concocti.LOGGER.info("Registered block entity renderer for multiblock " + machine.ID + ".");
+            }
+        }
     }
 
     @SubscribeEvent

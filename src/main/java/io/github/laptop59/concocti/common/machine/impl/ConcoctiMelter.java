@@ -497,7 +497,7 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
 
         @Override
         public @Nullable ItemStack handleOtherQuickMoves(ItemStack movedStack) {
-            // index 2 - dirty concocti slot
+            // index 2 - dirty concocti tank
             if (!this.getSlot(2).hasItem() && !this.moveItemStackTo(movedStack, 2, 3, true)) {
                 return ItemStack.EMPTY;
             }

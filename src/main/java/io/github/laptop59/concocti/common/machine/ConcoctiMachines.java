@@ -4,10 +4,7 @@ import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.HatchPurpose;
 import io.github.laptop59.concocti.common.block.HatchType;
 import io.github.laptop59.concocti.common.machine.impl.*;
-import io.github.laptop59.concocti.common.multiblock.MultiblockBlockTagPredicate;
-import io.github.laptop59.concocti.common.multiblock.MultiblockSimpleBlockPredicate;
-import io.github.laptop59.concocti.common.multiblock.MultiblockStructure;
-import io.github.laptop59.concocti.common.multiblock.MultiblockToughConcoctiBrickLikePredicate;
+import io.github.laptop59.concocti.common.multiblock.*;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.Blocks;
 
@@ -48,11 +45,12 @@ public final class ConcoctiMachines {
         MAGNETIC_SEPARATOR = register(new ConcoctiMultiBlockMachine(
                 "concocti_magnetic_separator",
                 100.0f,
-                MultiblockStructure.from(MultiblockStructure.Builder.create(-1, -1, 0, 1, 3, 2), builder -> builder.load(
+                MultiblockStructure.from(MultiblockStructure.Builder.create(-1, -1, -2, 2, 4, 1), builder -> builder.load(
                             Map.of(
                                     'B', new MultiblockToughConcoctiBrickLikePredicate(
                                             ConcoctiBlocks.getDeferredHatch(HatchPurpose.INPUT, HatchType.FLUID),
-                                            ConcoctiBlocks.getDeferredHatch(HatchPurpose.OUTPUT, HatchType.ITEM)
+                                            ConcoctiBlocks.getDeferredHatch(HatchPurpose.OUTPUT, HatchType.ITEM),
+                                            ConcoctiBlocks.getDeferredHatch(HatchPurpose.INPUT, HatchType.ENERGY)
                                     ),
                                     'C', new MultiblockSimpleBlockPredicate(ConcoctiBlocks.CONDUCTIVIUM_BLOCK),
                                     'A', new MultiblockBlockTagPredicate(BlockTags.AIR)
@@ -64,6 +62,21 @@ public final class ConcoctiMachines {
                         )
                 )
         ));
+
+        MultiblockStructure structure = MAGNETIC_SEPARATOR.STRUCTURE;
+        for (int y = structure.yStart(); y < structure.yEnd(); y++) {
+            System.out.println("Level y = " + y);
+            for (int z = structure.zStart(); z < structure.zEnd(); z++) {
+                for (int x = structure.xStart(); x < structure.xEnd(); x++) {
+                    MultiblockBlockPredicate predicate = structure.at(x, y, z);
+                    char c = '.';
+                    if (predicate != null) c = (char) predicate.hashCode();
+                    System.out.print(c);
+                }
+                System.out.println();
+            }
+            System.out.println();
+        }
     }
 
     public static void forEach(Consumer<ConcoctiMachine<?, ?, ?, ?, ?, ?, ?, ?, ?>> consumer) {

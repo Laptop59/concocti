@@ -128,7 +128,7 @@ public record ComplexionCodec<T>(
     );
 
     public static final ComplexionCodec<MachineSettingsSlots> MACHINE_SETTINGS_SLOTS = new ComplexionCodec<>(
-            6, // each slot occupies 1 integer.
+            6, // each tank occupies 1 integer.
             (object, instance) -> {
                 for (Direction direction : MachineSettingsSlots.SLOTS_ORDER) {
                     SLOT_TYPE.serialize(

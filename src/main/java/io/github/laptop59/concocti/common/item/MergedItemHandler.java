@@ -1,4 +1,4 @@
-package io.github.laptop59.concocti.common.fluid;
+package io.github.laptop59.concocti.common.item;
 
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -28,7 +28,7 @@ public class MergedItemHandler implements IItemHandler {
         for (IItemHandler handler : itemHandlers) {
             int firstSlot = size;
             size += handler.getSlots();
-            if (slot < size) continue;
+            if (slot >= size) continue;
             return new TranslatedSlot(handler, slot - firstSlot);
         }
         throw new IllegalArgumentException("Slot is out of bounds (provided was " + slot + ", size is " + getSlots() + ").");

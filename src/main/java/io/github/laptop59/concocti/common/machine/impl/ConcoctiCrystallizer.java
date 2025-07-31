@@ -188,7 +188,7 @@ public class ConcoctiCrystallizer extends ConcoctiMachineOnlyItemsFluids<
         public boolean canProcess() {
             if (!super.canProcess()) return false;
             Recipe recipe = getRecipe(getInput());
-            // Check whether the resulting item can be placed in the slot.
+            // Check whether the resulting item can be placed in the tank.
             ItemStack output = getItem(OUTPUT_SLOT);
             if (!output.isEmpty()) {
                 return output.getCount() + recipe.getOutputItem().getCount() <= output.getMaxStackSize();
@@ -453,9 +453,9 @@ public class ConcoctiCrystallizer extends ConcoctiMachineOnlyItemsFluids<
 
         @Override
         protected void addOtherSlots() {
-            // Mold slot
+            // Mold tank
             this.addSlot(new Slot(container, 2, 58, 37));
-            // Output slot
+            // Output tank
             this.addSlot(new ResultSlot(null, container, 3, 120, 37));
         }
 
@@ -546,7 +546,7 @@ public class ConcoctiCrystallizer extends ConcoctiMachineOnlyItemsFluids<
 
         @Override
         public void setRecipe(@NotNull IRecipeLayoutBuilder builder, Recipe recipe, @NotNull IFocusGroup focuses) {
-            // Add the recipe inputs (fluid + slot + base item).
+            // Add the recipe inputs (fluid + tank + base item).
             addSizedFluidIngredientSlot(builder, RecipeIngredientRole.INPUT, 30, 6, "input_fluid", recipe.getInputFluid());
             builder.addSlot(RecipeIngredientRole.INPUT, 48, 6)
                     .addItemStacks(Arrays.asList(recipe.getSeedCrystal().getItems()))

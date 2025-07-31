@@ -176,7 +176,7 @@ public abstract class AbstractFluidBar<T extends AbstractContainerMenu> extends 
     }
 
     private String getFluidTranslation() {
-        if (fluidIsEmpty()) return "mco.configure.world.slot.empty"; // Found an empty translation???
+        if (fluidIsEmpty()) return "fluid.concocti.empty";
         String trimmed = fluid.getPath();
         if (trimmed.startsWith("flowing_")) trimmed = trimmed.substring(8);
         return "block." + fluid.getNamespace() + "." + trimmed;

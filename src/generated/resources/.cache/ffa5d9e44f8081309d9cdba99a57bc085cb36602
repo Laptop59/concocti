@@ -1,4 +1,4 @@
-// 1.21.1	2025-07-29T21:17:27.677184587	Item Models: concocti
+// 1.21.1	2025-07-31T12:20:16.990936202	Item Models: concocti
 9860ec1d2840f2feb3028da96207cecc0c5e3f62 assets/concocti/models/item/advanced_concocti_frame.json
 dd158e01c0d63b3f0b51a1b83e0a0dd4bb49c1c5 assets/concocti/models/item/basic_concocti_frame.json
 cf580921ecb218d04b6901c60c3a8ac60a25b83e assets/concocti/models/item/compact_concocti_upgrade.json
@@ -35,6 +35,7 @@ db15f9242cd39db4bb7e1dd11588ae6749f71176 assets/concocti/models/item/conductiviu
 bdcada04835ac978d05b7541648de5b5f5f5c9b5 assets/concocti/models/item/crystalium_nugget.json
 c807cb3e5e5f47ccfbd29ba71c8a5145fdd71951 assets/concocti/models/item/crystalium_ore.json
 23efd3e61db254d695f0b2329897928fd6520d99 assets/concocti/models/item/crystalium_solution_bucket.json
+10e204237b0b2557b5472a0e1e504ad2de855ccb assets/concocti/models/item/dense_concocti_pellet.json
 f04129e8b07c8b3755a8ef90fee85af4788e5f60 assets/concocti/models/item/diamethyst_block.json
 61213bb50af89a6e974ab86c9a8910c4de6905d2 assets/concocti/models/item/diamethyst_crystal.json
 f068e18368658bd566869fa6a91ec35b66495935 assets/concocti/models/item/diamond_ingot_mold.json

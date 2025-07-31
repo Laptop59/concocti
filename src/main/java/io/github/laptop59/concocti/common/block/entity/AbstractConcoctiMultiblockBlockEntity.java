@@ -11,10 +11,13 @@ import io.github.laptop59.concocti.common.detail.DetailContext;
 import io.github.laptop59.concocti.common.detail.DetailHolder;
 import io.github.laptop59.concocti.common.detail.DetailHolders;
 import io.github.laptop59.concocti.common.detail.Details;
+import io.github.laptop59.concocti.common.energy.ViewOnlyEnergyStorage;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTankHandler;
-import io.github.laptop59.concocti.common.fluid.MergedEnergyStorage;
-import io.github.laptop59.concocti.common.fluid.MergedItemHandler;
-import io.github.laptop59.concocti.common.item.ConcoctiItemStackHandler;
+import io.github.laptop59.concocti.common.energy.MergedEnergyStorage;
+import io.github.laptop59.concocti.common.fluid.MergedViewOnlyFluidHandler;
+import io.github.laptop59.concocti.common.fluid.ViewOnlyFluidHandler;
+import io.github.laptop59.concocti.common.item.MergedItemHandler;
+import io.github.laptop59.concocti.common.item.ViewOnlyItemHandler;
 import io.github.laptop59.concocti.common.machine.FluidTankHolder;
 import io.github.laptop59.concocti.common.machine.ItemsFluidsInputValue;
 import io.github.laptop59.concocti.common.machine.SettingsHolder;
@@ -23,14 +26,19 @@ import io.github.laptop59.concocti.common.multiblock.MultiblockStructure;
 import io.github.laptop59.concocti.common.multiblock.MultiblockToughConcoctiBrickLikePredicate;
 import io.github.laptop59.concocti.common.recipe.AbstractConcoctiMultiblockRecipe;
 import io.github.laptop59.concocti.common.recipe.ItemsFluidsRecipeInput;
-import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
-import io.github.laptop59.concocti.common.util.ConcoctiTransferrer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
@@ -50,6 +58,7 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -67,12 +76,14 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
         <T extends AbstractConcoctiMultiblockBlockEntity<T, R>, R extends AbstractConcoctiMultiblockRecipe<R>>
         extends AbstractConcoctiMachineOnlyItemsFluidsBlockEntity<T, ConcoctiMultiblockMenu, R>
         implements Details, SettingsHolder, FluidTankHolder {
-    public int autoCooldown = 0;
+    public int autoCooldown = -100000000;
     public static final int AUTO_COOLDOWN = 20;
     public boolean valid = false;
+    public boolean buildPreview = false;
 
     public DetailHolders detailHolders = new DetailHolders();
-    public MultiblockStructure structure = getStructure();
+    public MultiblockStructure structure;
+    public Map<BlockPos, BlockState> unmatchingBlockStates = null;
 
     // Slots
     public static final int UPGRADE_SLOT = 0;
@@ -85,6 +96,8 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
             Properties.TICKS_LEFT.newWithLinker(() -> ticksLeft);
     public final Property<Integer> TOTAL_TICKS =
             Properties.TOTAL_TICKS.newWithLinker(() -> totalTicks);
+    public final Property<Boolean> BUILD_PREVIEW =
+            Properties.BUILD_PREVIEW.newWithLinker(() -> buildPreview);
 
     public IItemHandler itemStackInputHandler = null;
     public IFluidHandler fluidStackInputHandler = null;
@@ -95,14 +108,15 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
 
     protected final Complexion dataAccess = new Complexion(
             VALID.of(false),
+            BUILD_PREVIEW.of(false),
             TICKS_LEFT.of(0),
             TOTAL_TICKS.of(0)
     );
 
     /**
-     * Tells whether an item is valid in a specific slot index.
+     * Tells whether an item is valid in a specific tank index.
      *
-     * @param slot  The slot index.
+     * @param slot  The tank index.
      * @param stack The item stack.
      * @return The item's validity.
      */
@@ -186,6 +200,30 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
     }
 
     /**
+     * Gets the energy storage from a particular direction.
+     */
+    @Override
+    public @Nullable IEnergyStorage getSidedEnergyStorage(Direction direction) {
+        return new ViewOnlyEnergyStorage(() -> new MergedEnergyStorage(valid ? List.of(energyInputStorage, energyOutputStorage) : List.of()));
+    }
+
+    /**
+     * Gets the item handler from a particular direction.
+     */
+    @Override
+    public @Nullable IItemHandler getSidedItemHandler(Direction direction) {
+        return new ViewOnlyItemHandler(() -> new MergedItemHandler(valid ? List.of(itemStackInputHandler, itemStackOutputHandler) : List.of()));
+    }
+
+    /**
+     * Gets the fluid handler from a particular direction.
+     */
+    @Override
+    public @Nullable IFluidHandler getSidedFluidHandler(Direction direction) {
+        return new ViewOnlyFluidHandler(() -> new MergedViewOnlyFluidHandler(valid ? List.of(fluidStackInputHandler, fluidStackOutputHandler) : List.of()));
+    }
+
+    /**
      * Gives this block entity's recipe type.
      */
     public abstract Supplier<RecipeType<R>> getRecipeType();
@@ -199,7 +237,9 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
     public boolean canProcess() {
         if (!valid) return false;
         // Check if enough energy is left.
-        if (energyInputStorage.extractEnergy(getTickEnergyIntake(), true) < getTickEnergyIntake()) return false;
+        int fakeExtracted = energyInputStorage.extractEnergy(getTickEnergyIntake(), true);
+        int required = getTickEnergyIntake();
+        if (fakeExtracted < required) return false;
         // Query the recipe.
         ItemsFluidsInputValue input = getInput();
         R recipe = getRecipe(input);
@@ -248,6 +288,7 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
         itemStackOutputHandler = null;
         fluidStackOutputHandler = null;
         energyOutputStorage = null;
+        invalidateCapabilities();
     }
 
     public void updateMultiblockState() {
@@ -256,10 +297,14 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
         if (!valid) {
             ticksLeft = totalTicks;
             lastRecipe = null;
+            unmatchingBlockStates = structure.getUnmatched(getLevel(), getBlockPos(), direction);
 
             nullifyHandlers();
+            setChanged();
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
             return;
         }
+        unmatchingBlockStates = null;
         // Create the handlers.
         Map<BlockPos, Object> dataMap = structure.getExtraData(getLevel(), getBlockPos(), direction);
         List<IItemHandler> itemInputHandlers = new ArrayList<>();
@@ -269,7 +314,7 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
         List<IFluidTank> fluidOutputTanks = new ArrayList<>();
         List<IEnergyStorage> energyOutputStorages = new ArrayList<>();
         for (Map.Entry<BlockPos, Object> entry : dataMap.entrySet()) {
-            BlockPos pos = entry.getKey();
+            // BlockPos pos = entry.getKey();
             Object data = entry.getValue();
             if (data instanceof MultiblockToughConcoctiBrickLikePredicate.Data(ConcoctiHatchBlockEntity entity)) {
                 // Get the entity.
@@ -312,9 +357,10 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
         fluidStackOutputHandler = fluidOutputHandler;
         energyInputStorage = energyInputStorageLocal;
         energyOutputStorage = energyOutputStorageLocal;
-    }
 
-    public abstract MultiblockStructure getStructure();
+        level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        invalidateCapabilities();
+    }
 
     /**
      * A basic implementation of a Concocti Machine's server tick.
@@ -390,6 +436,7 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
         } else this.lastRecipe = null;
         // Fill in the total ticks.
         this.totalTicks = tag.getInt("total_ticks");
+        this.buildPreview = tag.contains("build_preview") && tag.getBoolean("build_preview");
         deserialize(new DetailContext(tag, registries, null));
     }
 
@@ -408,7 +455,55 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
         // Fetch the appropriate item ID.
         if (this.lastRecipe != null) tag.putString("last_recipe_id", this.lastRecipe.toString());
         tag.putInt("total_ticks", this.totalTicks);
+        tag.putBoolean("build_preview", this.buildPreview);
         serialize(new DetailContext(tag, registries, null));
+    }
+
+    @Override
+    public @NotNull CompoundTag getUpdateTag(HolderLookup.@NotNull Provider registries) {
+        CompoundTag tag = new CompoundTag();
+        saveAdditional(tag, registries);
+        ListTag listTagKeys = new ListTag();
+        ListTag listTagValues = new ListTag();
+        if (unmatchingBlockStates != null) {
+            for (Map.Entry<BlockPos, BlockState> entry : unmatchingBlockStates.entrySet()) {
+                listTagKeys.add(NbtUtils.writeBlockPos(entry.getKey()));
+                listTagValues.add(NbtUtils.writeBlockState(entry.getValue()));
+            }
+        }
+        tag.put("unmatched_block_states_keys", listTagKeys);
+        tag.put("unmatched_block_states_values", listTagValues);
+        return tag;
+    }
+
+    // Return our packet here. This method returning a non-null result tells the game to use this packet for syncing.
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        // The packet uses the CompoundTag returned by #getUpdateTag. An alternative overload of #create exists
+        // that allows you to specify a custom update tag, including the ability to omit data the client might not need.
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    // Optionally: Run some custom logic when the packet is received.
+    // The super/default implementation forwards to #loadAdditional.
+    @Override
+    public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet, HolderLookup.Provider registries) {
+        super.onDataPacket(connection, packet, registries);
+        // Do whatever you need to do here.
+        CompoundTag tag = packet.getTag();
+        if (tag.contains("unmatched_block_states_keys") && tag.contains("unmatched_block_states_values")) {
+            ListTag listTagKeys = tag.getList("unmatched_block_states_keys", Tag.TAG_INT_ARRAY);
+            ListTag listTagValues = tag.getList("unmatched_block_states_values", Tag.TAG_COMPOUND);
+            Map<BlockPos, BlockState> map = new HashMap<>();
+            for (int i = 0; i < listTagKeys.size(); i++) {
+                int[] blockPosTag = listTagKeys.getIntArray(i);
+                CompoundTag blockStateTag = listTagValues.getCompound(i);
+                BlockPos blockPos = new BlockPos(blockPosTag[0], blockPosTag[1], blockPosTag[2]);
+                BlockState blockState = NbtUtils.readBlockState(level.holderLookup(Registries.BLOCK), blockStateTag);
+                map.put(blockPos, blockState);
+            }
+            this.unmatchingBlockStates = map;
+        }
     }
 
     @Override
@@ -439,5 +534,10 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
     @Override
     public void deserialize(DetailContext context) {
         detailHolders.deserialize(context);
+    }
+
+    public void changeBuildPreview() {
+        buildPreview = !buildPreview;
+        updateMultiblockState();
     }
 }

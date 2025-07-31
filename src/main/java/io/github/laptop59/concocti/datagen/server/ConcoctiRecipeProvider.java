@@ -4,6 +4,8 @@ import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.item.MoldItem;
+import io.github.laptop59.concocti.common.machine.ConcoctiMachines;
+import io.github.laptop59.concocti.common.machine.ConcoctiMultiBlockMachine;
 import io.github.laptop59.concocti.common.machine.impl.*;
 import io.github.laptop59.concocti.common.util.ConcoctiConstants;
 import net.minecraft.core.HolderLookup;
@@ -430,6 +432,18 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 new ItemStack(ConcoctiItems.COMPRESSED_CONCOCTI_BLOCK.get(), 1),
                 null
         );
+        concoctiMultiblockRecipe(
+                output,
+                ConcoctiMachines.MAGNETIC_SEPARATOR,
+                "magnetic_extraction_of_iron_nugget",
+                10,
+                List.of(),
+                List.of(
+                        SizedFluidIngredient.of(ConcoctiFluids.MOLTEN_CONCOCTI.get(), ConcoctiConstants.MOLTEN_INGOT * 2)
+                ),
+                List.of(new ItemStack(Items.IRON_NUGGET, 4), new ItemStack(ConcoctiItems.DENSE_CONCOCTI_PELLET.get(), 1)),
+                List.of()
+        );
     }
 
     private static void concoctiSolidifierRecipe(RecipeOutput output, MoldItem.Type type, List<ConcoctiMoldingSolidifierRecipe> recipeList) {
@@ -622,6 +636,30 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 outputItem,
                 inputFluids,
                 outputFluid,
+                ticks
+        ).save(output);
+    }
+
+    /**
+     * Generates a Concocti Multiblock's Recipe.
+     */
+    private static void concoctiMultiblockRecipe(
+            RecipeOutput output,
+            ConcoctiMultiBlockMachine multiBlockMachine,
+            String name,
+            int ticks,
+            List<SizedIngredient> inputItems,
+            List<SizedFluidIngredient> inputFluids,
+            List<ItemStack> outputItems,
+            List<FluidStack> outputFluids
+    ) {
+        new ConcoctiMultiBlockMachine.Recipe.Builder(
+                multiBlockMachine.ID,
+                ResourceLocation.fromNamespaceAndPath(MODID, "multiblock/" + name),
+                inputItems,
+                outputItems,
+                inputFluids,
+                outputFluids,
                 ticks
         ).save(output);
     }
