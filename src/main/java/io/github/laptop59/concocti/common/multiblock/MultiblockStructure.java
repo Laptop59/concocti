@@ -300,7 +300,6 @@ public record MultiblockStructure(
                 }
             schematic = newSchematic;
             //
-            System.out.println(xStart + "-" + xEnd + " " + yStart + "-" + yEnd + " " + zStart + "-" + zEnd);
             assert schematic.length == (zEnd - zStart) && schematic.length > 0;
             assert schematic[0].length() == (xEnd - xStart) * (yEnd - yStart) + (yEnd - yStart - 1);
             // Capital variables are used for relative pos. (xStart -> xEnd - 1)

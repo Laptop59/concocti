@@ -24,7 +24,12 @@ public final class ConcoctiMachines {
     public static ConcoctiCompressor COMPRESSOR;
 
     public static ConcoctiMultiBlockMachine MAGNETIC_SEPARATOR;
+
     public static int MAX_RADIUS_SEARCHABLE = 0;
+    public static int MAX_SQ_RADIUS_SEARCHABLE = 0;
+    public static int MAX_X_RADIUS_SEARCHABLE = 0;
+    public static int MAX_Y_RADIUS_SEARCHABLE = 0;
+    public static int MAX_Z_RADIUS_SEARCHABLE = 0;
 
     private static <T extends ConcoctiMachine<?, ?, ?, ?, ?, ?, ?, ?, ?>> T register(T machine) {
         MACHINES.add(machine);
@@ -32,15 +37,27 @@ public final class ConcoctiMachines {
     }
 
     private static <T extends ConcoctiMultiBlockMachine> T registerMultiblock(T machine) {
-        // Get the max radius to search for.
-        MultiblockStructure structure = machine.STRUCTURE;
-        int xLen = structure.xLength(), yLen = structure.yLength(), zLen = structure.zLength();
-        int squaredRadius = xLen * xLen + yLen * yLen + zLen * zLen;
-        squaredRadius += 1; // Just in case
-        int radius = (int) Math.ceil(Math.sqrt(squaredRadius));
-        if (radius > MAX_RADIUS_SEARCHABLE)
-            MAX_RADIUS_SEARCHABLE = radius;
+        updateRadii(machine.STRUCTURE);
+
         return register(machine);
+    }
+
+    private static void updateRadii(MultiblockStructure structure) {
+        int xLen = structure.xLength(), yLen = structure.yLength(), zLen = structure.zLength();
+
+        if (xLen > MAX_X_RADIUS_SEARCHABLE)
+            MAX_X_RADIUS_SEARCHABLE = xLen;
+        if (zLen > MAX_Z_RADIUS_SEARCHABLE)
+            MAX_Z_RADIUS_SEARCHABLE = zLen;
+        if (yLen > MAX_Y_RADIUS_SEARCHABLE)
+            MAX_Y_RADIUS_SEARCHABLE = yLen;
+
+        MAX_SQ_RADIUS_SEARCHABLE =
+                MAX_X_RADIUS_SEARCHABLE * MAX_X_RADIUS_SEARCHABLE +
+                MAX_Y_RADIUS_SEARCHABLE * MAX_Y_RADIUS_SEARCHABLE +
+                MAX_Z_RADIUS_SEARCHABLE * MAX_Z_RADIUS_SEARCHABLE;
+
+        MAX_RADIUS_SEARCHABLE = (int) Math.ceil(Math.sqrt(MAX_SQ_RADIUS_SEARCHABLE));
     }
 
     public static void register() {
@@ -76,7 +93,13 @@ public final class ConcoctiMachines {
                 )
         ));
 
-        Concocti.LOGGER.info("MAX_RADIUS_SEARCHABLE calculated is {}.", MAX_RADIUS_SEARCHABLE);
+        Concocti.LOGGER.info("Max radii searchable are: X = {}, Y = {}, Z = {} | Max searchable squared radius = {} | Max searchable radius = {}",
+                MAX_X_RADIUS_SEARCHABLE,
+                MAX_Y_RADIUS_SEARCHABLE,
+                MAX_Z_RADIUS_SEARCHABLE,
+                MAX_SQ_RADIUS_SEARCHABLE,
+                MAX_RADIUS_SEARCHABLE
+        );
     }
 
     public static void forEach(Consumer<ConcoctiMachine<?, ?, ?, ?, ?, ?, ?, ?, ?>> consumer) {
