@@ -1,0 +1,15 @@
+{
+  "type": "concocti:concocti_crystallizer",
+  "input_fluid": {
+    "amount": 576,
+    "fluid": "concocti:molten_concocti"
+  },
+  "output_item": {
+    "count": 2,
+    "id": "minecraft:amethyst_block"
+  },
+  "seed_crystal": {
+    "item": "minecraft:amethyst_block"
+  },
+  "ticks": 60
+}

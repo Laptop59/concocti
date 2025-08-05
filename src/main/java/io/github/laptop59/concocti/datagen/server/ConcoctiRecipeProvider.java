@@ -316,6 +316,20 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
         );
 
         concoctiMixerRecipe(output,
+                "budding_amethyst_from_amethyst_block",
+                200,
+                List.of(
+                        SizedIngredient.of(Items.AMETHYST_BLOCK, 1),
+                        SizedIngredient.of(Items.AMETHYST_SHARD, 4)
+                ),
+                List.of(
+                        SizedFluidIngredient.of(ConcoctiFluids.MOLTEN_CONCOCTI.get(), ConcoctiConstants.MOLTEN_INGOT)
+                ),
+                new ItemStack(Items.BUDDING_AMETHYST),
+                null
+        );
+
+        concoctiMixerRecipe(output,
                 "generating_concocti_with_concocti_seeds",
                 20 * 32,
                 List.of(
@@ -405,6 +419,34 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 new FluidStack(Fluids.WATER, 81000),
                 75,
                 new ItemStack(Items.BLUE_ICE, 2)
+        );
+        concoctiCrystallizerRecipe(
+                output,
+                Ingredient.of(Items.AMETHYST_SHARD),
+                new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_INGOT),
+                15,
+                new ItemStack(Items.AMETHYST_SHARD, 2)
+        );
+        concoctiCrystallizerRecipe(
+                output,
+                Ingredient.of(Items.AMETHYST_BLOCK),
+                new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_INGOT * 4),
+                60,
+                new ItemStack(Items.AMETHYST_BLOCK, 2)
+        );
+        concoctiCrystallizerRecipe(
+                output,
+                Ingredient.of(ConcoctiItems.DIAMETHYST_CRYSTAL),
+                new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_INGOT * 4),
+                75,
+                new ItemStack(ConcoctiItems.DIAMETHYST_CRYSTAL.get(), 2)
+        );
+        concoctiCrystallizerRecipe(
+                output,
+                Ingredient.of(ConcoctiItems.DIAMETHYST_BLOCK),
+                new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_BLOCK * 4),
+                75,
+                new ItemStack(ConcoctiItems.DIAMETHYST_BLOCK.get(), 2)
         );
 
         // Concocti Compressor recipes
