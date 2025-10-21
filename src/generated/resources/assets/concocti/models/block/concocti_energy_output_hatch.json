@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:block/cube_all",
-  "textures": {
-    "all": "concocti:block/concocti_energy_output_hatch"
-  }
-}
