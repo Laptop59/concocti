@@ -18,7 +18,7 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import static io.github.laptop59.concocti.common.Concocti.MODID;
 
 public class ConcoctiRegisters {
-    // Create 2 Deferred Registers to hold Blocks and Block Entities which will all be registered under the "concocti" namespace.
+
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
 
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MODID);
@@ -41,6 +41,5 @@ public class ConcoctiRegisters {
 
     public static final DeferredRegister<MobEffect> MOB_EFFECTS = DeferredRegister.create(Registries.MOB_EFFECT, MODID);
 
-    // Create a Deferred Register to hold CreativeModeTabs which will all be registered under the "concocti" namespace
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
 }

@@ -1,7 +1,10 @@
 package io.github.laptop59.concocti.integration.jei;
 
+import io.github.laptop59.concocti.common.machine.RecipeBuilder;
 import io.github.laptop59.concocti.common.machine.impl.ConcoctiMixer;
 import io.github.laptop59.concocti.common.recipe.AbstractConcoctiMultiblockRecipe;
+import io.github.laptop59.concocti.common.recipe.FluidRecipeIngredient;
+import io.github.laptop59.concocti.common.recipe.ItemRecipeIngredient;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
 import mezz.jei.api.helpers.IGuiHelper;
@@ -52,45 +55,28 @@ public abstract class AbstractConcoctiMultiblockRecipeCategory<R extends Abstrac
     }
 
     @Override
-    public void setRecipe(@NotNull IRecipeLayoutBuilder builder, R recipe, @NotNull IFocusGroup focuses) {
+    public void set(@NotNull RecipeBuilder builder, @NotNull R recipe) {
         int drawnSlots = 0;
         drawnSlots += recipe.getInputItems().size() + recipe.getInputFluids().size() + recipe.getOutputFluids().size() + recipe.getOutputItems().size();
         int drawnWidth = drawnSlots * 18 + (11 + 22 + 11);
         int left = (WIDTH - drawnWidth) / 2 - 3;
         // Add the recipe inputs.
-        int i = 1;
-        for (SizedIngredient ingredient : recipe.getInputItems()) {
-            builder.addSlot(RecipeIngredientRole.INPUT, left, 6)
-                    .addItemStacks(Arrays.asList(ingredient.getItems()))
-                    .setSlotName("input_item_" + i);
-            i++;
+        for (ItemRecipeIngredient ingredient : recipe.getInputItems()) {
+            builder.addInputSlot(left, 6, ingredient);
             left += 18;
         }
-        i = 1;
-        for (SizedFluidIngredient ingredient : recipe.getInputFluids()) {
-            IRecipeSlotBuilder slotBuilder =
-                    builder.addSlot(RecipeIngredientRole.INPUT, left, 6)
-                            .setSlotName("input_fluid_" + i);
-            for (FluidStack fluidStack : ingredient.getFluids())
-                slotBuilder.addFluidStack(fluidStack.getFluid(), fluidStack.getAmount());
-            i++;
+        for (FluidRecipeIngredient ingredient : recipe.getInputFluids()) {
+            builder.addInputSlot(left, 6, ingredient);
             left += 18;
         }
         left += 11;
         left += 22 + 11;
-        i = 1;
         for (ItemStack itemStack : recipe.getOutputItems()) {
-            builder.addSlot(RecipeIngredientRole.OUTPUT, left, 6)
-                    .addItemStacks(List.of(itemStack))
-                    .setSlotName("output_item_" + i);
-            i++;
+            builder.addOutputSlot(left, 6, itemStack);
             left += 18;
         }
-        i = 1;
         for (FluidStack fluidStack : recipe.getOutputFluids()) {
-            builder.addSlot(RecipeIngredientRole.OUTPUT, left, 6)
-                    .addFluidStack(fluidStack.getFluid(), fluidStack.getAmount())
-                    .setSlotName("output_fluid_" + i);
+            builder.addOutputSlot(left, 6, fluidStack);
             left += 18;
         }
     }

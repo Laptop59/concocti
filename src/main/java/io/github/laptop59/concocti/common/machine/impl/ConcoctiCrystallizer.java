@@ -3,6 +3,7 @@ package io.github.laptop59.concocti.common.machine.impl;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.emi.emi.api.stack.EmiIngredient;
 import io.github.laptop59.concocti.client.gui.AbstractConcoctiMachineScreen;
 import io.github.laptop59.concocti.client.gui.components.*;
 import io.github.laptop59.concocti.common.abstraction.ConcoctiMachineComplexion;
@@ -22,6 +23,8 @@ import io.github.laptop59.concocti.common.machine.ItemsFluidsInputValue;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.menu.IconSlot;
 import io.github.laptop59.concocti.common.menu.ResultSlot;
+import io.github.laptop59.concocti.common.recipe.FluidRecipeIngredient;
+import io.github.laptop59.concocti.common.recipe.ItemRecipeIngredient;
 import io.github.laptop59.concocti.common.recipe.ItemsFluidsRecipeInput;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
 import io.github.laptop59.concocti.integration.jei.AbstractConcoctiRecipeCategory;
@@ -52,19 +55,16 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.neoforged.neoforge.common.crafting.SizedIngredient;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
-import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -208,7 +208,7 @@ public class ConcoctiCrystallizer extends ConcoctiMachineOnlyItemsFluids<
             // Consume the seed.
             seed.shrink(1);
             // Reduce the fluids.
-            fluidInput.get().drain(recipe.getInputFluid().amount(), IFluidHandler.FluidAction.EXECUTE);
+            recipe.getInputFluid().consume(fluidInput.get());
         }
 
         @Override
@@ -240,7 +240,7 @@ public class ConcoctiCrystallizer extends ConcoctiMachineOnlyItemsFluids<
 
     public static class Recipe implements ProcessingRecipe<Recipe, ItemsFluidsRecipeInput> {
         private final Ingredient seedCrystal;
-        private final SizedFluidIngredient inputFluid;
+        private final FluidRecipeIngredient inputFluid;
         private final ItemStack outputItem;
         private final int ticks;
 
@@ -250,14 +250,14 @@ public class ConcoctiCrystallizer extends ConcoctiMachineOnlyItemsFluids<
             return makeResourceLocation(recipe.seedCrystal, recipe.inputFluid);
         }
 
-        static ResourceLocation makeResourceLocation(Ingredient seedCrystal, SizedFluidIngredient inputFluid) {
-            ResourceLocation fluidLoc = ResourceLocation.fromNamespaceAndPath(MODID, BuiltInRegistries.FLUID.getKey(
-                    Arrays.stream(inputFluid.getFluids()).findFirst().orElseThrow().getFluid()).getPath());
+        static ResourceLocation makeResourceLocation(Ingredient seedCrystal, FluidRecipeIngredient inputFluid) {
+            long hash = (long) seedCrystal.hashCode() << 32 | inputFluid.hashCode();
+            ResourceLocation fluidLoc = ResourceLocation.fromNamespaceAndPath(MODID, String.format("%016x", hash));
             fluidLoc = fluidLoc.withPrefix("seed_crystallization/").withSuffix("_with_" + getId(seedCrystal));
             return fluidLoc;
         }
 
-        public Recipe(ResourceLocation id, Ingredient seedCrystal, SizedFluidIngredient inputFluid, ItemStack outputItem, int ticks) {
+        public Recipe(ResourceLocation id, Ingredient seedCrystal, FluidRecipeIngredient inputFluid, ItemStack outputItem, int ticks) {
             this.seedCrystal = seedCrystal;
             this.inputFluid = inputFluid;
             this.outputItem = outputItem;
@@ -265,7 +265,7 @@ public class ConcoctiCrystallizer extends ConcoctiMachineOnlyItemsFluids<
             idMap.put(this, id);
         }
 
-        public Recipe(Ingredient seedCrystal, SizedFluidIngredient inputFluid, ItemStack outputItem, int ticks) {
+        public Recipe(Ingredient seedCrystal, FluidRecipeIngredient inputFluid, ItemStack outputItem, int ticks) {
             this.seedCrystal = seedCrystal;
             this.inputFluid = inputFluid;
             this.outputItem = outputItem;
@@ -291,7 +291,7 @@ public class ConcoctiCrystallizer extends ConcoctiMachineOnlyItemsFluids<
             return seedCrystal;
         }
 
-        public SizedFluidIngredient getInputFluid() {
+        public FluidRecipeIngredient getInputFluid() {
             return inputFluid;
         }
 
@@ -347,11 +347,11 @@ public class ConcoctiCrystallizer extends ConcoctiMachineOnlyItemsFluids<
 
         public static class Builder implements RecipeBuilder {
             protected Ingredient seedCrystal;
-            protected SizedFluidIngredient inputFluid;
+            protected FluidRecipeIngredient inputFluid;
             protected ItemStack outputItem;
             protected int ticks;
 
-            public Builder(Ingredient seedCrystal, SizedFluidIngredient inputFluid, ItemStack outputItem, int ticks) {
+            public Builder(Ingredient seedCrystal, FluidRecipeIngredient inputFluid, ItemStack outputItem, int ticks) {
                 this.seedCrystal = seedCrystal;
                 this.inputFluid = inputFluid;
                 this.outputItem = outputItem;
@@ -401,7 +401,7 @@ public class ConcoctiCrystallizer extends ConcoctiMachineOnlyItemsFluids<
         public static class Serializer implements RecipeSerializer<Recipe> {
             public static final MapCodec<Recipe> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
                     Ingredient.CODEC.fieldOf("seed_crystal").forGetter(Recipe::getSeedCrystal),
-                    SizedFluidIngredient.FLAT_CODEC.fieldOf("input_fluid").forGetter(Recipe::getInputFluid),
+                    FluidRecipeIngredient.CODEC.fieldOf("input_fluid").forGetter(Recipe::getInputFluid),
                     ItemStack.CODEC.fieldOf("output_item").forGetter(Recipe::getOutputItem),
                     Codec.INT.fieldOf("ticks").forGetter(Recipe::getTicks)
             ).apply(inst, Recipe::new));
@@ -409,7 +409,7 @@ public class ConcoctiCrystallizer extends ConcoctiMachineOnlyItemsFluids<
             public static final StreamCodec<RegistryFriendlyByteBuf, Recipe> STREAM_CODEC =
                     StreamCodec.composite(
                             Ingredient.CONTENTS_STREAM_CODEC, Recipe::getSeedCrystal,
-                            SizedFluidIngredient.STREAM_CODEC, Recipe::getInputFluid,
+                            FluidRecipeIngredient.STREAM_CODEC, Recipe::getInputFluid,
                             ItemStack.STREAM_CODEC, Recipe::getOutputItem,
                             ByteBufCodecs.INT, Recipe::getTicks,
                             Recipe::new
@@ -518,7 +518,6 @@ public class ConcoctiCrystallizer extends ConcoctiMachineOnlyItemsFluids<
     }
 
     public static class RecipeCategory extends AbstractConcoctiRecipeCategory<Recipe> {
-
         @Override
         protected ConcoctiCrystallizer getMachineInstance() {
             return INSTANCE;
@@ -545,16 +544,12 @@ public class ConcoctiCrystallizer extends ConcoctiMachineOnlyItemsFluids<
         }
 
         @Override
-        public void setRecipe(@NotNull IRecipeLayoutBuilder builder, Recipe recipe, @NotNull IFocusGroup focuses) {
+        public void set(@NotNull io.github.laptop59.concocti.common.machine.RecipeBuilder builder, @NotNull Recipe recipe) {
             // Add the recipe inputs (fluid + tank + base item).
-            addSizedFluidIngredientSlot(builder, RecipeIngredientRole.INPUT, 30, 6, "input_fluid", recipe.getInputFluid());
-            builder.addSlot(RecipeIngredientRole.INPUT, 48, 6)
-                    .addItemStacks(Arrays.asList(recipe.getSeedCrystal().getItems()))
-                    .setSlotName("seed_crystal");
+            builder.addInputSlot(30, 6, recipe.getInputFluid());
+            builder.addInputSlot(48, 6, recipe.getSeedCrystal());
             // Add the item output.
-            builder.addSlot(RecipeIngredientRole.OUTPUT, 137 - 9, 6)
-                    .addIngredient(VanillaTypes.ITEM_STACK, recipe.getOutputItem())
-                    .setSlotName("output");
+            builder.addOutputSlot(137 - 9, 6, recipe.getOutputItem());
         }
     }
 

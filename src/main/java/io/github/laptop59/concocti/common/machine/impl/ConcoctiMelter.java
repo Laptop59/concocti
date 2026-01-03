@@ -20,6 +20,8 @@ import io.github.laptop59.concocti.common.machine.ConcoctiMachineOnlyItemsFluids
 import io.github.laptop59.concocti.common.machine.InputOutput;
 import io.github.laptop59.concocti.common.machine.ItemsFluidsInputValue;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
+import io.github.laptop59.concocti.common.recipe.FluidRecipeIngredient;
+import io.github.laptop59.concocti.common.recipe.ItemRecipeIngredient;
 import io.github.laptop59.concocti.common.recipe.ItemsFluidsRecipeInput;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
 import io.github.laptop59.concocti.integration.jei.AbstractConcoctiRecipeCategory;
@@ -251,7 +253,7 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
 
         @Override
         protected void onRecipeCompleted(Recipe recipe) {
-            getInputStack().shrink(recipe.inputItem.count());
+            recipe.getInputItem().consume(getInputStack());
             recipeResultFill(recipe.getOutputPureFluid().copy());
             recipeResultFill(recipe.getOutputByproductFluid().copy());
         }
@@ -282,18 +284,15 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
     }
 
     public static class Recipe implements ProcessingRecipe<Recipe, ItemsFluidsRecipeInput> {
-        // An in-code representation of our recipe data. This can be basically anything you want.
-        // Common things to have here is a processing time integer of some kind, or an experience reward.
-        // Note that we now use an ingredient instead of an item stack for the input.
-        private final SizedIngredient inputItem;
+        private final ItemRecipeIngredient inputItem;
         private final FluidStack outputPureFluid;
         private final FluidStack outputByproductFluid;
         private final int ticks;
 
-        private static final HashMap<SizedIngredient, ResourceLocation> idMap = new HashMap<>();
+        private static final HashMap<ItemRecipeIngredient, ResourceLocation> idMap = new HashMap<>();
 
         // Add a constructor that sets all properties.
-        public Recipe(ResourceLocation id, SizedIngredient inputItem, FluidStack outputPureFluid, FluidStack outputByproductFluid, int ticks) {
+        public Recipe(ResourceLocation id, ItemRecipeIngredient inputItem, FluidStack outputPureFluid, FluidStack outputByproductFluid, int ticks) {
             this.inputItem = inputItem;
             this.outputPureFluid = outputPureFluid;
             this.outputByproductFluid = outputByproductFluid;
@@ -301,21 +300,25 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
             idMap.put(inputItem, id);
         }
 
-        public Recipe(SizedIngredient inputItem, FluidStack outputPureFluid, FluidStack outputByproductFluid, int ticks) {
+        public Recipe(ItemRecipeIngredient inputItem, FluidStack outputPureFluid, FluidStack outputByproductFluid, int ticks) {
             this.inputItem = inputItem;
             this.outputPureFluid = outputPureFluid;
             this.outputByproductFluid = outputByproductFluid;
             this.ticks = ticks;
-            idMap.put(inputItem, Arrays.stream(inputItem.getItems()).findFirst()
-                    .map(s -> BuiltInRegistries.ITEM.getKey(s.getItem()))
-                    .map(l -> ResourceLocation.fromNamespaceAndPath(
-                            l.getNamespace(), "melting/" + l.getPath()
-                    ))
-                    .orElse(null)
-            );
+            idMap.put(inputItem, makeResourceLocation(this));
         }
 
-        public SizedIngredient getInputItem() {
+        static ResourceLocation makeResourceLocation(Recipe recipe) {
+            return makeResourceLocation(recipe.inputItem);
+        }
+
+        static ResourceLocation makeResourceLocation(ItemRecipeIngredient ingredient) {
+            ResourceLocation fluidLoc = ResourceLocation.fromNamespaceAndPath(MODID, String.format("%08x", ingredient.hashCode()));
+            fluidLoc = fluidLoc.withPrefix("melting/");
+            return fluidLoc;
+        }
+
+        public ItemRecipeIngredient getInputItem() {
             return inputItem;
         }
 
@@ -378,12 +381,12 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
 
 
         public static class Builder implements RecipeBuilder {
-            protected final SizedIngredient inputItem;
+            protected final ItemRecipeIngredient inputItem;
             protected final FluidStack pureResult;
             protected final FluidStack byproductResult;
             protected final int ticks;
 
-            public Builder(SizedIngredient inputItem, FluidStack pureResult, FluidStack byproductResult, int ticks) {
+            public Builder(ItemRecipeIngredient inputItem, FluidStack pureResult, FluidStack byproductResult, int ticks) {
                 this.inputItem = inputItem;
                 this.pureResult = pureResult;
                 this.byproductResult = byproductResult;
@@ -415,12 +418,12 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
 
             @Override
             public void save(@NotNull RecipeOutput recipeOutput) {
-                this.save(recipeOutput, getDefaultRecipeId(inputItem.ingredient()));
+                this.save(recipeOutput, makeResourceLocation(inputItem));
             }
 
             @Override
             public void save(@NotNull RecipeOutput recipeOutput, @NotNull String id) {
-                ResourceLocation resourceLocation = getDefaultRecipeId(inputItem.ingredient());
+                ResourceLocation resourceLocation = makeResourceLocation(inputItem);
                 ResourceLocation idLocation = ResourceLocation.parse(id);
                 if (ResourceLocation.parse(id).equals(resourceLocation)) {
                     throw new IllegalStateException("Recipe " + id + " should remove its 'save' argument as it is equal to default one");
@@ -439,7 +442,7 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
 
         public static class Serializer implements RecipeSerializer<Recipe> {
             public static final MapCodec<Recipe> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
-                    SizedIngredient.FLAT_CODEC.fieldOf("ingredient").forGetter(Recipe::getInputItem),
+                    ItemRecipeIngredient.CODEC.fieldOf("ingredient").forGetter(Recipe::getInputItem),
                     FluidStack.CODEC.fieldOf("pure_result").forGetter(Recipe::getOutputPureFluid),
                     FluidStack.OPTIONAL_CODEC.fieldOf("byproduct_result").forGetter(Recipe::getOutputByproductFluid),
                     Codec.INT.fieldOf("ticks").forGetter(Recipe::getTicks)
@@ -447,7 +450,7 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
 
             public static final StreamCodec<RegistryFriendlyByteBuf, Recipe> STREAM_CODEC =
                     StreamCodec.composite(
-                            SizedIngredient.STREAM_CODEC, Recipe::getInputItem,
+                            ItemRecipeIngredient.STREAM_CODEC, Recipe::getInputItem,
                             FluidStack.STREAM_CODEC, Recipe::getOutputPureFluid,
                             FluidStack.OPTIONAL_STREAM_CODEC, Recipe::getOutputByproductFluid,
                             ByteBufCodecs.INT, Recipe::getTicks,
@@ -589,20 +592,12 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
         }
 
         @Override
-        public void setRecipe(@NotNull IRecipeLayoutBuilder builder, Recipe recipe, @NotNull IFocusGroup focuses) {
+        public void set(@NotNull io.github.laptop59.concocti.common.machine.RecipeBuilder builder, @NotNull Recipe recipe) {
             // Add the recipe input.
-            builder.addSlot(RecipeIngredientRole.INPUT, 22, 6)
-                    .addItemStacks(List.of(recipe.getInputItem().getItems()))
-                    .setSlotName("input");
+            builder.addInputSlot(22, 6, recipe.getInputItem());
             // Add the fluid outputs.
-            FluidStack[] outputs = new FluidStack[]{recipe.getOutputPureFluid().copy(), recipe.getOutputByproductFluid().copy()};
-            int i = 0;
-            for (FluidStack fluid : outputs) {
-                if (!fluid.isEmpty()) builder.addSlot(RecipeIngredientRole.OUTPUT, 113 + i * 18, 6)
-                        .addIngredient(NeoForgeTypes.FLUID_STACK, fluid)
-                        .setSlotName("fluid" + i);
-                i++;
-            }
+            builder.addOutputSlot(113, 6, recipe.getOutputPureFluid());
+            builder.addOutputSlot(113 + 18, 6, recipe.getOutputByproductFluid());
         }
     }
 

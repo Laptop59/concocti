@@ -33,10 +33,9 @@ import java.util.stream.Collectors;
 
 @JeiPlugin
 public class ConcoctiJeiPlugin implements IModPlugin {
-
     @Override
     public @NotNull ResourceLocation getPluginUid() {
-        return ResourceLocation.fromNamespaceAndPath(Concocti.MODID, "main");
+        return ResourceLocation.fromNamespaceAndPath(Concocti.MODID, "jei");
     }
 
     @Override
@@ -67,7 +66,6 @@ public class ConcoctiJeiPlugin implements IModPlugin {
         return (mezz.jei.api.recipe.RecipeType<R>) machine.JEI_RECIPE_TYPE.get();
     }
 
-    @SuppressWarnings("unchecked")
     private <R extends ProcessingRecipe<R, I>, I extends RecipeInput> void registerRecipesFor(
             IRecipeRegistration registration,
             RecipeManager manager,
@@ -75,31 +73,7 @@ public class ConcoctiJeiPlugin implements IModPlugin {
     ) {
         registerRecipesFor(registration, manager, machine.RECIPE_TYPE.get(), getJeiRecipeType(machine));
         if (machine == ConcoctiMachines.ENERGY_GENERATOR) {
-            final var registry = Minecraft.getInstance().level.registryAccess().registryOrThrow(Registries.ITEM);
-            var datamap = registry.getDataMap(NeoForgeDataMaps.FURNACE_FUELS);
-            ArrayList<ConcoctiEnergyGenerator.Recipe> proxies = new ArrayList<>();
-            Set<Ingredient> unproxiedIngredients = manager
-                    .getAllRecipesFor(ConcoctiMachines.ENERGY_GENERATOR.RECIPE_TYPE.get())
-                    .stream()
-                    .map(RecipeHolder::value)
-                    .map(ConcoctiEnergyGenerator.Recipe::getInputItem)
-                    .collect(Collectors.toUnmodifiableSet());
-            outer:
-            for (Map.Entry<ResourceKey<Item>, FurnaceFuel> entry : datamap.entrySet().stream().sorted(Comparator.comparingInt(
-                    item -> BuiltInRegistries.ITEM.getId(item.getKey())
-            )).toList()) {
-                var item = BuiltInRegistries.ITEM.get(entry.getKey());
-                for (Ingredient ingredient : unproxiedIngredients) {
-                    if (ingredient.test(new ItemStack(item, 1))) continue outer;
-                }
-                ConcoctiEnergyGenerator.Recipe proxy = new ConcoctiEnergyGenerator.Recipe(
-                        Ingredient.of(item),
-                        entry.getValue().burnTime(),
-                        ConcoctiEnergyGenerator.BlockEntity.DEFAULT_ENERGY_PER_TICK
-                );
-                proxies.add(proxy);
-            }
-            registration.addRecipes(getJeiRecipeType(ConcoctiMachines.ENERGY_GENERATOR), proxies);
+            registration.addRecipes(getJeiRecipeType(ConcoctiMachines.ENERGY_GENERATOR), ConcoctiEnergyGenerator.getRecipeProxies());
         }
     }
 
@@ -115,7 +89,8 @@ public class ConcoctiJeiPlugin implements IModPlugin {
             IGuiHelper guiHelper,
             ConcoctiMachine<?, ?, ?, I, R, ?, ?, ?, C> machine
     ) {
-        registration.addRecipeCategories(machine.newRecipeCategory(guiHelper));
+        var category = machine.newRecipeCategory(guiHelper);
+        registration.addRecipeCategories(category);
     }
 
     private <R extends Recipe<I>, I extends RecipeInput> void registerRecipesFor(

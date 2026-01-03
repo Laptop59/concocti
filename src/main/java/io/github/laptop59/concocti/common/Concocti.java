@@ -24,6 +24,7 @@ import io.github.laptop59.concocti.network.ConcoctiPayloads;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -47,6 +48,7 @@ import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.RegisterEvent;
 import org.slf4j.Logger;
 
 import java.lang.reflect.Constructor;
@@ -72,26 +74,6 @@ public class Concocti {
 
     public static final DeferredHolder<MobEffect, MobEffect> CONCOCTIZED = ConcoctiRegisters.MOB_EFFECTS.register("concoctized",
             () -> new ConcoctizedMobEffect(MobEffectCategory.NEUTRAL, 0x9d57db)
-    );
-
-    // For rendering through walls
-    public static final RenderType GHOST_RENDER_TYPE = RenderType.create(
-            "concocti:ghost_block",
-            DefaultVertexFormat.BLOCK,
-            VertexFormat.Mode.QUADS,
-            256,
-            false,
-            true, // needs sorting for translucency
-            RenderType.CompositeState.builder()
-                    .setShaderState(RenderStateShard.RENDERTYPE_TRANSLUCENT_SHADER)
-                    .setTextureState(new RenderStateShard.TextureStateShard(InventoryMenu.BLOCK_ATLAS, false, false))
-                    .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
-                    .setDepthTestState(RenderStateShard.NO_DEPTH_TEST)
-                    .setCullState(RenderStateShard.NO_CULL)
-                    .setLightmapState(RenderStateShard.LIGHTMAP)
-                    .setOverlayState(RenderStateShard.OVERLAY)
-                    .setLayeringState(RenderStateShard.POLYGON_OFFSET_LAYERING)
-                    .createCompositeState(true)
     );
 
     @SubscribeEvent
@@ -139,7 +121,6 @@ public class Concocti {
         ConcoctiRegisters.BLOCKS.register(modEventBus);
         ConcoctiRegisters.ITEMS.register(modEventBus);
         ConcoctiRegisters.BLOCK_ENTITY_TYPES.register(modEventBus);
-        ConcoctiMachines.register();
         ConcoctiRegisters.SOUND_EVENTS.register(modEventBus);
         ConcoctiRegisters.MENUS.register(modEventBus);
         ConcoctiRegisters.FLUIDS.register(modEventBus);
@@ -151,11 +132,13 @@ public class Concocti {
         ConcoctiRegisters.MOB_EFFECTS.register(modEventBus);
         ConcoctiRegisters.CREATIVE_MODE_TABS.register(modEventBus);
 
+        ConcoctiMachines.register();
+
         initializeUninitializedStaticVariables(
                 ConcoctiBlocks.class,
                 ConcoctiItems.class,
-                ConcoctiSounds.class,
                 ConcoctiFluids.class,
+                ConcoctiSounds.class,
                 ConcoctiPoiTypes.class,
                 ConcoctiMenus.class
         );
@@ -182,10 +165,10 @@ public class Concocti {
             if (constructor == null)
                 throw new IllegalStateException(clazz + " has no non-parameterized constructor (should be created by the virtual machine by default).");
             try {
-                // By doing this should also initialize static variables.
+                // By doing this, it should also initialize static variables.
                 constructor.newInstance();
-            } catch (InstantiationException | InvocationTargetException | IllegalAccessException e) {
-                throw new RuntimeException(e);
+            } catch (Throwable e) {
+                throw new RuntimeException("Could not initialize " + clazz, e);
             }
         }
     }

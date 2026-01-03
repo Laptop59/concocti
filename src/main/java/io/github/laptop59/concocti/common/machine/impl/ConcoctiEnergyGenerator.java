@@ -12,12 +12,10 @@ import io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineOnlyItemsFluidsBlockEntity;
 import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
-import io.github.laptop59.concocti.common.machine.ConcoctiMachineDetails;
-import io.github.laptop59.concocti.common.machine.ConcoctiMachineOnlyItemsFluids;
-import io.github.laptop59.concocti.common.machine.InputOutput;
-import io.github.laptop59.concocti.common.machine.ItemsFluidsInputValue;
+import io.github.laptop59.concocti.common.machine.*;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.menu.ConcoctiUpgradeSlot;
+import io.github.laptop59.concocti.common.recipe.ItemRecipeIngredient;
 import io.github.laptop59.concocti.common.recipe.ItemsFluidsRecipeInput;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
 import io.github.laptop59.concocti.integration.jei.AbstractConcoctiRecipeCategory;
@@ -35,6 +33,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.nbt.CompoundTag;
@@ -42,6 +41,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
@@ -51,9 +51,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -70,6 +68,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static io.github.laptop59.concocti.common.Concocti.MODID;
 import static io.github.laptop59.concocti.common.machine.impl.ConcoctiEnergyGenerator.Block.LIT;
@@ -405,7 +404,7 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
         // We check our block state and our item stack, and only return true if both match.
         @Override
         public boolean matches(ItemsFluidsRecipeInput input, @NotNull Level level) {
-            return input.test(List.of(new SizedIngredient(inputItem, 1)), List.of());
+            return input.test(List.of(ItemRecipeIngredient.of(inputItem)), List.of());
         }
 
         // Return an UNMODIFIABLE version of your result here. The result of this method is mainly intended
@@ -560,11 +559,9 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
         }
 
         @Override
-        public void setRecipe(@NotNull IRecipeLayoutBuilder builder, Recipe recipe, @NotNull IFocusGroup focuses) {
+        public void set(@NotNull io.github.laptop59.concocti.common.machine.RecipeBuilder builder, @NotNull Recipe recipe) {
             // Add the recipe input.
-            builder.addSlot(RecipeIngredientRole.INPUT, 48, 6)
-                    .addItemStacks(List.of(recipe.getInputItem().getItems()))
-                    .setSlotName("input");
+            builder.addInputSlot(48, 6, recipe.getInputItem());
         }
 
         @Override
@@ -633,5 +630,37 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
 
     public Class<Recipe> getRecipeClass() {
         return Recipe.class;
+    }
+
+    /** Gets ''fake'' recipes (proxies) of fuels. MUST BE CALLED ONLY WHEN IN-GAME! */
+    public static List<Recipe> getRecipeProxies() {
+        assert Minecraft.getInstance().level != null;
+
+        RecipeManager recipeManager = Minecraft.getInstance().level.getRecipeManager();
+        final var itemRegistry = Minecraft.getInstance().level.registryAccess().registryOrThrow(Registries.ITEM);
+        var datamap = itemRegistry.getDataMap(NeoForgeDataMaps.FURNACE_FUELS);
+        ArrayList<ConcoctiEnergyGenerator.Recipe> proxies = new ArrayList<>();
+        Set<Ingredient> unproxiedIngredients = recipeManager
+            .getAllRecipesFor(ConcoctiMachines.ENERGY_GENERATOR.RECIPE_TYPE.get())
+            .stream()
+            .map(RecipeHolder::value)
+            .map(ConcoctiEnergyGenerator.Recipe::getInputItem)
+            .collect(Collectors.toUnmodifiableSet());
+        outer:
+        for (Map.Entry<ResourceKey<Item>, FurnaceFuel> entry : datamap.entrySet().stream().sorted(Comparator.comparingInt(
+            item -> BuiltInRegistries.ITEM.getId(item.getKey())
+        )).toList()) {
+            var item = BuiltInRegistries.ITEM.get(entry.getKey());
+            for (Ingredient ingredient : unproxiedIngredients) {
+                if (ingredient.test(new ItemStack(item, 1))) continue outer;
+            }
+            ConcoctiEnergyGenerator.Recipe proxy = new ConcoctiEnergyGenerator.Recipe(
+                Ingredient.of(item),
+                entry.getValue().burnTime(),
+                ConcoctiEnergyGenerator.BlockEntity.DEFAULT_ENERGY_PER_TICK
+            );
+            proxies.add(proxy);
+        }
+        return proxies;
     }
 }

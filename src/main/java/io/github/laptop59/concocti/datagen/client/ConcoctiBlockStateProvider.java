@@ -2,6 +2,8 @@ package io.github.laptop59.concocti.datagen.client;
 
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.ConcoctiHatchBlock;
+import io.github.laptop59.concocti.common.fluid.ConcoctiFluidParent;
+import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachines;
 import net.minecraft.data.PackOutput;

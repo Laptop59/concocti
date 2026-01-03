@@ -121,7 +121,7 @@ public abstract class ConcoctiMachine<
         BLOCK_BEHAVIOUR_PROPERTIES = properties;
         BLOCK_DATA = blockData;
         ConcoctiBlocks.BLOCK_MAP.put(BLOCK, BLOCK_DATA);
-        Concocti.LOGGER.info("Registered machine: {} ({})", this.getClass(), id);
+        Concocti.LOGGER.debug("Registered machine: {} ({})", this.getClass(), id);
     }
 
     /**

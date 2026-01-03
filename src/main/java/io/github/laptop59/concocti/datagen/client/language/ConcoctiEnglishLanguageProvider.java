@@ -3,9 +3,12 @@ package io.github.laptop59.concocti.datagen.client.language;
 import io.github.laptop59.concocti.client.gui.components.SlotType;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.ConcoctiHatchBlock;
+import io.github.laptop59.concocti.common.fluid.ConcoctiFluid;
+import io.github.laptop59.concocti.common.fluid.ConcoctiFluidParent;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.item.MoldItem;
+import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachines;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
@@ -39,14 +42,14 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add("itemGroup.concocti", "Concocti");
 
         // Machines go here.
-        add(ConcoctiMachines.MELTER.BLOCK, "Concocti Melter");
-        add(ConcoctiMachines.SOLIDIFIER.BLOCK, "Concocti Solidifier");
-        add(ConcoctiMachines.ENERGY_GENERATOR.BLOCK, "Concocti Energy Generator");
-        add(ConcoctiMachines.MIXER.BLOCK, "Concocti Mixer");
-        add(ConcoctiMachines.ELECTRON_COLLECTOR.BLOCK, "Concocti Electron Collector");
-        add(ConcoctiMachines.CRYSTALLIZER.BLOCK, "Concocti Crystallizer");
-        add(ConcoctiMachines.COMPRESSOR.BLOCK, "Concocti Compressor");
-        add(ConcoctiMachines.MAGNETIC_SEPARATOR.BLOCK, "Concocti Magnetic Separator");
+        add(ConcoctiMachines.MELTER, "Concocti Melter");
+        add(ConcoctiMachines.SOLIDIFIER, "Concocti Solidifier");
+        add(ConcoctiMachines.ENERGY_GENERATOR, "Concocti Energy Generator");
+        add(ConcoctiMachines.MIXER, "Concocti Mixer");
+        add(ConcoctiMachines.ELECTRON_COLLECTOR, "Concocti Electron Collector");
+        add(ConcoctiMachines.CRYSTALLIZER, "Concocti Crystallizer");
+        add(ConcoctiMachines.COMPRESSOR, "Concocti Compressor");
+        add(ConcoctiMachines.MAGNETIC_SEPARATOR, "Concocti Magnetic Separator");
 
         // Blocks go here.
         add(ConcoctiBlocks.DIAMETHYST_BLOCK, "Block of Diamethyst");
@@ -78,14 +81,16 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiItems.COMPRESSED_CONCOCTI_NUGGET, "Compressed Concocti Nugget");
         add(ConcoctiItems.CONDUCTIVIUM_NUGGET, "Conductivium Nugget");
         add(ConcoctiItems.CONDUCTIVIUM_INGOT, "Conductivium Ingot");
-        add(ConcoctiItems.MOLTEN_CONCOCTI_BUCKET, "Bucket of Molten Concocti");
-        add(ConcoctiItems.MOLTEN_TOUGH_CONCOCTI_BUCKET, "Bucket of Molten Tough Concocti");
-        add(ConcoctiItems.MOLTEN_CONCOCTIZED_DIRT_BUCKET, "Bucket of Molten Concoctized Dirt");
-        add(ConcoctiItems.MOLTEN_COPPER_BUCKET, "Bucket of Molten Copper");
-        add(ConcoctiItems.MOLTEN_CONDUCTIVIUM_BUCKET, "Bucket of Molten Conductivium");
-        add(ConcoctiItems.CRYSTALIUM_SOLUTION_BUCKET, "Bucket of Crystalium Solution");
-        add(ConcoctiItems.SUPERSATURATED_CRYSTALIUM_SOLUTION_BUCKET, "Bucket of Supersaturated Crystalium Solution");
-        add(ConcoctiItems.MOLTEN_LATTICIUM_BUCKET, "Bucket of Molten Latticium");
+
+        add(ConcoctiFluids.MOLTEN_CONCOCTI.BUCKET, "Bucket of Molten Concocti");
+        add(ConcoctiFluids.MOLTEN_TOUGH_CONCOCTI.BUCKET, "Bucket of Molten Tough Concocti");
+        add(ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT.BUCKET, "Bucket of Molten Concoctized Dirt");
+        add(ConcoctiFluids.MOLTEN_COPPER.BUCKET, "Bucket of Molten Copper");
+        add(ConcoctiFluids.MOLTEN_CONDUCTIVIUM.BUCKET, "Bucket of Molten Conductivium");
+        add(ConcoctiFluids.CRYSTALIUM_SOLUTION.BUCKET, "Bucket of Crystalium Solution");
+        add(ConcoctiFluids.SUPERSATURATED_CRYSTALIUM_SOLUTION.BUCKET, "Bucket of Supersaturated Crystalium Solution");
+        add(ConcoctiFluids.MOLTEN_LATTICIUM.BUCKET, "Bucket of Molten Latticium");
+
         add(ConcoctiItems.COMPACT_CONCOCTI_UPGRADE, "Compact Concocti Upgrade");
         add(ConcoctiItems.COMPACTER_CONCOCTI_UPGRADE, "Compacter Concocti Upgrade");
         add(ConcoctiItems.COMPACTEST_CONCOCTI_UPGRADE, "Compactest Concocti Upgrade");
@@ -106,6 +111,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
 
         // Fluid types go here.
         add("fluid.concocti.empty", "Empty");
+
         add(ConcoctiFluids.MOLTEN_CONCOCTI, "Molten Concocti");
         add(ConcoctiFluids.MOLTEN_TOUGH_CONCOCTI, "Molten Tough Concocti");
         add(ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT, "Molten Concoctized Dirt");
@@ -149,7 +155,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add("screen.concocti.durability_info", "Durability: %s/%s");
         add("screen.concocti.infinite_durability_info", "Durability: %s");
         add("screen.concocti.mold_base_durability_info", "Available Durability: %s");
-        add("screen.concocti.rate", "Rate: ×%s");
+        add("screen.concocti.rate", "Rate: x%s");
         add("screen.concocti.requirements", "Requirements:");
         add("screen.concocti.directly_on_top_of_machine", "Directly on top of machine");
         add("screen.concocti.struck_by_lightning", "Struck by lightning");
@@ -208,14 +214,18 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         this.add(block.get(), translation);
     }
 
+    private void add(ConcoctiMachine<?, ?, ?, ?, ?, ?, ?, ?, ?> concoctiMachine, String translation) {
+        this.add(concoctiMachine.BLOCK.get(), translation);
+        this.add("emi.category.concocti." + concoctiMachine.ID, translation);
+    }
+
     private void add(DeferredItem<? extends Item> item, String translation) {
         this.add(item.get(), translation);
     }
 
-    private void add(DeferredHolder<Fluid, FlowingFluid> fluid, String translation) {
-        String name = BuiltInRegistries.FLUID.getKey(fluid.get()).getPath();
-        this.add("block.concocti." + name, translation);
-        this.add("fluid_type.concocti." + name, translation);
+    private void add(ConcoctiFluidParent fluid, String translation) {
+        this.add("block.concocti." + fluid.ID, translation);
+        this.add("fluid_type.concocti." + fluid.ID, translation);
     }
 
     private void addCommonTag(String tag, String translation) {

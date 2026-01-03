@@ -270,8 +270,8 @@ public record MultiblockStructure(
          *              'A', airPredicate,
          *              'C', controllerPredicate
          *          ),
-         *          // Empty spaces represent a null predicate. If you want AIR-only ones those which
-         *          // are always satisfied, specify a letter mapping to an AIR-only predicate. Shown here:
+         *          // Empty spaces represent a null predicate, which are always satisfied.
+         *          // If you want AIR-only ones instead, specify a letter mapping to an AIR-only predicate. Shown here:
          *          //
          *          // Spaces between the layers are non-functional and are only there for parsing & clarity.
          *          // However they must be left.
