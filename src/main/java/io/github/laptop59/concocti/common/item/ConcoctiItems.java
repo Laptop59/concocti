@@ -1,5 +1,6 @@
 package io.github.laptop59.concocti.common.item;
 
+import io.github.laptop59.concocti.common.Concocti;
 import io.github.laptop59.concocti.common.ConcoctiRegisters;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.ConcoctiHatchBlock;
@@ -68,15 +69,7 @@ public class ConcoctiItems {
     public static final DeferredItem<Item> ELECTROSTATIC_CONDUCTIVIUM_NUGGET = registerItem("electrostatic_conductivium_nugget", new Item.Properties());
     public static final DeferredItem<Item> ELECTROSTATIC_CONDUCTIVIUM_INGOT = registerItem("electrostatic_conductivium_ingot", new Item.Properties());
 
-    public static final DeferredItem<BucketItem> MOLTEN_CONCOCTI_BUCKET = registerBucketItem("molten_concocti_bucket", ConcoctiFluids.MOLTEN_CONCOCTI);
-    public static final DeferredItem<BucketItem> MOLTEN_TOUGH_CONCOCTI_BUCKET = registerBucketItem("molten_tough_concocti_bucket", ConcoctiFluids.MOLTEN_TOUGH_CONCOCTI);
-    public static final DeferredItem<BucketItem> MOLTEN_CONCOCTIZED_DIRT_BUCKET = registerBucketItem("molten_concoctized_dirt_bucket", ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT);
-    public static final DeferredItem<BucketItem> MOLTEN_COPPER_BUCKET = registerBucketItem("molten_copper_bucket", ConcoctiFluids.MOLTEN_COPPER);
-    public static final DeferredItem<BucketItem> MOLTEN_CONDUCTIVIUM_BUCKET = registerBucketItem("molten_conductivium_bucket", ConcoctiFluids.MOLTEN_CONDUCTIVIUM);
-    public static final DeferredItem<BucketItem> MOLTEN_LATTICIUM_BUCKET = registerBucketItem("molten_latticium_bucket", ConcoctiFluids.MOLTEN_LATTICIUM);
-
-    public static final DeferredItem<BucketItem> CRYSTALIUM_SOLUTION_BUCKET = registerBucketItem("crystalium_solution_bucket", ConcoctiFluids.CRYSTALIUM_SOLUTION);
-    public static final DeferredItem<BucketItem> SUPERSATURATED_CRYSTALIUM_SOLUTION_BUCKET = registerBucketItem("supersaturated_crystalium_solution_bucket", ConcoctiFluids.SUPERSATURATED_CRYSTALIUM_SOLUTION);
+    // Buckets of fluids are now automatically defined by the ConcoctiFluid class.
 
     public static final DeferredItem<? extends Item> COMPACT_CONCOCTI_UPGRADE = registerItem("compact_concocti_upgrade", ConcoctiUpgradeItem::new, new Item.Properties().stacksTo(8));
     public static final DeferredItem<? extends Item> COMPACTER_CONCOCTI_UPGRADE = registerItem("compacter_concocti_upgrade", ConcoctiUpgradeItem::new, new Item.Properties().stacksTo(8));
@@ -277,7 +270,9 @@ public class ConcoctiItems {
         acceptStack(output, ELECTROSTATIC_CONDUCTIVIUM_NUGGET);
         acceptStack(output, ELECTROSTATIC_CONDUCTIVIUM_INGOT);
 
-        ConcoctiMachines.forEach(concoctiMachine -> acceptStack(output, concoctiMachine.ITEM));
+        ConcoctiMachines.forEach(concoctiMachine ->
+            acceptStack(output, concoctiMachine.ITEM)
+        );
 
         acceptStack(output, COMPACT_CONCOCTI_UPGRADE);
         acceptStack(output, COMPACTER_CONCOCTI_UPGRADE);
@@ -286,14 +281,9 @@ public class ConcoctiItems {
         acceptStack(output, BASIC_CONCOCTI_FRAME);
         acceptStack(output, ADVANCED_CONCOCTI_FRAME);
 
-        acceptStack(output, MOLTEN_CONCOCTI_BUCKET);
-        acceptStack(output, MOLTEN_TOUGH_CONCOCTI_BUCKET);
-        acceptStack(output, MOLTEN_CONCOCTIZED_DIRT_BUCKET);
-        acceptStack(output, MOLTEN_COPPER_BUCKET);
-        acceptStack(output, MOLTEN_CONDUCTIVIUM_BUCKET);
-        acceptStack(output, CRYSTALIUM_SOLUTION_BUCKET);
-        acceptStack(output, SUPERSATURATED_CRYSTALIUM_SOLUTION_BUCKET);
-        acceptStack(output, MOLTEN_LATTICIUM_BUCKET);
+        ConcoctiFluids.forEach(concoctiFluid -> {
+            if (concoctiFluid.BUCKET != null) acceptStack(output, concoctiFluid.BUCKET);
+        });
 
         for (Map.Entry<MoldItem.Material, Map<MoldItem.Type, DeferredItem<? extends Item>>> entry : MOLDS.entrySet()) {
             acceptStack(output, MOLD_BASES.get(entry.getKey()));

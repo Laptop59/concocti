@@ -1,10 +1,15 @@
 package io.github.laptop59.concocti.client;
 
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import io.github.laptop59.concocti.common.Concocti;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachines;
 import io.github.laptop59.concocti.common.machine.ConcoctiMultiBlockMachine;
+import net.minecraft.client.renderer.RenderStateShard;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -23,6 +28,26 @@ import static io.github.laptop59.concocti.common.Concocti.MODID;
 @Mod(value = MODID, dist = Dist.CLIENT)
 public class ConcoctiClient {
     public static Set<UUID> concoctizedEntities = Set.of();
+
+    // For rendering through walls
+    public static final RenderType GHOST_RENDER_TYPE = RenderType.create(
+            "concocti:ghost_block",
+            DefaultVertexFormat.BLOCK,
+            VertexFormat.Mode.QUADS,
+            256,
+            false,
+            true, // needs sorting for translucency
+            RenderType.CompositeState.builder()
+                    .setShaderState(RenderStateShard.RENDERTYPE_TRANSLUCENT_SHADER)
+                    .setTextureState(new RenderStateShard.TextureStateShard(InventoryMenu.BLOCK_ATLAS, false, false))
+                    .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+                    .setDepthTestState(RenderStateShard.NO_DEPTH_TEST)
+                    .setCullState(RenderStateShard.NO_CULL)
+                    .setLightmapState(RenderStateShard.LIGHTMAP)
+                    .setOverlayState(RenderStateShard.OVERLAY)
+                    .setLayeringState(RenderStateShard.POLYGON_OFFSET_LAYERING)
+                    .createCompositeState(true)
+    );
 
     public ConcoctiClient(IEventBus modEventBus, ModContainer modContainer) {
         modEventBus.register(ConcoctiClient.class);
@@ -44,104 +69,16 @@ public class ConcoctiClient {
     @SubscribeEvent
     public static void onClientExtensions(RegisterClientExtensionsEvent event) {
         // Tell Minecraft how to render our custom Concocti fluids.
-        event.registerFluidType(new IClientFluidTypeExtensions() {
+        ConcoctiFluids.forEach(fluid -> event.registerFluidType(new IClientFluidTypeExtensions() {
             @Override
             public @NotNull ResourceLocation getStillTexture() {
-                return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_concocti_still");
+                return ResourceLocation.fromNamespaceAndPath(MODID, "block/" + fluid.ID + "_still");
             }
 
             @Override
             public @NotNull ResourceLocation getFlowingTexture() {
-                return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_concocti_flow");
+                return ResourceLocation.fromNamespaceAndPath(MODID, "block/" + fluid.ID + "_flow");
             }
-        }, ConcoctiFluids.MOLTEN_CONCOCTI_FLUID_TYPE);
-        event.registerFluidType(new IClientFluidTypeExtensions() {
-            @Override
-            public @NotNull ResourceLocation getStillTexture() {
-                return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_tough_concocti_still");
-            }
-
-            @Override
-            public @NotNull ResourceLocation getFlowingTexture() {
-                return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_tough_concocti_flow");
-            }
-        }, ConcoctiFluids.MOLTEN_TOUGH_CONCOCTI_FLUID_TYPE);
-        event.registerFluidType(new IClientFluidTypeExtensions() {
-            @Override
-            public @NotNull ResourceLocation getStillTexture() {
-                return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_concoctized_dirt_still");
-            }
-
-            @Override
-            public @NotNull ResourceLocation getFlowingTexture() {
-                return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_concoctized_dirt_flow");
-            }
-        }, ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT_FLUID_TYPE);
-        event.registerFluidType(new IClientFluidTypeExtensions() {
-            @Override
-            public @NotNull ResourceLocation getStillTexture() {
-                return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_copper_still");
-            }
-
-            @Override
-            public @NotNull ResourceLocation getFlowingTexture() {
-                return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_copper_flow");
-            }
-        }, ConcoctiFluids.MOLTEN_COPPER_FLUID_TYPE);
-        event.registerFluidType(new IClientFluidTypeExtensions() {
-            @Override
-            public @NotNull ResourceLocation getStillTexture() {
-                return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_conductivium_still");
-            }
-
-            @Override
-            public @NotNull ResourceLocation getFlowingTexture() {
-                return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_conductivium_flow");
-            }
-        }, ConcoctiFluids.MOLTEN_CONDUCTIVIUM_FLUID_TYPE);
-        event.registerFluidType(new IClientFluidTypeExtensions() {
-            @Override
-            public @NotNull ResourceLocation getStillTexture() {
-                return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_lightning_still");
-            }
-
-            @Override
-            public @NotNull ResourceLocation getFlowingTexture() {
-                return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_lightning_flow");
-            }
-        }, ConcoctiFluids.MOLTEN_LIGHTNING_FLUID_TYPE);
-        event.registerFluidType(new IClientFluidTypeExtensions() {
-            @Override
-            public @NotNull ResourceLocation getStillTexture() {
-                return ResourceLocation.fromNamespaceAndPath(MODID, "block/crystalium_solution_still");
-            }
-
-            @Override
-            public @NotNull ResourceLocation getFlowingTexture() {
-                return ResourceLocation.fromNamespaceAndPath(MODID, "block/crystalium_solution_flow");
-            }
-        }, ConcoctiFluids.CRYSTALIUM_SOLUTION_FLUID_TYPE);
-        event.registerFluidType(new IClientFluidTypeExtensions() {
-            @Override
-            public @NotNull ResourceLocation getStillTexture() {
-                return ResourceLocation.fromNamespaceAndPath(MODID, "block/supersaturated_crystalium_solution_still");
-            }
-
-            @Override
-            public @NotNull ResourceLocation getFlowingTexture() {
-                return ResourceLocation.fromNamespaceAndPath(MODID, "block/supersaturated_crystalium_solution_flow");
-            }
-        }, ConcoctiFluids.SUPERSATURATED_CRYSTALIUM_SOLUTION_FLUID_TYPE);
-        event.registerFluidType(new IClientFluidTypeExtensions() {
-            @Override
-            public @NotNull ResourceLocation getStillTexture() {
-                return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_latticium_still");
-            }
-
-            @Override
-            public @NotNull ResourceLocation getFlowingTexture() {
-                return ResourceLocation.fromNamespaceAndPath(MODID, "block/molten_latticium_flow");
-            }
-        }, ConcoctiFluids.MOLTEN_LATTICIUM_FLUID_TYPE);
+        }, fluid.FLUID_TYPE));
     }
 }

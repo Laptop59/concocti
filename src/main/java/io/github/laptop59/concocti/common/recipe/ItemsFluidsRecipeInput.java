@@ -1,10 +1,8 @@
 package io.github.laptop59.concocti.common.recipe;
 
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.crafting.SizedIngredient;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.wrapper.RecipeWrapper;
 
@@ -26,48 +24,73 @@ public class ItemsFluidsRecipeInput extends RecipeWrapper {
         return fluids.getFluidInTank(i);
     }
 
-    public boolean test(List<SizedIngredient> inputItems, List<SizedFluidIngredient> inputFluids) {
+    public boolean test(List<ItemRecipeIngredient> inputItems, List<FluidRecipeIngredient> inputFluids) {
+        /* TODO
+        boolean itemsInvolveRemainder = false, fluidsInvolveRemainder = false;
+        int[] itemsPreferredSlot = new int[size()];
+        int[] fluidsPreferredSlot = new int[getFluids()];
+
+        int k = 0;
         loop1:
-        for (SizedIngredient inputItem : inputItems) {
+        for (FluidRecipeIngredient inputItem : inputItems) {
+            if (!inputItem.remainder().isEmpty()) itemsInvolveRemainder = true;
             for (int i = 0; i < this.size(); i++) {
                 ItemStack toSearch = this.getItem(i);
-                if (inputItem.test(toSearch)) continue loop1;
+                if (inputItem.test(toSearch)) {
+                    itemsPreferredSlot[k++] = i;
+                    continue loop1;
+                }
             }
             return false;
         }
+
+        k = 0;
         loop2:
-        for (SizedFluidIngredient fluidIngredient : inputFluids) {
+        for (FluidRecipeIngredient fluidIngredient : inputFluids) {
+            if (!fluidIngredient.remainder().isEmpty()) fluidsInvolveRemainder = true;
             for (int i = 0; i < this.getFluids(); i++) {
                 FluidStack toSearch = this.getFluid(i);
-                if (fluidIngredient.test(toSearch)) continue loop2;
+                if (fluidIngredient.test(toSearch)) {
+                    fluidsPreferredSlot[k++] = i;
+                    continue loop2;
+                }
             }
             return false;
         }
+        */
         return true;
     }
 
-    public void consume(List<SizedIngredient> inputItems, List<SizedFluidIngredient> inputFluids) {
-        for (SizedIngredient inputItem : inputItems) {
+    public boolean consume(List<ItemRecipeIngredient> inputItems, List<FluidRecipeIngredient> inputFluids) {
+                /* TODO
+        loop1:
+        for (FluidRecipeIngredient inputItem : inputItems) {
             for (int i = 0; i < this.size(); i++) {
                 ItemStack toSearch = this.getItem(i);
                 if (inputItem.test(toSearch)) {
                     inv.extractItem(i, inputItem.count(), false);
-                    break;
+                    continue loop1;
                 }
             }
+            return false;
         }
-        for (SizedFluidIngredient fluidIngredient : inputFluids) {
+
+        loop2:
+        for (FluidRecipeIngredient fluidIngredient : inputFluids) {
             for (int i = 0; i < this.getFluids(); i++) {
                 FluidStack toSearch = this.getFluid(i);
                 if (fluidIngredient.test(toSearch)) for (FluidStack tester : fluidIngredient.getFluids()) {
                     FluidStack drained = fluids.drain(tester, IFluidHandler.FluidAction.SIMULATE);
                     if (drained.getAmount() == tester.getAmount()) {
                         fluids.drain(tester, IFluidHandler.FluidAction.EXECUTE);
-                        break;
+                        continue loop2;
                     }
                 }
             }
+            return false;
         }
+        */
+        return true;
     }
 
     @Override

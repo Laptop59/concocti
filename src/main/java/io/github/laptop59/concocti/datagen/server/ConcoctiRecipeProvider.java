@@ -10,6 +10,9 @@ import io.github.laptop59.concocti.common.item.MoldItem;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachines;
 import io.github.laptop59.concocti.common.machine.ConcoctiMultiBlockMachine;
 import io.github.laptop59.concocti.common.machine.impl.*;
+import io.github.laptop59.concocti.common.recipe.FluidRecipeIngredient;
+import io.github.laptop59.concocti.common.recipe.ItemOption;
+import io.github.laptop59.concocti.common.recipe.ItemRecipeIngredient;
 import io.github.laptop59.concocti.common.util.ConcoctiConstants;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -17,7 +20,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.*;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -27,9 +29,7 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
-import net.neoforged.neoforge.common.crafting.SizedIngredient;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 import net.neoforged.neoforge.registries.DeferredItem;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -213,28 +213,28 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
         // Concocti Mixer Recipes
         {
             concoctiMixerRecipe(output, "molten_conductivium", 10, List.of(), List.of(
-                    SizedFluidIngredient.of(new FluidStack(ConcoctiFluids.MOLTEN_COPPER, 27)),
-                    SizedFluidIngredient.of(new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, 9))
+                    FluidRecipeIngredient.of(new FluidStack(ConcoctiFluids.MOLTEN_COPPER, 27)),
+                    FluidRecipeIngredient.of(new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, 9))
             ), null, new FluidStack(ConcoctiFluids.MOLTEN_CONDUCTIVIUM, 18));
 
             concoctiMixerRecipe(output, "electrostatic_conductivium_nugget_mixing", 20 * 20, List.of(
-                    SizedIngredient.of(ConcoctiItems.CONDUCTIVIUM_NUGGET.get(), 3),
-                    SizedIngredient.of(Items.REDSTONE, 16)
+                    ItemRecipeIngredient.of(ConcoctiItems.CONDUCTIVIUM_NUGGET.get(), 3),
+                    ItemRecipeIngredient.of(Items.REDSTONE, 16)
             ), List.of(
-                    SizedFluidIngredient.of(new FluidStack(ConcoctiFluids.MOLTEN_LIGHTNING, 1)),
-                    SizedFluidIngredient.of(new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_NUGGET))
+                    FluidRecipeIngredient.of(new FluidStack(ConcoctiFluids.MOLTEN_LIGHTNING, 1)),
+                    FluidRecipeIngredient.of(new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_NUGGET))
             ), new ItemStack(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_NUGGET.get()), null);
 
             concoctiMixerRecipe(output, "electrostatic_conductivium_ingot_mixing", 4 * 20 * 20, List.of(
-                    SizedIngredient.of(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_NUGGET.get(), 9),
-                    SizedIngredient.of(Items.REDSTONE, 64),
-                    SizedIngredient.of(ConcoctiItems.PURIFIED_CONCOCTI_INGOT.get(), 1)
+                    ItemRecipeIngredient.of(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_NUGGET.get(), 9),
+                    ItemRecipeIngredient.of(Items.REDSTONE, 64),
+                    ItemRecipeIngredient.of(ConcoctiItems.PURIFIED_CONCOCTI_INGOT.get(), 1)
             ), List.of(
-                    SizedFluidIngredient.of(new FluidStack(ConcoctiFluids.MOLTEN_COPPER, ConcoctiConstants.MOLTEN_BLOCK))
+                    FluidRecipeIngredient.of(new FluidStack(ConcoctiFluids.MOLTEN_COPPER, ConcoctiConstants.MOLTEN_BLOCK))
             ), new ItemStack(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_INGOT.get()), null);
 
             concoctiMixerRecipe(output, "electrostatic_conductivium_nugget_from_ingot", 60 * 20, List.of(
-                    SizedIngredient.of(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_INGOT.get(), 1)
+                    ItemRecipeIngredient.of(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_INGOT.get(), 1)
             ), List.of(), new ItemStack(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_NUGGET.get(), 9), null);
 
             concoctiMixerRecipe(
@@ -242,10 +242,10 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     "crystalium_solution",
                     20 * 4,
                     List.of(
-                            SizedIngredient.of(ConcoctiItems.RAW_CRYSTALIUM, 18),
-                            SizedIngredient.of(Items.POPPED_CHORUS_FRUIT, 1)
+                            ItemRecipeIngredient.of(ConcoctiItems.RAW_CRYSTALIUM, 18),
+                            ItemRecipeIngredient.of(Items.POPPED_CHORUS_FRUIT, 1)
                     ),
-                    List.of(SizedFluidIngredient.of(Fluids.WATER, 1000)),
+                    List.of(FluidRecipeIngredient.of(Fluids.WATER, 1000)),
                     null,
                     new FluidStack(ConcoctiFluids.CRYSTALIUM_SOLUTION, 1000)
             );
@@ -253,8 +253,8 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
             concoctiMixerRecipe(output,
                     "supersaturated_crystalium_solution",
                     20 * 20,
-                    List.of(SizedIngredient.of(ConcoctiItems.RAW_CRYSTALIUM, 9)),
-                    List.of(SizedFluidIngredient.of(ConcoctiFluids.CRYSTALIUM_SOLUTION.get(), 1000)),
+                    List.of(ItemRecipeIngredient.of(ConcoctiItems.RAW_CRYSTALIUM, 9)),
+                    List.of(FluidRecipeIngredient.of(ConcoctiFluids.CRYSTALIUM_SOLUTION.get(), 1000)),
                     null,
                     new FluidStack(ConcoctiFluids.SUPERSATURATED_CRYSTALIUM_SOLUTION, 1000)
             );
@@ -263,7 +263,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     "crystalium_nugget",
                     20 * 45,
                     List.of(),
-                    List.of(SizedFluidIngredient.of(ConcoctiFluids.SUPERSATURATED_CRYSTALIUM_SOLUTION.get(), 200)),
+                    List.of(FluidRecipeIngredient.of(ConcoctiFluids.SUPERSATURATED_CRYSTALIUM_SOLUTION.get(), 200)),
                     new ItemStack(ConcoctiItems.CRYSTALIUM_NUGGET.get(), 1),
                     new FluidStack(Fluids.WATER, 100)
             );
@@ -272,10 +272,10 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     "crystalium_ore_extraction",
                     20 * 60,
                     List.of(
-                            SizedIngredient.of(ConcoctiBlocks.CRYSTALIUM_ORE.get(), 3)
+                            ItemRecipeIngredient.of(ConcoctiBlocks.CRYSTALIUM_ORE.get(), 3)
                     ),
                     List.of(
-                            SizedFluidIngredient.of(Fluids.WATER, 500)
+                            FluidRecipeIngredient.of(Fluids.WATER, 500)
                     ),
                     new ItemStack(Blocks.END_STONE, 2),
                     new FluidStack(ConcoctiFluids.CRYSTALIUM_SOLUTION.get(), 500)
@@ -285,10 +285,10 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     "boiling_crystalium_solution_to_supersaturation",
                     10 * 15,
                     List.of(
-                            SizedIngredient.of(ConcoctiItems.CRYSTALIUM_NUGGET.get(), 1)
+                            ItemRecipeIngredient.of(ConcoctiItems.CRYSTALIUM_NUGGET.get(), 1)
                     ),
                     List.of(
-                            SizedFluidIngredient.of(ConcoctiFluids.CRYSTALIUM_SOLUTION.get(), 300)
+                            FluidRecipeIngredient.of(ConcoctiFluids.CRYSTALIUM_SOLUTION.get(), 300)
                     ),
                     null,
                     new FluidStack(ConcoctiFluids.SUPERSATURATED_CRYSTALIUM_SOLUTION.get(), 200)
@@ -298,11 +298,11 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     "alloying_tough_concocti_ingot",
                     20 * 20,
                     List.of(
-                            SizedIngredient.of(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_INGOT.get(), 1),
-                            SizedIngredient.of(ConcoctiItems.CRYSTALIUM_INGOT.get(), 1)
+                            ItemRecipeIngredient.of(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_INGOT.get(), 1),
+                            ItemRecipeIngredient.of(ConcoctiItems.CRYSTALIUM_INGOT.get(), 1)
                     ),
                     List.of(
-                            SizedFluidIngredient.of(ConcoctiFluids.MOLTEN_CONCOCTI.get(), 2 * ConcoctiConstants.MOLTEN_INGOT)
+                            FluidRecipeIngredient.of(ConcoctiFluids.MOLTEN_CONCOCTI.get(), 2 * ConcoctiConstants.MOLTEN_INGOT)
                     ),
                     null,
                     new FluidStack(ConcoctiFluids.MOLTEN_TOUGH_CONCOCTI.get(), 4 * ConcoctiConstants.MOLTEN_INGOT)
@@ -312,11 +312,11 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     "alloying_molten_latticium",
                     20 * 2,
                     List.of(
-                            SizedIngredient.of(Items.COAL, 2),
-                            SizedIngredient.of(Items.QUARTZ, 1)
+                            ItemRecipeIngredient.of(Items.COAL, 2),
+                            ItemRecipeIngredient.of(Items.QUARTZ, 1)
                     ),
                     List.of(
-                            SizedFluidIngredient.of(ConcoctiFluids.MOLTEN_TOUGH_CONCOCTI.get(), ConcoctiConstants.MOLTEN_NUGGET)
+                            FluidRecipeIngredient.of(ConcoctiFluids.MOLTEN_TOUGH_CONCOCTI.get(), ConcoctiConstants.MOLTEN_NUGGET)
                     ),
                     null,
                     new FluidStack(ConcoctiFluids.MOLTEN_LATTICIUM.get(), 4 * ConcoctiConstants.MOLTEN_NUGGET)
@@ -326,11 +326,11 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     "budding_amethyst_from_amethyst_block",
                     200,
                     List.of(
-                            SizedIngredient.of(Items.AMETHYST_BLOCK, 1),
-                            SizedIngredient.of(Items.AMETHYST_SHARD, 4)
+                            ItemRecipeIngredient.of(Items.AMETHYST_BLOCK, 1),
+                            ItemRecipeIngredient.of(Items.AMETHYST_SHARD, 4)
                     ),
                     List.of(
-                            SizedFluidIngredient.of(ConcoctiFluids.MOLTEN_CONCOCTI.get(), ConcoctiConstants.MOLTEN_INGOT)
+                            FluidRecipeIngredient.of(ConcoctiFluids.MOLTEN_CONCOCTI.get(), ConcoctiConstants.MOLTEN_INGOT)
                     ),
                     new ItemStack(Items.BUDDING_AMETHYST),
                     null
@@ -340,7 +340,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     "generating_concocti_with_concocti_seeds",
                     20 * 32,
                     List.of(
-                            SizedIngredient.of(ConcoctiItems.CONCOCTI_SEEDS, 1)
+                            ItemRecipeIngredient.of(ConcoctiItems.CONCOCTI_SEEDS, 1)
                     ),
                     List.of(),
                     null,
@@ -351,10 +351,16 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     "generating_concocti_with_infinity_concocti_seeds",
                     20 * 32,
                     List.of(
-                            SizedIngredient.of(ConcoctiItems.INFINITY_CONCOCTI_SEEDS, 1)
+                            ItemRecipeIngredient.of(
+                                ItemOption.of(
+                                    Ingredient.of(ConcoctiItems.INFINITY_CONCOCTI_SEEDS),
+                                    1,
+                                    new ItemStack(ConcoctiItems.INFINITY_CONCOCTI_SEEDS.get())
+                                )
+                            )
                     ),
                     List.of(),
-                    new ItemStack(ConcoctiItems.INFINITY_CONCOCTI_SEEDS.get(), 1),
+                    null,
                     new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_BLOCK_PURIFIED * 2)
             );
 
@@ -373,7 +379,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                             output,
                             recipeName,
                             2 * 20,
-                            List.of(SizedIngredient.of(moldBase.get(), 1), SizedIngredient.of(type.getTag(), 1)),
+                            List.of(ItemRecipeIngredient.of(moldBase.get(), 1), ItemRecipeIngredient.of(type.getTag(), 1)),
                             List.of(),
                             new ItemStack(mold.get()),
                             null
@@ -381,14 +387,14 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 }
             }
 
-            concoctiMixerRecipe(output, "crying_obsidian", 60, List.of(SizedIngredient.of(Items.OBSIDIAN, 1)), List.of(
-                    SizedFluidIngredient.of(new FluidStack(ConcoctiFluids.MOLTEN_TOUGH_CONCOCTI, 500))
+            concoctiMixerRecipe(output, "crying_obsidian", 60, List.of(ItemRecipeIngredient.of(Items.OBSIDIAN, 1)), List.of(
+                    FluidRecipeIngredient.of(new FluidStack(ConcoctiFluids.MOLTEN_TOUGH_CONCOCTI, 500))
             ), new ItemStack(Items.CRYING_OBSIDIAN), null);
-            concoctiMixerRecipe(output, "soul_soil", 20, List.of(SizedIngredient.of(Items.SOUL_SAND, 2)), List.of(
-                    SizedFluidIngredient.of(new FluidStack(Fluids.LAVA, 250))
+            concoctiMixerRecipe(output, "soul_soil", 20, List.of(ItemRecipeIngredient.of(Items.SOUL_SAND, 2)), List.of(
+                    FluidRecipeIngredient.of(new FluidStack(Fluids.LAVA, 250))
             ), new ItemStack(Items.SOUL_SOIL), null);
-            concoctiMixerRecipe(output, "magma_block", 20, List.of(SizedIngredient.of(Items.NETHERRACK, 1), SizedIngredient.of(Items.BLAZE_POWDER, 4)), List.of(
-                    SizedFluidIngredient.of(new FluidStack(Fluids.LAVA, 200))
+            concoctiMixerRecipe(output, "magma_block", 20, List.of(ItemRecipeIngredient.of(Items.NETHERRACK, 1), ItemRecipeIngredient.of(Items.BLAZE_POWDER, 4)), List.of(
+                    FluidRecipeIngredient.of(new FluidStack(Fluids.LAVA, 250))
             ), new ItemStack(Items.MAGMA_BLOCK), null);
 
 
@@ -472,14 +478,14 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
             concoctiCrystallizerRecipe(
                     output,
                     Ingredient.of(Items.WARPED_ROOTS),
-                    new FluidStack(Fluids.LAVA, 200),
+                    new FluidStack(Fluids.LAVA, 100),
                     3 * 20,
                     new ItemStack(Items.WARPED_ROOTS, 2)
             );
             concoctiCrystallizerRecipe(
                     output,
                     Ingredient.of(Items.CRIMSON_ROOTS),
-                    new FluidStack(Fluids.LAVA, 250),
+                    new FluidStack(Fluids.LAVA, 125),
                     2 * 20,
                     new ItemStack(Items.CRIMSON_ROOTS, 2)
             );
@@ -499,12 +505,12 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
             "compressed_concocti_nugget",
             50,
             List.of(
-                SizedIngredient.of(ConcoctiItems.TOUGH_CONCOCTI_NUGGET, 4),
-                SizedIngredient.of(ConcoctiItems.DIAMETHYST_BLOCK, 1)
+                ItemRecipeIngredient.of(ConcoctiItems.TOUGH_CONCOCTI_NUGGET, 4),
+                ItemRecipeIngredient.of(ConcoctiItems.DIAMETHYST_BLOCK, 1)
             ),
             List.of(
-                SizedFluidIngredient.of(Fluids.LAVA, 100),
-                SizedFluidIngredient.of(ConcoctiFluids.MOLTEN_LATTICIUM.get(), 1_000)
+                FluidRecipeIngredient.of(Fluids.LAVA, 100),
+                FluidRecipeIngredient.of(ConcoctiFluids.MOLTEN_LATTICIUM.get(), 1_000)
             ),
             new ItemStack(ConcoctiItems.COMPRESSED_CONCOCTI_NUGGET.get(), 1),
             null
@@ -514,14 +520,14 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 "compressed_concocti_ingot",
                 200,
                 List.of(
-                        SizedIngredient.of(ConcoctiItems.COMPRESSED_CONCOCTI_NUGGET, 9),
-                        SizedIngredient.of(ConcoctiItems.TOUGH_CONCOCTI_INGOT, 4),
-                        SizedIngredient.of(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_INGOT, 9),
-                        SizedIngredient.of(ConcoctiItems.DIAMETHYST_BLOCK, 9)
+                        ItemRecipeIngredient.of(ConcoctiItems.COMPRESSED_CONCOCTI_NUGGET, 9),
+                        ItemRecipeIngredient.of(ConcoctiItems.TOUGH_CONCOCTI_INGOT, 4),
+                        ItemRecipeIngredient.of(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_INGOT, 9),
+                        ItemRecipeIngredient.of(ConcoctiItems.DIAMETHYST_BLOCK, 9)
                 ),
                 List.of(
-                        SizedFluidIngredient.of(Fluids.LAVA, 1000),
-                        SizedFluidIngredient.of(ConcoctiFluids.MOLTEN_LATTICIUM.get(), 8_000)
+                        FluidRecipeIngredient.of(Fluids.LAVA, 1000),
+                        FluidRecipeIngredient.of(ConcoctiFluids.MOLTEN_LATTICIUM.get(), 8_000)
                 ),
                 new ItemStack(ConcoctiItems.COMPRESSED_CONCOCTI_INGOT.get(), 1),
                 null
@@ -531,24 +537,117 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 "compressed_concocti_block",
                 800,
                 List.of(
-                        SizedIngredient.of(ConcoctiItems.COMPRESSED_CONCOCTI_INGOT, 9),
-                        SizedIngredient.of(ConcoctiItems.TOUGH_CONCOCTI_BLOCK, 4),
-                        SizedIngredient.of(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_INGOT, 64),
-                        SizedIngredient.of(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_INGOT, 81 - 64)
+                        ItemRecipeIngredient.of(ConcoctiItems.COMPRESSED_CONCOCTI_INGOT, 9),
+                        ItemRecipeIngredient.of(ConcoctiItems.TOUGH_CONCOCTI_BLOCK, 4),
+                        ItemRecipeIngredient.of(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_INGOT, 81)
                 ),
                 List.of(
-                        SizedFluidIngredient.of(Fluids.LAVA, 10000),
-                        SizedFluidIngredient.of(ConcoctiFluids.MOLTEN_LATTICIUM.get(), 64_000)
+                        FluidRecipeIngredient.of(Fluids.LAVA, 10000),
+                        FluidRecipeIngredient.of(ConcoctiFluids.MOLTEN_LATTICIUM.get(), 64_000)
                 ),
                 new ItemStack(ConcoctiItems.COMPRESSED_CONCOCTI_BLOCK.get(), 1),
                 null
         );
         concoctiCompressorRecipe(
+            output,
+            "diamethyst_crystal",
+            250,
+            List.of(
+                ItemRecipeIngredient.of(Items.DIAMOND, 4),
+                ItemRecipeIngredient.of(Items.AMETHYST_SHARD, 1)
+            ), List.of(),
+            new ItemStack(ConcoctiItems.DIAMETHYST_CRYSTAL.get(), 2), null
+        );
+        concoctiCompressorRecipe(
+            output,
+            "diamethyst_crystal_block",
+            250 * 8,
+            List.of(
+                ItemRecipeIngredient.of(ConcoctiItems.DIAMETHYST_CRYSTAL.get(), 9)
+            ), List.of(),
+            new ItemStack(ConcoctiItems.DIAMETHYST_BLOCK.get(), 1), null
+        );
+        concoctiCompressorRecipe(
+            output,
+            "diamond_block",
+            150,
+            List.of(
+                ItemRecipeIngredient.of(Items.DIAMOND, 9)
+            ), List.of(),
+            new ItemStack(Items.DIAMOND_BLOCK, 1), null
+        );
+        concoctiCompressorRecipe(
+            output,
+            "emerald_block",
+            100,
+            List.of(
+                ItemRecipeIngredient.of(Items.EMERALD, 9)
+            ), List.of(),
+            new ItemStack(Items.EMERALD_BLOCK, 1), null
+        );
+        concoctiCompressorRecipe(
+            output,
+            "amethyst_block",
+            70,
+            List.of(
+                ItemRecipeIngredient.of(Items.AMETHYST_SHARD, 4)
+            ), List.of(),
+            new ItemStack(Items.AMETHYST_BLOCK, 1), null
+        );
+        concoctiCompressorRecipe(
+            output,
+            "lapis_lazuli_block",
+            50,
+            List.of(
+                ItemRecipeIngredient.of(Items.LAPIS_LAZULI, 9)
+            ), List.of(),
+            new ItemStack(Items.LAPIS_BLOCK, 1), null
+        );
+        concoctiCompressorRecipe(
+            output,
+            "crystalium_ingot",
+            10,
+            List.of(
+                ItemRecipeIngredient.of(ConcoctiItems.CRYSTALIUM_NUGGET, 9)
+            ), List.of(),
+            new ItemStack(ConcoctiItems.CRYSTALIUM_INGOT.get(), 1), null
+        );
+        concoctiCompressorRecipe(
+            output,
+            "crystalium_block",
+            20,
+            List.of(
+                ItemRecipeIngredient.of(ConcoctiItems.CRYSTALIUM_INGOT, 9)
+            ), List.of(),
+            new ItemStack(ConcoctiItems.CRYSTALIUM_BLOCK.get(), 1), null
+        );
+        concoctiCompressorRecipe(
+            output,
+            "coal_block",
+            20,
+            List.of(
+                ItemRecipeIngredient.of(Items.COAL, 9)
+            ), List.of(),
+            new ItemStack(Items.COAL_BLOCK, 1), null
+        );
+        concoctiCompressorRecipe(
+            output,
+            "netherite_ingot",
+            400,
+            List.of(
+                ItemRecipeIngredient.of(Items.NETHERITE_SCRAP, 4),
+                ItemRecipeIngredient.of(Items.GOLD_INGOT, 4)
+            ), List.of(),
+            new ItemStack(Items.NETHERITE_INGOT, 2), null
+        );
+
+
+        concoctiCompressorRecipe(
                 output,
                 "brown_mushroom_block",
                 20,
                 List.of(
-                        SizedIngredient.of(Items.BROWN_MUSHROOM, 9)
+                        ItemRecipeIngredient.of(Items.BROWN_MUSHROOM, 9)
                 ), List.of(),
                 new ItemStack(Items.BROWN_MUSHROOM_BLOCK, 1), null
         );
@@ -557,7 +656,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 "red_mushroom_block",
                 20,
                 List.of(
-                        SizedIngredient.of(Items.RED_MUSHROOM, 9)
+                        ItemRecipeIngredient.of(Items.RED_MUSHROOM, 9)
                 ), List.of(),
                 new ItemStack(Items.RED_MUSHROOM_BLOCK, 1), null
         );
@@ -566,8 +665,8 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 "mushroom_stem",
                 20,
                 List.of(
-                        SizedIngredient.of(TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("c", "mushrooms")), 8),
-                        SizedIngredient.of(Items.BONE_MEAL, 1)
+                        ItemRecipeIngredient.of(TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath("c", "mushrooms")), 8),
+                        ItemRecipeIngredient.of(Items.BONE_MEAL, 1)
                 ), List.of(),
                 new ItemStack(Items.MUSHROOM_STEM, 1), null
         );
@@ -576,7 +675,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 "chorus_plant",
                 200,
                 List.of(
-                        SizedIngredient.of(Items.CHORUS_FRUIT, 9)
+                        ItemRecipeIngredient.of(Items.CHORUS_FRUIT, 9)
                 ), List.of(),
                 new ItemStack(Items.CHORUS_PLANT, 1), null
         );
@@ -585,8 +684,8 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 "chorus_flower",
                 400,
                 List.of(
-                        SizedIngredient.of(Items.CHORUS_PLANT, 4),
-                        SizedIngredient.of(Items.BONE_MEAL, 8)
+                        ItemRecipeIngredient.of(Items.CHORUS_PLANT, 4),
+                        ItemRecipeIngredient.of(Items.BONE_MEAL, 8)
                 ), List.of(),
                 new ItemStack(Items.CHORUS_FLOWER, 1), null
         );
@@ -595,7 +694,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 "dripstone_block",
                 400,
                 List.of(
-                        SizedIngredient.of(Items.POINTED_DRIPSTONE, 9)
+                        ItemRecipeIngredient.of(Items.POINTED_DRIPSTONE, 4)
                 ), List.of(),
                 new ItemStack(Items.DRIPSTONE_BLOCK, 1), null
         );
@@ -604,8 +703,8 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 "warped_nylium",
                 20,
                 List.of(
-                        SizedIngredient.of(Items.NETHERRACK, 1),
-                        SizedIngredient.of(Items.WARPED_ROOTS, 4)
+                        ItemRecipeIngredient.of(Items.NETHERRACK, 1),
+                        ItemRecipeIngredient.of(Items.WARPED_ROOTS, 4)
                 ), List.of(),
                 new ItemStack(Items.WARPED_NYLIUM, 1), null
         );
@@ -614,19 +713,19 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 "crimson_nylium",
                 20,
                 List.of(
-                        SizedIngredient.of(Items.NETHERRACK, 1),
-                        SizedIngredient.of(Items.CRIMSON_ROOTS, 4)
+                        ItemRecipeIngredient.of(Items.NETHERRACK, 1),
+                        ItemRecipeIngredient.of(Items.CRIMSON_ROOTS, 4)
                 ), List.of(),
                 new ItemStack(Items.CRIMSON_NYLIUM, 1), null
         );
         concoctiCompressorRecipe(
                 output,
                 "gilded_blackstone",
-                10 * 20,
+                20,
                 List.of(
-                        SizedIngredient.of(Items.BLACKSTONE, 1),
-                        SizedIngredient.of(Items.GOLD_BLOCK, 1)
-                ), List.of(SizedFluidIngredient.of(Fluids.LAVA, ConcoctiConstants.MOLTEN_INGOT * 2)),
+                        ItemRecipeIngredient.of(Items.BLACKSTONE, 1),
+                        ItemRecipeIngredient.of(Items.GOLD_INGOT, 1)
+                ), List.of(FluidRecipeIngredient.of(Fluids.LAVA, ConcoctiConstants.MOLTEN_INGOT * 2)),
                 new ItemStack(Items.GILDED_BLACKSTONE, 1), null
         );
         concoctiCompressorRecipe(
@@ -634,8 +733,8 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 "tuff",
                 10 * 20,
                 List.of(
-                        SizedIngredient.of(Items.CALCITE, 1),
-                        SizedIngredient.of(Items.DEEPSLATE, 1)
+                        ItemRecipeIngredient.of(Items.CALCITE, 1),
+                        ItemRecipeIngredient.of(Items.DEEPSLATE, 1)
                 ), List.of(),
                 new ItemStack(Items.TUFF, 2), null
         );
@@ -644,7 +743,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 "cobweb",
                 20,
                 List.of(
-                        SizedIngredient.of(Items.STRING, 5)
+                        ItemRecipeIngredient.of(Items.STRING, 5)
                 ), List.of(),
                 new ItemStack(Items.COBWEB, 1), null
         );
@@ -656,7 +755,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 10,
                 List.of(),
                 List.of(
-                        SizedFluidIngredient.of(ConcoctiFluids.MOLTEN_CONCOCTI.get(), ConcoctiConstants.MOLTEN_INGOT * 2)
+                        FluidRecipeIngredient.of(ConcoctiFluids.MOLTEN_CONCOCTI.get(), ConcoctiConstants.MOLTEN_INGOT * 2)
                 ),
                 List.of(new ItemStack(Items.IRON_NUGGET, 4), new ItemStack(ConcoctiItems.DENSE_CONCOCTI_PELLET.get(), 1)),
                 List.of()
@@ -668,7 +767,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 10,
                 List.of(),
                 List.of(
-                        SizedFluidIngredient.of(Fluids.LAVA, ConcoctiConstants.MOLTEN_BLOCK * 2)
+                        FluidRecipeIngredient.of(Fluids.LAVA, ConcoctiConstants.MOLTEN_BLOCK * 2)
                 ),
                 List.of(new ItemStack(Items.IRON_NUGGET, 1), new ItemStack(Items.STONE, 1)),
                 List.of()
@@ -758,7 +857,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 output,
                 moldBaseName,
                 4 * 20,
-                List.of(SizedIngredient.of(ingot, 1), SizedIngredient.of(nugget, 1)),
+                List.of(ItemRecipeIngredient.of(ingot, 1), ItemRecipeIngredient.of(nugget, 1)),
                 List.of(),
                 new ItemStack(moldBase),
                 null
@@ -781,7 +880,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
     private static void concoctiMelterRecipe(RecipeOutput output, ItemLike input, int ticks,
                                              FluidStack pureResult, FluidStack byproductResult) {
         new ConcoctiMelter.Recipe.Builder(
-                SizedIngredient.of(input.asItem(), 1),
+                ItemRecipeIngredient.of(Ingredient.of(input.asItem())),
                 pureResult,
                 byproductResult,
                 ticks
@@ -793,7 +892,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
      */
     private static void concoctiMelterRecipe(RecipeOutput output, ItemLike input, int ticks, FluidStack pureResult) {
         new ConcoctiMelter.Recipe.Builder(
-                SizedIngredient.of(input.asItem(), 1),
+            ItemRecipeIngredient.of(Ingredient.of(input.asItem())),
                 pureResult,
                 FluidStack.EMPTY,
                 ticks
@@ -836,7 +935,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
         new ConcoctiSolidifier.Recipe.Builder(
                 baseItem == null ? Ingredient.EMPTY : baseItem,
                 mold,
-                SizedFluidIngredient.of(inputFluid),
+                FluidRecipeIngredient.of(inputFluid),
                 outputItem,
                 ticks
         ).save(output);
@@ -849,7 +948,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                                                    FluidStack inputFluid, int ticks, ItemStack outputItem) {
         new ConcoctiCrystallizer.Recipe.Builder(
                 seedCrystal,
-                SizedFluidIngredient.of(inputFluid),
+                FluidRecipeIngredient.of(inputFluid),
                 outputItem,
                 ticks
         ).save(output);
@@ -862,8 +961,8 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
             RecipeOutput output,
             String name,
             int ticks,
-            List<SizedIngredient> inputItems,
-            List<SizedFluidIngredient> inputFluids,
+            List<ItemRecipeIngredient> inputItems,
+            List<FluidRecipeIngredient> inputFluids,
             ItemStack outputItem,
             FluidStack outputFluid
     ) {
@@ -884,8 +983,8 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
             RecipeOutput output,
             String name,
             int ticks,
-            List<SizedIngredient> inputItems,
-            List<SizedFluidIngredient> inputFluids,
+            List<ItemRecipeIngredient> inputItems,
+            List<FluidRecipeIngredient> inputFluids,
             ItemStack outputItem,
             FluidStack outputFluid
     ) {
@@ -907,8 +1006,8 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
             ConcoctiMultiBlockMachine multiBlockMachine,
             String name,
             int ticks,
-            List<SizedIngredient> inputItems,
-            List<SizedFluidIngredient> inputFluids,
+            List<ItemRecipeIngredient> inputItems,
+            List<FluidRecipeIngredient> inputFluids,
             List<ItemStack> outputItems,
             List<FluidStack> outputFluids
     ) {

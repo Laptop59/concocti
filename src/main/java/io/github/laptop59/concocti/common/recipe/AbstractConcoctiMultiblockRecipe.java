@@ -37,9 +37,9 @@ public abstract class AbstractConcoctiMultiblockRecipe<T extends AbstractConcoct
     // An in-code representation of our recipe data. This can be basically anything you want.
     // Common things to have here is a processing time integer of some kind, or an experience reward.
     // Note that we now use an ingredient instead of an item stack for the input.
-    private final List<SizedIngredient> inputItems;
+    private final List<ItemRecipeIngredient> inputItems;
     private final List<ItemStack> outputItems;
-    private final List<SizedFluidIngredient> inputFluids;
+    private final List<FluidRecipeIngredient> inputFluids;
     private final List<FluidStack> outputFluids;
 
     private final ResourceLocation id;
@@ -47,7 +47,7 @@ public abstract class AbstractConcoctiMultiblockRecipe<T extends AbstractConcoct
     private final int ticks;
 
     // Add a constructor that sets all properties.
-    public AbstractConcoctiMultiblockRecipe(ResourceLocation id, List<SizedIngredient> inputItems, List<ItemStack> outputItems, List<SizedFluidIngredient> inputFluids, List<FluidStack> outputFluids, int ticks) {
+    public AbstractConcoctiMultiblockRecipe(ResourceLocation id, List<ItemRecipeIngredient> inputItems, List<ItemStack> outputItems, List<FluidRecipeIngredient> inputFluids, List<FluidStack> outputFluids, int ticks) {
         this.inputItems = inputItems;
         this.outputItems = outputItems;
         this.inputFluids = inputFluids;
@@ -56,7 +56,7 @@ public abstract class AbstractConcoctiMultiblockRecipe<T extends AbstractConcoct
         this.id = id;
     }
 
-    public AbstractConcoctiMultiblockRecipe(List<SizedIngredient> inputItems, List<ItemStack> outputItems, List<SizedFluidIngredient> inputFluids, List<FluidStack> outputFluids, int ticks) {
+    public AbstractConcoctiMultiblockRecipe(List<ItemRecipeIngredient> inputItems, List<ItemStack> outputItems, List<FluidRecipeIngredient> inputFluids, List<FluidStack> outputFluids, int ticks) {
         this.inputItems = inputItems;
         this.outputItems = outputItems;
         this.inputFluids = inputFluids;
@@ -65,7 +65,7 @@ public abstract class AbstractConcoctiMultiblockRecipe<T extends AbstractConcoct
         this.id = getWouldBeResourceLocation(inputItems, inputFluids);
     }
 
-    public static ResourceLocation getWouldBeResourceLocation(List<SizedIngredient> inputItems, List<SizedFluidIngredient> inputFluids) {
+    public static ResourceLocation getWouldBeResourceLocation(List<ItemRecipeIngredient> inputItems, List<FluidRecipeIngredient> inputFluids) {
         int[] hashes = new int[2];
         ArrayList<Object> objects = new ArrayList<>(inputItems);
         hashes[0] = Objects.hash(objects.toArray());
@@ -73,12 +73,11 @@ public abstract class AbstractConcoctiMultiblockRecipe<T extends AbstractConcoct
         objects.addAll(inputFluids);
         hashes[1] = Objects.hash(objects.toArray());
         long longHash = ((long) hashes[0] << 32) | hashes[1];
-        UnsignedLong unsignedLong = UnsignedLong.fromLongBits(longHash);
-        return ResourceLocation.fromNamespaceAndPath(MODID, "mixing/" + unsignedLong.toString(16));
+        return ResourceLocation.fromNamespaceAndPath(MODID, "mixing/" + String.format("%016x", longHash));
     }
 
     @NotNull
-    public List<SizedIngredient> getInputItems() {
+    public List<ItemRecipeIngredient> getInputItems() {
         return inputItems;
     }
 
@@ -88,7 +87,7 @@ public abstract class AbstractConcoctiMultiblockRecipe<T extends AbstractConcoct
     }
 
     @NotNull
-    public List<SizedFluidIngredient> getInputFluids() {
+    public List<FluidRecipeIngredient> getInputFluids() {
         return inputFluids;
     }
 
@@ -155,14 +154,14 @@ public abstract class AbstractConcoctiMultiblockRecipe<T extends AbstractConcoct
     }
 
     public abstract static class Builder<T extends AbstractConcoctiMultiblockRecipe<T>> implements RecipeBuilder {
-        protected final List<SizedIngredient> inputItems;
+        protected final List<ItemRecipeIngredient> inputItems;
         protected final List<ItemStack> outputItems;
-        protected final List<SizedFluidIngredient> inputFluids;
+        protected final List<FluidRecipeIngredient> inputFluids;
         protected final List<FluidStack> outputFluids;
         protected final ResourceLocation resourceLocation;
         protected final int ticks;
 
-        public Builder(ResourceLocation resourceLocation, List<SizedIngredient> inputItems, List<ItemStack> outputItems, List<SizedFluidIngredient> inputFluids, List<FluidStack> outputFluids, int ticks) {
+        public Builder(ResourceLocation resourceLocation, List<ItemRecipeIngredient> inputItems, List<ItemStack> outputItems, List<FluidRecipeIngredient> inputFluids, List<FluidStack> outputFluids, int ticks) {
             this.resourceLocation = resourceLocation;
             this.inputItems = inputItems;
             this.outputItems = outputItems;
@@ -201,24 +200,24 @@ public abstract class AbstractConcoctiMultiblockRecipe<T extends AbstractConcoct
             recipeOutput.accept(resourceLocation, recipe, null);
         }
 
-        public abstract T construct(ResourceLocation id, List<SizedIngredient> inputItems, List<ItemStack> outputItems, List<SizedFluidIngredient> inputFluids, List<FluidStack> outputFluids, int ticks);
+        public abstract T construct(ResourceLocation id, List<ItemRecipeIngredient> inputItems, List<ItemStack> outputItems, List<FluidRecipeIngredient> inputFluids, List<FluidStack> outputFluids, int ticks);
     }
 
 
     public abstract static class Serializer<T extends AbstractConcoctiMultiblockRecipe<T>> implements RecipeSerializer<T> {
         public final MapCodec<T> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
-                SizedIngredient.FLAT_CODEC.listOf().fieldOf("input_items").forGetter(AbstractConcoctiMultiblockRecipe::getInputItems),
+                ItemRecipeIngredient.CODEC.listOf().fieldOf("input_items").forGetter(AbstractConcoctiMultiblockRecipe::getInputItems),
                 ItemStack.CODEC.listOf().fieldOf("output_item").forGetter(AbstractConcoctiMultiblockRecipe::getOutputItems),
-                SizedFluidIngredient.FLAT_CODEC.listOf().fieldOf("input_fluids").forGetter(AbstractConcoctiMultiblockRecipe::getInputFluids),
+                FluidRecipeIngredient.CODEC.listOf().fieldOf("input_fluids").forGetter(AbstractConcoctiMultiblockRecipe::getInputFluids),
                 FluidStack.CODEC.listOf().fieldOf("output_fluid").forGetter(AbstractConcoctiMultiblockRecipe::getOutputFluids),
                 Codec.INT.fieldOf("ticks").forGetter(AbstractConcoctiMultiblockRecipe::getTicks)
         ).apply(inst, this::construct));
 
         public final StreamCodec<RegistryFriendlyByteBuf, T> STREAM_CODEC =
                 StreamCodec.composite(
-                        SizedIngredient.STREAM_CODEC.apply(ByteBufCodecs.list()), AbstractConcoctiMultiblockRecipe::getInputItems,
+                        ItemRecipeIngredient.STREAM_CODEC.apply(ByteBufCodecs.list()), AbstractConcoctiMultiblockRecipe::getInputItems,
                         ItemStack.STREAM_CODEC.apply(ByteBufCodecs.list()), AbstractConcoctiMultiblockRecipe::getOutputItems,
-                        SizedFluidIngredient.STREAM_CODEC.apply(ByteBufCodecs.list()), AbstractConcoctiMultiblockRecipe::getInputFluids,
+                        FluidRecipeIngredient.STREAM_CODEC.apply(ByteBufCodecs.list()), AbstractConcoctiMultiblockRecipe::getInputFluids,
                         FluidStack.STREAM_CODEC.apply(ByteBufCodecs.list()), AbstractConcoctiMultiblockRecipe::getOutputFluids,
                         ByteBufCodecs.INT, AbstractConcoctiMultiblockRecipe::getTicks,
                         this::construct
@@ -236,6 +235,6 @@ public abstract class AbstractConcoctiMultiblockRecipe<T extends AbstractConcoct
             return STREAM_CODEC;
         }
 
-        public abstract T construct(List<SizedIngredient> inputItems, List<ItemStack> outputItems, List<SizedFluidIngredient> inputFluids, List<FluidStack> outputFluids, int ticks);
+        public abstract T construct(List<ItemRecipeIngredient> inputItems, List<ItemStack> outputItems, List<FluidRecipeIngredient> inputFluids, List<FluidStack> outputFluids, int ticks);
     }
 }

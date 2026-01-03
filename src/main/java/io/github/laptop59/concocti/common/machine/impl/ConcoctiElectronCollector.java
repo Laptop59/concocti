@@ -537,11 +537,9 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
         }
 
         @Override
-        public void setRecipe(@NotNull IRecipeLayoutBuilder builder, Recipe recipe, @NotNull IFocusGroup focuses) {
+        public void set(@NotNull io.github.laptop59.concocti.common.machine.RecipeBuilder builder, @NotNull Recipe recipe) {
             // Add the fluid output.
-            builder.addSlot(RecipeIngredientRole.OUTPUT, 113, 6)
-                    .addIngredient(NeoForgeTypes.FLUID_STACK, recipe.getOutputFluid())
-                    .setSlotName("output_fluid");
+            builder.addOutputSlot(113, 6, recipe.getOutputFluid());
 
             ItemStack rod = new ItemStack(ConcoctiItems.CONDUCTIVIUM_LIGHTNING_ROD.get());
             ArrayList<MutableComponent> mutableComponents = new ArrayList<>();
@@ -560,9 +558,7 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
             ItemLore itemLore = new ItemLore(components);
             rod.set(DataComponents.LORE, itemLore);
 
-            builder.addSlot(RecipeIngredientRole.CATALYST, 40, 6)
-                    .setSlotName("lightning_rod")
-                    .addIngredients(Ingredient.of(rod));
+            builder.addCatalystSlot(40, 6, Ingredient.of(rod));
         }
     }
 

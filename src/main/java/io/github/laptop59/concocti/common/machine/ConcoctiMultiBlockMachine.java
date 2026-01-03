@@ -6,35 +6,26 @@ import io.github.laptop59.concocti.client.gui.components.*;
 import io.github.laptop59.concocti.common.abstraction.Complexion;
 import io.github.laptop59.concocti.common.block.AbstractConcoctiMultiBlockControllerBlock;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
-import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMultiblockBlockEntity;
 import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
-import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTankHandler;
-import io.github.laptop59.concocti.common.machine.impl.ConcoctiMixer;
 import io.github.laptop59.concocti.common.menu.ConcoctiMultiblockMenu;
 import io.github.laptop59.concocti.common.multiblock.MultiblockStructure;
 import io.github.laptop59.concocti.common.recipe.AbstractConcoctiMultiblockRecipe;
+import io.github.laptop59.concocti.common.recipe.FluidRecipeIngredient;
+import io.github.laptop59.concocti.common.recipe.ItemRecipeIngredient;
 import io.github.laptop59.concocti.common.recipe.ItemsFluidsRecipeInput;
-import io.github.laptop59.concocti.common.util.Lazy;
 import io.github.laptop59.concocti.integration.jei.AbstractConcoctiMultiblockRecipeCategory;
 import io.github.laptop59.concocti.network.ConcoctiMachineSettingsBuildPreviewChangeC2S;
-import io.github.laptop59.concocti.network.ConcoctiMachineSettingsPullOnChangeC2S;
-import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
-import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.recipe.IFocusGroup;
-import mezz.jei.api.recipe.RecipeIngredientRole;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -45,10 +36,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.common.crafting.SizedIngredient;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
-import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -108,7 +97,7 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
                 Component.translatable("block.concocti." + id),
                 List.of(),
                 (a, b, c, d) -> new ConcoctiMultiblockMenu(getInstance(id).MENU, a, b, c, d),
-                b -> b.getDataAccess(),
+                BlockEntity::getDataAccess,
                 new EnumMap<>(SlotType.class),
                 new EnumMap<>(SlotType.class),
                 InputOutput.empty(),
@@ -210,12 +199,12 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
     public static class Recipe extends AbstractConcoctiMultiblockRecipe<Recipe> {
         String machineId;
 
-        public Recipe(String machineId, ResourceLocation id, List<SizedIngredient> inputItems, List<ItemStack> outputItems, List<SizedFluidIngredient> inputFluids, List<FluidStack> outputFluids, int ticks) {
+        public Recipe(String machineId, ResourceLocation id, List<ItemRecipeIngredient> inputItems, List<ItemStack> outputItems, List<FluidRecipeIngredient> inputFluids, List<FluidStack> outputFluids, int ticks) {
             super(id, inputItems, outputItems, inputFluids, outputFluids, ticks);
             this.machineId = machineId;
         }
 
-        public Recipe(String machineId, List<SizedIngredient> inputItems, List<ItemStack> outputItems, List<SizedFluidIngredient> inputFluids, List<FluidStack> outputFluids, int ticks) {
+        public Recipe(String machineId, List<ItemRecipeIngredient> inputItems, List<ItemStack> outputItems, List<FluidRecipeIngredient> inputFluids, List<FluidStack> outputFluids, int ticks) {
             super(inputItems, outputItems, inputFluids, outputFluids, ticks);
             this.machineId = machineId;
         }
@@ -238,7 +227,7 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
             }
 
             @Override
-            public Recipe construct(List<SizedIngredient> inputItems, List<ItemStack> outputItems, List<SizedFluidIngredient> inputFluids, List<FluidStack> outputFluids, int ticks) {
+            public Recipe construct(List<ItemRecipeIngredient> inputItems, List<ItemStack> outputItems, List<FluidRecipeIngredient> inputFluids, List<FluidStack> outputFluids, int ticks) {
                 return new Recipe(machineId, inputItems, outputItems, inputFluids, outputFluids, ticks);
             }
         }
@@ -246,13 +235,13 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
         public static class Builder extends AbstractConcoctiMultiblockRecipe.Builder<Recipe> {
             String machineId;
 
-            public Builder(String machineId, ResourceLocation resourceLocation, List<SizedIngredient> inputItems, List<ItemStack> outputItems, List<SizedFluidIngredient> inputFluids, List<FluidStack> outputFluids, int ticks) {
+            public Builder(String machineId, ResourceLocation resourceLocation, List<ItemRecipeIngredient> inputItems, List<ItemStack> outputItems, List<FluidRecipeIngredient> inputFluids, List<FluidStack> outputFluids, int ticks) {
                 super(resourceLocation, inputItems, outputItems, inputFluids, outputFluids, ticks);
                 this.machineId = machineId;
             }
 
             @Override
-            public Recipe construct(ResourceLocation id, List<SizedIngredient> inputItems, List<ItemStack> outputItems, List<SizedFluidIngredient> inputFluids, List<FluidStack> outputFluids, int ticks) {
+            public Recipe construct(ResourceLocation id, List<ItemRecipeIngredient> inputItems, List<ItemStack> outputItems, List<FluidRecipeIngredient> inputFluids, List<FluidStack> outputFluids, int ticks) {
                 return new Recipe(machineId, id, inputItems, outputItems, inputFluids, outputFluids, ticks);
             }
         }
@@ -384,7 +373,7 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
             guiGraphics.drawString(font, menu.isValid() ? "VALID" : "INVALID", leftPos + 8, topPos + 16, color);
 
             {
-                RenderInfo pullRenderInfo = renderInfo.offset(leftPos - 16, topPos + 8);
+                RenderInfo pullRenderInfo = renderInfo.offset(imageWidth - 24, 64);
                 if (pullRenderInfo.isHovering(16, 16)) {
                     RenderSystem.setShaderColor(1.1f, 1.1f, 1.1f, 1.1f);
                     pullRenderInfo.renderTooltip(
@@ -408,7 +397,7 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
         @Override
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
             RenderInfo renderInfo = new RenderInfo((int) mouseX, (int) mouseY, leftPos, topPos, font);
-            RenderInfo pureRenderInfo = renderInfo.offset(imageWidth - 24, topPos + 8);
+            RenderInfo pureRenderInfo = renderInfo.offset(imageWidth - 24, 64);
             if (pureRenderInfo.isHovering(16, 16)) {
                 Minecraft.getInstance().player.playSound(SoundEvents.UI_BUTTON_CLICK.value());
                 PacketDistributor.sendToServer(new ConcoctiMachineSettingsBuildPreviewChangeC2S(menu.containerId));

@@ -2,7 +2,6 @@ package io.github.laptop59.concocti.mixin;
 
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
 import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;

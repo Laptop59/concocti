@@ -1,28 +1,19 @@
 package io.github.laptop59.concocti.client;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import io.github.laptop59.concocti.common.Concocti;
-import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMultiblockBlockEntity;
 import io.github.laptop59.concocti.common.machine.ConcoctiMultiBlockMachine;
 import io.github.laptop59.concocti.common.multiblock.MultiblockResult;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.RenderTypeHelper;
 import net.neoforged.neoforge.client.model.data.ModelData;
-import net.neoforged.neoforge.client.resources.NeoForgeSplashHooks;
-import org.joml.Matrix4f;
 
 import java.util.Map;
 
@@ -68,7 +59,7 @@ public class ConcoctiMultiblockBlockEntityRenderer implements BlockEntityRendere
                         LightTexture.FULL_BRIGHT,
                         OverlayTexture.NO_OVERLAY,
                         ModelData.EMPTY,
-                        Concocti.GHOST_RENDER_TYPE
+                        ConcoctiClient.GHOST_RENDER_TYPE
                 );
             poseStack.popPose();
         }

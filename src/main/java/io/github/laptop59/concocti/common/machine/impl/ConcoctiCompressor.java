@@ -4,9 +4,10 @@ import com.google.common.primitives.UnsignedLong;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import dev.emi.emi.api.stack.EmiIngredient;
+import dev.emi.emi.api.stack.EmiStack;
 import io.github.laptop59.concocti.client.gui.AbstractConcoctiMachineScreen;
 import io.github.laptop59.concocti.client.gui.components.*;
-import io.github.laptop59.concocti.common.ConcoctiSounds;
 import io.github.laptop59.concocti.common.abstraction.ConcoctiMachineComplexion;
 import io.github.laptop59.concocti.common.abstraction.Properties;
 import io.github.laptop59.concocti.common.abstraction.Property;
@@ -17,27 +18,20 @@ import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineOn
 import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
 import io.github.laptop59.concocti.common.detail.DetailCodec;
 import io.github.laptop59.concocti.common.detail.DetailHolder;
-import io.github.laptop59.concocti.common.machine.ConcoctiMachineDetails;
-import io.github.laptop59.concocti.common.machine.ConcoctiMachineOnlyItemsFluids;
-import io.github.laptop59.concocti.common.machine.InputOutput;
-import io.github.laptop59.concocti.common.machine.ItemsFluidsInputValue;
+import io.github.laptop59.concocti.common.machine.*;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.menu.ResultSlot;
-import io.github.laptop59.concocti.common.recipe.ItemsFluidsRecipeInput;
-import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
+import io.github.laptop59.concocti.common.recipe.*;
 import io.github.laptop59.concocti.integration.jei.AbstractConcoctiRecipeCategory;
-import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -315,9 +309,9 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
         // An in-code representation of our recipe data. This can be basically anything you want.
         // Common things to have here is a processing time integer of some kind, or an experience reward.
         // Note that we now use an ingredient instead of an item stack for the input.
-        private final List<SizedIngredient> inputItems;
+        private final List<ItemRecipeIngredient> inputItems;
         private final ItemStack outputItem;
-        private final List<SizedFluidIngredient> inputFluids;
+        private final List<FluidRecipeIngredient> inputFluids;
         private final FluidStack outputFluid;
 
         private final ResourceLocation id;
@@ -325,7 +319,7 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
         private final int ticks;
 
         // Add a constructor that sets all properties.
-        public Recipe(ResourceLocation id, List<SizedIngredient> inputItems, ItemStack outputItem, List<SizedFluidIngredient> inputFluids, FluidStack outputFluid, int ticks) {
+        public Recipe(ResourceLocation id, List<ItemRecipeIngredient> inputItems, ItemStack outputItem, List<FluidRecipeIngredient> inputFluids, FluidStack outputFluid, int ticks) {
             this.inputItems = inputItems;
             this.outputItem = outputItem;
             this.inputFluids = inputFluids;
@@ -334,7 +328,7 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
             this.id = id;
         }
 
-        public Recipe(List<SizedIngredient> inputItems, ItemStack outputItem, List<SizedFluidIngredient> inputFluids, FluidStack outputFluid, int ticks) {
+        public Recipe(List<ItemRecipeIngredient> inputItems, ItemStack outputItem, List<FluidRecipeIngredient> inputFluids, FluidStack outputFluid, int ticks) {
             this.inputItems = inputItems;
             this.outputItem = outputItem;
             this.inputFluids = inputFluids;
@@ -343,7 +337,7 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
             this.id = getWouldBeResourceLocation(inputItems, inputFluids);
         }
 
-        public static ResourceLocation getWouldBeResourceLocation(List<SizedIngredient> inputItems, List<SizedFluidIngredient> inputFluids) {
+        public static ResourceLocation getWouldBeResourceLocation(List<ItemRecipeIngredient> inputItems, List<FluidRecipeIngredient> inputFluids) {
             int[] hashes = new int[2];
             ArrayList<Object> objects = new ArrayList<>(inputItems);
             hashes[0] = Objects.hash(objects.toArray());
@@ -351,11 +345,10 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
             objects.addAll(inputFluids);
             hashes[1] = Objects.hash(objects.toArray());
             long longHash = ((long) hashes[0] << 32) | hashes[1];
-            UnsignedLong unsignedLong = UnsignedLong.fromLongBits(longHash);
-            return ResourceLocation.fromNamespaceAndPath(MODID, "compressing/" + unsignedLong.toString(16));
+            return ResourceLocation.fromNamespaceAndPath(MODID, String.format("compressing/%016x", longHash));
         }
 
-        public List<SizedIngredient> getInputItems() {
+        public List<ItemRecipeIngredient> getInputItems() {
             return inputItems;
         }
 
@@ -369,7 +362,7 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
             return outputItem == null ? ItemStack.EMPTY : outputItem;
         }
 
-        public List<SizedFluidIngredient> getInputFluids() {
+        public List<FluidRecipeIngredient> getInputFluids() {
             return inputFluids;
         }
 
@@ -444,15 +437,15 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
             return id;
         }
 
-        public static class Builder implements RecipeBuilder {
-            protected final List<SizedIngredient> inputItems;
+        public static class Builder implements net.minecraft.data.recipes.RecipeBuilder {
+            protected final List<ItemRecipeIngredient> inputItems;
             protected final ItemStack outputItem;
-            protected final List<SizedFluidIngredient> inputFluids;
+            protected final List<FluidRecipeIngredient> inputFluids;
             protected final FluidStack outputFluid;
             protected final ResourceLocation resourceLocation;
             protected final int ticks;
 
-            public Builder(ResourceLocation resourceLocation, List<SizedIngredient> inputItems, ItemStack outputItem, List<SizedFluidIngredient> inputFluids, FluidStack outputFluid, int ticks) {
+            public Builder(ResourceLocation resourceLocation, List<ItemRecipeIngredient> inputItems, ItemStack outputItem, List<FluidRecipeIngredient> inputFluids, FluidStack outputFluid, int ticks) {
                 this.resourceLocation = resourceLocation;
                 this.inputItems = inputItems;
                 this.outputItem = outputItem;
@@ -462,7 +455,7 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
             }
 
             @Override
-            public @NotNull RecipeBuilder unlockedBy(@NotNull String name, @NotNull Criterion<?> criterion) {
+            public @NotNull net.minecraft.data.recipes.RecipeBuilder unlockedBy(@NotNull String name, @NotNull Criterion<?> criterion) {
                 return this;
             }
 
@@ -495,18 +488,18 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
 
         public static class Serializer implements RecipeSerializer<Recipe> {
             public static final MapCodec<Recipe> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
-                    SizedIngredient.FLAT_CODEC.listOf().fieldOf("input_items").forGetter(Recipe::getInputItems),
+                    ItemRecipeIngredient.CODEC.listOf().fieldOf("input_items").forGetter(Recipe::getInputItems),
                     ItemStack.OPTIONAL_CODEC.fieldOf("output_item").forGetter(Recipe::getOutputItemOrEmpty),
-                    SizedFluidIngredient.FLAT_CODEC.listOf().fieldOf("input_fluids").forGetter(Recipe::getInputFluids),
+                    FluidRecipeIngredient.CODEC.listOf().fieldOf("input_fluids").forGetter(Recipe::getInputFluids),
                     FluidStack.OPTIONAL_CODEC.fieldOf("output_fluid").forGetter(Recipe::getOutputFluidOrEmpty),
                     Codec.INT.fieldOf("ticks").forGetter(Recipe::getTicks)
             ).apply(inst, Recipe::new));
 
             public static final StreamCodec<RegistryFriendlyByteBuf, Recipe> STREAM_CODEC =
                     StreamCodec.composite(
-                            SizedIngredient.STREAM_CODEC.apply(ByteBufCodecs.list()), Recipe::getInputItems,
+                            ItemRecipeIngredient.STREAM_CODEC.apply(ByteBufCodecs.list()), Recipe::getInputItems,
                             ItemStack.OPTIONAL_STREAM_CODEC, Recipe::getOutputItemOrEmpty,
-                            SizedFluidIngredient.STREAM_CODEC.apply(ByteBufCodecs.list()), Recipe::getInputFluids,
+                            FluidRecipeIngredient.STREAM_CODEC.apply(ByteBufCodecs.list()), Recipe::getInputFluids,
                             FluidStack.OPTIONAL_STREAM_CODEC, Recipe::getOutputFluidOrEmpty,
                             ByteBufCodecs.INT, Recipe::getTicks,
                             Recipe::new
@@ -707,7 +700,7 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
         }
 
         @Override
-        public void setRecipe(@NotNull IRecipeLayoutBuilder builder, Recipe recipe, @NotNull IFocusGroup focuses) {
+        public void set(@NotNull RecipeBuilder builder, @NotNull Recipe recipe) {
             int drawnSlots = 0;
             if (recipe.getOutputItem() != null && !recipe.getOutputItem().isEmpty()) drawnSlots++;
             if (recipe.getOutputFluid() != null && !recipe.getOutputFluid().isEmpty()) drawnSlots++;
@@ -716,36 +709,25 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
             int left = (WIDTH - drawnWidth) / 2 - 3;
             // Add the recipe inputs.
             int i = 1;
-            for (SizedIngredient ingredient : recipe.getInputItems()) {
-                builder.addSlot(RecipeIngredientRole.INPUT, left, 6)
-                        .addItemStacks(Arrays.asList(ingredient.getItems()))
-                        .setSlotName("input_item_" + i);
+            for (ItemRecipeIngredient ingredient : recipe.getInputItems()) {
+                builder.addInputSlot(left, 6, ingredient);
                 i++;
                 left += 18;
             }
             i = 1;
-            for (SizedFluidIngredient ingredient : recipe.getInputFluids()) {
-                IRecipeSlotBuilder slotBuilder =
-                        builder.addSlot(RecipeIngredientRole.INPUT, left, 6)
-                                .setSlotName("input_fluid_" + i);
-                for (FluidStack fluidStack : ingredient.getFluids())
-                    slotBuilder.addFluidStack(fluidStack.getFluid(), fluidStack.getAmount());
+            for (FluidRecipeIngredient ingredient : recipe.getInputFluids()) {
+                builder.addInputSlot(left, 6, ingredient);
                 i++;
                 left += 18;
             }
             left += 11;
             left += 22 + 11;
             if (recipe.getOutputItem() != null && !recipe.getOutputItem().isEmpty()) {
-                builder.addSlot(RecipeIngredientRole.OUTPUT, left, 6)
-                        .addItemStack(recipe.getOutputItem())
-                        .setSlotName("output_item");
+                builder.addOutputSlot(left, 6, recipe.getOutputItem());
                 left += 18;
             }
             if (recipe.getOutputFluid() != null && !recipe.getOutputFluid().isEmpty()) {
-                builder.addSlot(RecipeIngredientRole.OUTPUT, left, 6)
-                        .addFluidStack(recipe.getOutputFluid().getFluid(), recipe.getOutputFluid().getAmount())
-                        .setSlotName("output_fluid");
-                // left += 18;
+                builder.addOutputSlot(left, 6, recipe.getOutputFluid());
             }
         }
 
