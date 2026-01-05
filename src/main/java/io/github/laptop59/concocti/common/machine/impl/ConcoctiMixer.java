@@ -1,6 +1,5 @@
 package io.github.laptop59.concocti.common.machine.impl;
 
-import com.google.common.primitives.UnsignedLong;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -27,13 +26,7 @@ import io.github.laptop59.concocti.common.recipe.FluidRecipeIngredient;
 import io.github.laptop59.concocti.common.recipe.ItemRecipeIngredient;
 import io.github.laptop59.concocti.common.recipe.ItemsFluidsRecipeInput;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
-import io.github.laptop59.concocti.integration.jei.AbstractConcoctiRecipeCategory;
-import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
-import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
-import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.recipe.IFocusGroup;
-import mezz.jei.api.recipe.RecipeIngredientRole;
+import io.github.laptop59.concocti.common.machine.AbstractConcoctiRecipeCategory;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
@@ -63,12 +56,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.common.crafting.SizedIngredient;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
-import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -679,14 +670,9 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
 
         private final int WIDTH = 176;
 
-        public RecipeCategory(IGuiHelper guiHelper) {
-            super(guiHelper, new ItemStack(INSTANCE.BLOCK.get()));
-        }
-
         @Override
-        @SuppressWarnings("unchecked")
-        public @NotNull mezz.jei.api.recipe.RecipeType<Recipe> getRecipeType() {
-            return (mezz.jei.api.recipe.RecipeType<Recipe>) INSTANCE.getJeiRecipeType();
+        public @NotNull Object getJeiRecipeType() {
+            return INSTANCE.getJeiRecipeType();
         }
 
         @Override
@@ -752,9 +738,8 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
         }
 
         @Override
-        public void draw(@NotNull ConcoctiMixer.Recipe recipe, @NotNull IRecipeSlotsView recipeSlotsView,
-                         @NotNull GuiGraphics guiGraphics, double mouseX, double mouseY) {
-            super.draw(recipe, recipeSlotsView, guiGraphics, mouseX, mouseY);
+        public void render(@NotNull ConcoctiMixer.Recipe recipe, @NotNull GuiGraphics guiGraphics, double mouseX, double mouseY) {
+            super.render(recipe, guiGraphics, mouseX, mouseY);
             DrawInfo drawInfo = createDrawInfo(recipe);
             for (int x : drawInfo.slots) {
                 guiGraphics.blit(slot, x - 1, 6 - 1, 0, 0, 18, 18, 18, 18);

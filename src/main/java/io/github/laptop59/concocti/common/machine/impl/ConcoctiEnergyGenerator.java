@@ -18,13 +18,7 @@ import io.github.laptop59.concocti.common.menu.ConcoctiUpgradeSlot;
 import io.github.laptop59.concocti.common.recipe.ItemRecipeIngredient;
 import io.github.laptop59.concocti.common.recipe.ItemsFluidsRecipeInput;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
-import io.github.laptop59.concocti.integration.jei.AbstractConcoctiRecipeCategory;
-import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
-import mezz.jei.api.gui.builder.ITooltipBuilder;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
-import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.recipe.IFocusGroup;
-import mezz.jei.api.recipe.RecipeIngredientRole;
+import io.github.laptop59.concocti.common.machine.AbstractConcoctiRecipeCategory;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -58,7 +52,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.common.crafting.SizedIngredient;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.registries.datamaps.builtin.FurnaceFuel;
 import net.neoforged.neoforge.registries.datamaps.builtin.NeoForgeDataMaps;
@@ -543,14 +536,9 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
             return INSTANCE;
         }
 
-        public RecipeCategory(IGuiHelper guiHelper) {
-            super(guiHelper, new ItemStack(INSTANCE.BLOCK.get()));
-        }
-
         @Override
-        @SuppressWarnings("unchecked")
-        public @NotNull mezz.jei.api.recipe.RecipeType<Recipe> getRecipeType() {
-            return (mezz.jei.api.recipe.RecipeType<Recipe>) INSTANCE.getJeiRecipeType();
+        public @NotNull Object getJeiRecipeType() {
+            return INSTANCE.getJeiRecipeType();
         }
 
         @Override
@@ -565,15 +553,7 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
         }
 
         @Override
-        public void getTooltip(@NotNull ITooltipBuilder tooltip, @NotNull Recipe recipe,
-                               @NotNull IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
-            // Show the duration, if needed.
-            super.getTooltip(tooltip, recipe, recipeSlotsView, mouseX, mouseY);
-        }
-
-        @Override
-        public void draw(@NotNull Recipe recipe, @NotNull IRecipeSlotsView recipeSlotsView,
-                         GuiGraphics guiGraphics, double mouseX, double mouseY) {
+        public void render(@NotNull Recipe recipe, @NotNull GuiGraphics guiGraphics, double mouseX, double mouseY) {
             int left = -4;
             int top = -4;
             // Draw the background texture.

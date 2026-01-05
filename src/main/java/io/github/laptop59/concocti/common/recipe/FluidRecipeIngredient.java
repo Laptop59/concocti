@@ -43,8 +43,8 @@ public final class FluidRecipeIngredient {
         this.options = List.of(options);
     }
 
-    public static FluidRecipeIngredient of(FluidIngredient ingredient, long amount, FluidStack remainder) {
-        return new FluidRecipeIngredient(FluidOption.of(ingredient, amount, remainder));
+    public static FluidRecipeIngredient of(FluidIngredient ingredient, long amount, boolean unconsumed) {
+        return new FluidRecipeIngredient(FluidOption.of(ingredient, amount, unconsumed));
     }
 
     public static FluidRecipeIngredient of(Fluid fluid, long amount) {
@@ -55,8 +55,8 @@ public final class FluidRecipeIngredient {
         return new FluidRecipeIngredient(FluidOption.of(ingredient, amount));
     }
 
-    public static FluidRecipeIngredient of(FluidStack ingredient, FluidStack remainder) {
-        return new FluidRecipeIngredient(FluidOption.of(FluidIngredient.of(ingredient.getFluid()), ingredient.getAmount(), remainder));
+    public static FluidRecipeIngredient of(FluidStack ingredient, boolean unconsumed) {
+        return new FluidRecipeIngredient(FluidOption.of(FluidIngredient.of(ingredient.getFluid()), ingredient.getAmount(), unconsumed));
     }
 
     public static FluidRecipeIngredient of(FluidStack ingredient) {

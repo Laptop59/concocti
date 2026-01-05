@@ -74,4 +74,5 @@ public interface RecipeBuilder {
     void addInputSlot(int x, int y, RecipeSlotFlags flags);
     void addCatalystSlot(int x, int y, RecipeSlotFlags flags);
     void addOutputSlot(int x, int y, RecipeSlotFlags flags, float chance);
+    default void reset() {}
 }

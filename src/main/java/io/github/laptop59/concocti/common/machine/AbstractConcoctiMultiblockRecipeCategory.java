@@ -1,31 +1,20 @@
-package io.github.laptop59.concocti.integration.jei;
+package io.github.laptop59.concocti.common.machine;
 
-import io.github.laptop59.concocti.common.machine.RecipeBuilder;
-import io.github.laptop59.concocti.common.machine.impl.ConcoctiMixer;
 import io.github.laptop59.concocti.common.recipe.AbstractConcoctiMultiblockRecipe;
 import io.github.laptop59.concocti.common.recipe.FluidRecipeIngredient;
 import io.github.laptop59.concocti.common.recipe.ItemRecipeIngredient;
-import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
-import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
-import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.recipe.IFocusGroup;
-import mezz.jei.api.recipe.RecipeIngredientRole;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.crafting.SizedIngredient;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public abstract class AbstractConcoctiMultiblockRecipeCategory<R extends AbstractConcoctiMultiblockRecipe<R>> extends AbstractConcoctiRecipeCategory<R> {
 
     private final int WIDTH = 176;
 
-    public AbstractConcoctiMultiblockRecipeCategory(IGuiHelper guiHelper, ItemStack itemStack) {
-        super(guiHelper, itemStack);
+    public AbstractConcoctiMultiblockRecipeCategory() {
     }
 
     public record DrawInfo(List<Integer> slots, int arrowPos) {

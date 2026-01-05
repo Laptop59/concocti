@@ -1,6 +1,7 @@
 package io.github.laptop59.concocti.integration.jei;
 
 import io.github.laptop59.concocti.common.Concocti;
+import io.github.laptop59.concocti.common.machine.AbstractConcoctiRecipeCategory;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachines;
 import io.github.laptop59.concocti.common.machine.impl.ConcoctiEnergyGenerator;
@@ -16,20 +17,15 @@ import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
-import net.neoforged.neoforge.registries.datamaps.builtin.FurnaceFuel;
-import net.neoforged.neoforge.registries.datamaps.builtin.NeoForgeDataMaps;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 @JeiPlugin
 public class ConcoctiJeiPlugin implements IModPlugin {
@@ -89,8 +85,9 @@ public class ConcoctiJeiPlugin implements IModPlugin {
             IGuiHelper guiHelper,
             ConcoctiMachine<?, ?, ?, I, R, ?, ?, ?, C> machine
     ) {
-        var category = machine.newRecipeCategory(guiHelper);
-        registration.addRecipeCategories(category);
+        var category = machine.newRecipeCategory();
+        JeiRecipeCategory<R> jeiRecipeCategory = new JeiRecipeCategory<>(category, guiHelper, new ItemStack(machine.ITEM.get(), 1));
+        registration.addRecipeCategories(jeiRecipeCategory);
     }
 
     private <R extends Recipe<I>, I extends RecipeInput> void registerRecipesFor(

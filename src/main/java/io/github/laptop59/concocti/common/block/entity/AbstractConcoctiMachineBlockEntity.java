@@ -94,7 +94,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
     public final MachineSettings machineSettings = new MachineSettings(List.of(SlotType.NONE));
 
     public static final int AUTO_COOLDOWN = 5;
-    public static final int TANK_CAPACITY = 64000;
+    public static final int TANK_CAPACITY = 96000;
 
     // Slots
     public static final int UPGRADE_SLOT = 0;

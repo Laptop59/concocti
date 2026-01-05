@@ -8,6 +8,8 @@ import io.github.laptop59.concocti.common.machine.ConcoctiMachines;
 import io.github.laptop59.concocti.common.machine.ConcoctiMultiBlockMachine;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.neoforged.api.distmarker.Dist;
@@ -28,6 +30,7 @@ import static io.github.laptop59.concocti.common.Concocti.MODID;
 @Mod(value = MODID, dist = Dist.CLIENT)
 public class ConcoctiClient {
     public static Set<UUID> concoctizedEntities = Set.of();
+    public static final Component UNCONSUMED =Component.translatable("screen.concocti.unconsumed").withColor(0xC7C7C7);
 
     // For rendering through walls
     public static final RenderType GHOST_RENDER_TYPE = RenderType.create(

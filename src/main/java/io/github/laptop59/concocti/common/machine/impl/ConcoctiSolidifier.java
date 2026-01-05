@@ -23,14 +23,10 @@ import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.menu.IconSlot;
 import io.github.laptop59.concocti.common.menu.ResultSlot;
 import io.github.laptop59.concocti.common.recipe.FluidRecipeIngredient;
+import io.github.laptop59.concocti.common.recipe.ItemRecipeIngredient;
 import io.github.laptop59.concocti.common.recipe.ItemsFluidsRecipeInput;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
-import io.github.laptop59.concocti.integration.jei.AbstractConcoctiRecipeCategory;
-import mezz.jei.api.constants.VanillaTypes;
-import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
-import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.recipe.IFocusGroup;
-import mezz.jei.api.recipe.RecipeIngredientRole;
+import io.github.laptop59.concocti.common.machine.AbstractConcoctiRecipeCategory;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
@@ -39,7 +35,6 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -65,9 +60,9 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
-import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Function;
@@ -161,9 +156,6 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
             <BlockEntity, Menu, Recipe>
             implements FluidHandlerBlockEntity {
 
-        public record InputValue(ItemStack mold, FluidStack fluid, ItemStack baseItem) {
-        }
-
         private final DetailHolder<FluidTank> fluidInput = new DetailHolder<>(
                 DetailCodec.FLUID_TANK, "fluid_input", new FluidTank(TANK_CAPACITY), this
         );
@@ -207,8 +199,13 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
         @Override
         protected void onRecipeCompleted(Recipe recipe) {
             // Consume a base item.
-            getItem(BASE_ITEM_SLOT).shrink(1);
-            ItemStack mold = getItem(MOLD_SLOT);
+            if (recipe.getBaseItem().isPresent())
+                recipe.getBaseItem().get().consume(getItem(BASE_ITEM_SLOT));
+            if (recipe.getMold() != null) {
+                recipe.getMold().consume(getItem(MOLD_SLOT));
+            }
+            // Reduce the fluids.
+            recipe.getInputFluid().consume(fluidInput.get());
             // Give a solidified item.
             ItemStack output = getItem(OUTPUT_SLOT);
             if (output.isEmpty()) {
@@ -216,13 +213,6 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
             } else {
                 output.setCount(output.getCount() + recipe.getOutputItem().getCount());
             }
-            // Damage the mold.
-            if (mold.isDamageableItem()) {
-                mold.setDamageValue(mold.getDamageValue() + 1);
-                if (mold.getDamageValue() >= mold.getMaxDamage()) mold.shrink(1);
-            }
-            // Reduce the fluids.
-            recipe.getInputFluid().consume(fluidInput.get());
         }
 
         @Override
@@ -253,8 +243,8 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
     }
 
     public static class Recipe implements ProcessingRecipe<Recipe, ItemsFluidsRecipeInput> {
-        private final Ingredient mold;
-        private final Ingredient baseItem;
+        private final ItemRecipeIngredient mold;
+        private final Optional<ItemRecipeIngredient> baseItem;
         private final FluidRecipeIngredient inputFluid;
         private final ItemStack outputItem;
         private final int ticks;
@@ -265,16 +255,16 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
             return makeResourceLocation(recipe.baseItem, recipe.mold, recipe.inputFluid);
         }
 
-        static ResourceLocation makeResourceLocation(Ingredient baseItem, Ingredient mold, FluidRecipeIngredient inputFluid) {
+        static ResourceLocation makeResourceLocation(Optional<ItemRecipeIngredient> baseItem, ItemRecipeIngredient mold, FluidRecipeIngredient inputFluid) {
             ResourceLocation fluidLoc = ResourceLocation.fromNamespaceAndPath(MODID, String.format("%08x", inputFluid.hashCode()));
-            fluidLoc = fluidLoc.withPrefix("solidifying/").withSuffix("_with_" + getId(mold));
-            if (!baseItem.hasNoItems()) {
-                fluidLoc = fluidLoc.withSuffix("_on_" + getId(baseItem));
+            fluidLoc = fluidLoc.withPrefix("solidifying/").withSuffix("_with_" + String.format("%08x", mold.hashCode()));
+            if (baseItem.isPresent()) {
+                fluidLoc = fluidLoc.withSuffix("_on_" + String.format("%08x", baseItem.hashCode()));
             }
             return fluidLoc;
         }
 
-        public Recipe(ResourceLocation id, Ingredient baseItem, Ingredient mold, FluidRecipeIngredient inputFluid, ItemStack outputItem, int ticks) {
+        public Recipe(ResourceLocation id, Optional<ItemRecipeIngredient> baseItem, ItemRecipeIngredient mold, FluidRecipeIngredient inputFluid, ItemStack outputItem, int ticks) {
             this.mold = mold;
             this.baseItem = baseItem;
             this.inputFluid = inputFluid;
@@ -283,7 +273,7 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
             idMap.put(this, id);
         }
 
-        public Recipe(Ingredient baseItem, Ingredient mold, FluidRecipeIngredient inputFluid, ItemStack outputItem, int ticks) {
+        public Recipe(Optional<ItemRecipeIngredient> baseItem, ItemRecipeIngredient mold, FluidRecipeIngredient inputFluid, ItemStack outputItem, int ticks) {
             this.mold = mold;
             this.baseItem = baseItem;
             this.inputFluid = inputFluid;
@@ -306,7 +296,7 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
             return BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
         }
 
-        public Ingredient getMold() {
+        public ItemRecipeIngredient getMold() {
             return mold;
         }
 
@@ -314,7 +304,7 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
             return inputFluid;
         }
 
-        public Ingredient getBaseItem() {
+        public Optional<ItemRecipeIngredient> getBaseItem() {
             return baseItem;
         }
 
@@ -324,10 +314,7 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
 
         @Override
         public @NotNull NonNullList<Ingredient> getIngredients() {
-            NonNullList<Ingredient> list = NonNullList.create();
-            list.add(this.mold);
-            if (!this.baseItem.isEmpty()) list.add(this.baseItem);
-            return list;
+            return NonNullList.create();
         }
 
         @Override
@@ -338,7 +325,7 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
         @Override
         public boolean matches(ItemsFluidsRecipeInput input, @NotNull Level level) {
             return this.mold.test(input.getItem(MOLD_SLOT)) &&
-                    this.baseItem.test(input.getItem(BASE_ITEM_SLOT)) &&
+                (this.baseItem.isEmpty() || this.baseItem.get().test(input.getItem(BASE_ITEM_SLOT))) &&
                     this.inputFluid.test(input.getFluid(0));
         }
 
@@ -372,35 +359,14 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
             return idMap.get(this);
         }
 
-        public record Input(ItemStack mold, ItemStack base, FluidStack inputFluid) implements RecipeInput {
-            @Override
-            public @NotNull ItemStack getItem(int index) {
-                return switch (index) {
-                    case 0 -> this.mold;
-                    case 1 -> this.base;
-                    default -> throw new IllegalArgumentException("Recipe does not contain item tank " + index);
-                };
-            }
-
-            @Override
-            public int size() {
-                return 2;
-            }
-
-            @Override
-            public boolean isEmpty() {
-                return this.base.isEmpty() && this.mold.isEmpty();
-            }
-        }
-
         public static class Builder implements RecipeBuilder {
-            protected Ingredient mold;
-            protected Ingredient baseItem;
+            protected ItemRecipeIngredient mold;
+            protected Optional<ItemRecipeIngredient> baseItem;
             protected FluidRecipeIngredient inputFluid;
             protected ItemStack outputItem;
             protected int ticks;
 
-            public Builder(Ingredient baseItem, Ingredient mold, FluidRecipeIngredient inputFluid, ItemStack outputItem, int ticks) {
+            public Builder(Optional<ItemRecipeIngredient> baseItem, ItemRecipeIngredient mold, FluidRecipeIngredient inputFluid, ItemStack outputItem, int ticks) {
                 this.mold = mold;
                 this.baseItem = baseItem;
                 this.inputFluid = inputFluid;
@@ -450,8 +416,8 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
 
         public static class Serializer implements RecipeSerializer<Recipe> {
             public static final MapCodec<Recipe> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
-                    Ingredient.CODEC.fieldOf("base_item").forGetter(Recipe::getBaseItem),
-                    Ingredient.CODEC.fieldOf("mold").forGetter(Recipe::getMold),
+                    Codec.optionalField("base_item", ItemRecipeIngredient.CODEC, false).forGetter(Recipe::getBaseItem),
+                    ItemRecipeIngredient.CODEC.fieldOf("mold").forGetter(Recipe::getMold),
                     FluidRecipeIngredient.CODEC.fieldOf("input_fluid").forGetter(Recipe::getInputFluid),
                     ItemStack.CODEC.fieldOf("output_item").forGetter(Recipe::getOutputItem),
                     Codec.INT.fieldOf("ticks").forGetter(Recipe::getTicks)
@@ -459,8 +425,8 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
 
             public static final StreamCodec<RegistryFriendlyByteBuf, Recipe> STREAM_CODEC =
                     StreamCodec.composite(
-                            Ingredient.CONTENTS_STREAM_CODEC, Recipe::getBaseItem,
-                            Ingredient.CONTENTS_STREAM_CODEC, Recipe::getMold,
+                            ItemRecipeIngredient.STREAM_CODEC.apply(ByteBufCodecs::optional), Recipe::getBaseItem,
+                            ItemRecipeIngredient.STREAM_CODEC, Recipe::getMold,
                             FluidRecipeIngredient.STREAM_CODEC, Recipe::getInputFluid,
                             ItemStack.STREAM_CODEC, Recipe::getOutputItem,
                             ByteBufCodecs.INT, Recipe::getTicks,
@@ -482,7 +448,6 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
     }
 
     public static class Menu extends AbstractConcoctiMachineMenu<Menu> {
-
         @Contract(pure = true)
         @Override
         public List<Property<?>> getMachineSpecificProperties() {
@@ -579,14 +544,9 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
             return INSTANCE;
         }
 
-        public RecipeCategory(IGuiHelper guiHelper) {
-            super(guiHelper, new ItemStack(INSTANCE.BLOCK.get()));
-        }
-
         @Override
-        @SuppressWarnings("unchecked")
-        public @NotNull mezz.jei.api.recipe.RecipeType<Recipe> getRecipeType() {
-            return (mezz.jei.api.recipe.RecipeType<Recipe>) INSTANCE.getJeiRecipeType();
+        public @NotNull Object getJeiRecipeType() {
+            return INSTANCE.getJeiRecipeType();
         }
 
         @Override
@@ -603,8 +563,8 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
         public void set(@NotNull io.github.laptop59.concocti.common.machine.RecipeBuilder builder, @NotNull Recipe recipe) {
             // Add the recipe inputs (fluid + tank + base item).
             builder.addInputSlot(12, 6, recipe.getInputFluid());
-            builder.addCatalystSlot(30, 6, recipe.getMold());
-            builder.addInputSlot(48, 6, recipe.getBaseItem());
+            builder.addInputSlot(30, 6, recipe.getMold());
+            builder.addInputSlot(48, 6, recipe.getBaseItem().orElse(null));
             builder.addOutputSlot(137 - 9, 6, recipe.getOutputItem());
         }
     }

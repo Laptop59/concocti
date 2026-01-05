@@ -14,10 +14,7 @@ import io.github.laptop59.concocti.common.recipe.AbstractConcoctiMultiblockRecip
 import io.github.laptop59.concocti.common.recipe.FluidRecipeIngredient;
 import io.github.laptop59.concocti.common.recipe.ItemRecipeIngredient;
 import io.github.laptop59.concocti.common.recipe.ItemsFluidsRecipeInput;
-import io.github.laptop59.concocti.integration.jei.AbstractConcoctiMultiblockRecipeCategory;
 import io.github.laptop59.concocti.network.ConcoctiMachineSettingsBuildPreviewChangeC2S;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
-import mezz.jei.api.helpers.IGuiHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
@@ -133,7 +130,7 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
 
     @Override
     public RecipeCategoryConstructor<RecipeCategory, Recipe, ItemsFluidsRecipeInput> getRecipeCategoryConstructor() {
-        return (helper) -> new RecipeCategory(id, helper, new ItemStack(ITEM.asItem(), 1));
+        return () -> new RecipeCategory(id);
     }
 
     @Override
@@ -285,8 +282,7 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
     public static class RecipeCategory extends AbstractConcoctiMultiblockRecipeCategory<Recipe> {
         String machineId;
 
-        public RecipeCategory(String machineId, IGuiHelper guiHelper, ItemStack icon) {
-            super(guiHelper, icon);
+        public RecipeCategory(String machineId) {
             this.machineId = machineId;
         }
 
@@ -299,9 +295,8 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
         }
 
         @Override
-        @SuppressWarnings("unchecked")
-        public mezz.jei.api.recipe.@NotNull RecipeType<Recipe> getRecipeType() {
-            return (mezz.jei.api.recipe.RecipeType<Recipe>) getMachineInstance().JEI_RECIPE_TYPE.get();
+        public @NotNull Object getJeiRecipeType() {
+            return getMachineInstance().getJeiRecipeType();
         }
 
         @Override
@@ -315,9 +310,8 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
         }
 
         @Override
-        public void draw(@NotNull Recipe recipe, @NotNull IRecipeSlotsView recipeSlotsView,
-                         @NotNull GuiGraphics guiGraphics, double mouseX, double mouseY) {
-            super.draw(recipe, recipeSlotsView, guiGraphics, mouseX, mouseY);
+        public void render(@NotNull Recipe recipe, @NotNull GuiGraphics guiGraphics, double mouseX, double mouseY) {
+            super.render(recipe, guiGraphics, mouseX, mouseY);
             RecipeCategory.DrawInfo drawInfo = createDrawInfo(recipe);
             for (int x : drawInfo.slots()) {
                 guiGraphics.blit(slot, x - 1, 6 - 1, 0, 0, 18, 18, 18, 18);
