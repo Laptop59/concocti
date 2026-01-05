@@ -9,8 +9,6 @@ import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBl
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
 import io.github.laptop59.concocti.common.util.Lazy;
-import io.github.laptop59.concocti.integration.jei.AbstractConcoctiRecipeCategory;
-import mezz.jei.api.helpers.IGuiHelper;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
@@ -82,7 +80,7 @@ public abstract class ConcoctiMachine<
     }
 
     public interface RecipeCategoryConstructor<C extends AbstractConcoctiRecipeCategory<R>, R extends ProcessingRecipe<R, I>, I extends RecipeInput> {
-        C create(IGuiHelper guiHelper);
+        C create();
     }
 
     protected ConcoctiMachine(String id, BlockBehaviour.Properties properties, ConcoctiBlocks.BlockData blockData) {
@@ -141,8 +139,8 @@ public abstract class ConcoctiMachine<
     /**
      * Creates a new recipe category of this machine.
      */
-    public C newRecipeCategory(IGuiHelper guiHelper) {
-        return getRecipeCategoryConstructor().create(guiHelper);
+    public C newRecipeCategory() {
+        return getRecipeCategoryConstructor().create();
     }
 
 

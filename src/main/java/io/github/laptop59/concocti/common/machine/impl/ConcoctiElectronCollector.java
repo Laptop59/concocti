@@ -22,14 +22,7 @@ import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.recipe.LightningRecipeInput;
 import io.github.laptop59.concocti.common.recipe.LightningState;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
-import io.github.laptop59.concocti.integration.jei.AbstractConcoctiRecipeCategory;
-import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
-import mezz.jei.api.gui.builder.ITooltipBuilder;
-import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
-import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.neoforge.NeoForgeTypes;
-import mezz.jei.api.recipe.IFocusGroup;
-import mezz.jei.api.recipe.RecipeIngredientRole;
+import io.github.laptop59.concocti.common.machine.AbstractConcoctiRecipeCategory;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
@@ -38,7 +31,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -510,14 +502,9 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
             return INSTANCE;
         }
 
-        public RecipeCategory(IGuiHelper guiHelper) {
-            super(guiHelper, new ItemStack(INSTANCE.BLOCK.get()));
-        }
-
         @Override
-        @SuppressWarnings("unchecked")
-        public @NotNull mezz.jei.api.recipe.RecipeType<Recipe> getRecipeType() {
-            return (mezz.jei.api.recipe.RecipeType<Recipe>) INSTANCE.getJeiRecipeType();
+        public @NotNull Object getJeiRecipeType() {
+            return INSTANCE.getJeiRecipeType();
         }
 
         @Override
@@ -526,13 +513,12 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
         }
 
         @Override
-        public void getTooltip(@NotNull ITooltipBuilder tooltip, @NotNull ConcoctiElectronCollector.Recipe recipe,
-                               @NotNull IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
+        public void tooltip(@NotNull List<Component> tooltipBuilder, @NotNull Recipe recipe, double mouseX, double mouseY) {
             // Show the duration, if needed.
             if (isCursorTouchingArrow(mouseX, mouseY, recipe)) {
                 String chance = String.format("%.2f", recipe.getChance() * 100);
-                tooltip.add(Component.translatable("screen.concocti.duration", (double) getTicks(recipe) / 20));
-                tooltip.add(Component.translatable("screen.concocti.chance", chance));
+                tooltipBuilder.add(Component.translatable("screen.concocti.duration", (double) getTicks(recipe) / 20));
+                tooltipBuilder.add(Component.translatable("screen.concocti.chance", chance));
             }
         }
 

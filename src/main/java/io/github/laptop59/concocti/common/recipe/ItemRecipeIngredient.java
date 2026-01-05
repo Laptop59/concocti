@@ -2,8 +2,6 @@ package io.github.laptop59.concocti.common.recipe;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -12,12 +10,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.ItemLike;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /** An item ingredient with remainder information as well. */
@@ -37,28 +34,29 @@ public final class ItemRecipeIngredient {
         return new ItemRecipeIngredient(options);
     }
 
-    public static ItemRecipeIngredient of(@NotNull Ingredient ingredient, long count, @NotNull ItemStack remainder) {
-        return ItemRecipeIngredient.of(ItemOption.of(ingredient, count, remainder));
+    public static ItemRecipeIngredient of(@NotNull Ingredient ingredient, long count, boolean unconsumed) {
+        Objects.requireNonNull(ingredient);
+        return ItemRecipeIngredient.of(ItemOption.of(ingredient, count, unconsumed));
     }
 
     public static ItemRecipeIngredient of(@NotNull Ingredient ingredient, long count) {
-        return ItemRecipeIngredient.of(ItemOption.of(ingredient, count, ItemStack.EMPTY));
+        return ItemRecipeIngredient.of(ItemOption.of(ingredient, count, false));
     }
 
     public static ItemRecipeIngredient of(@NotNull ItemLike itemLike, long count) {
-        return ItemRecipeIngredient.of(ItemOption.of(Ingredient.of(itemLike), count, ItemStack.EMPTY));
+        return ItemRecipeIngredient.of(ItemOption.of(Ingredient.of(itemLike), count, false));
     }
 
     public static ItemRecipeIngredient of(@NotNull TagKey<Item> tag, long count) {
-        return ItemRecipeIngredient.of(ItemOption.of(Ingredient.of(tag), count, ItemStack.EMPTY));
+        return ItemRecipeIngredient.of(ItemOption.of(Ingredient.of(tag), count, false));
     }
 
-    public static ItemRecipeIngredient of(@NotNull Ingredient ingredient, @NotNull ItemStack remainder) {
-        return ItemRecipeIngredient.of(ItemOption.of(ingredient, 1, remainder));
+    public static ItemRecipeIngredient of(@NotNull Ingredient ingredient, boolean unconsumed) {
+        return ItemRecipeIngredient.of(ItemOption.of(ingredient, 1, unconsumed));
     }
 
     public static ItemRecipeIngredient of(@NotNull Ingredient ingredient) {
-        return ItemRecipeIngredient.of(ItemOption.of(ingredient, 1, ItemStack.EMPTY));
+        return ItemRecipeIngredient.of(ItemOption.of(ingredient, 1, false));
     }
 
     @NotNull

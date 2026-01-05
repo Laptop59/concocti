@@ -159,6 +159,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add("screen.concocti.requirements", "Requirements:");
         add("screen.concocti.directly_on_top_of_machine", "Directly on top of machine");
         add("screen.concocti.struck_by_lightning", "Struck by lightning");
+        add("screen.concocti.unconsumed", "Unconsumed");
 
         add("screen.concocti.slot_compound", "%s (%s)");
         add("screen.concocti.slot_up", "Up");

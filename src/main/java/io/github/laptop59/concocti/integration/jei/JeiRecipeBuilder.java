@@ -60,7 +60,9 @@ public final class JeiRecipeBuilder implements RecipeBuilder {
                 stack.getAmount(),
                 stack.getComponentsPatch()
             );
-            case Ingredient ingredient -> slot.addIngredients(ingredient);
+            case Ingredient ingredient -> {
+                if (!ingredient.isEmpty()) slot.addIngredients(ingredient);
+            }
             case null -> {}
             default -> Concocti.LOGGER.warn("Could not convert {} to an object required for JEI.", flags.getInternalObject());
         }

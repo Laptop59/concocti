@@ -17,12 +17,17 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public record FluidOption(FluidIngredient ingredient, long amount, FluidStack remainder) {
+public record FluidOption(FluidIngredient ingredient, long amount, boolean unconsumed) {
+
+    public FluidOption {
+        Objects.requireNonNull(ingredient);
+    }
+
     public static final Codec<FluidOption> FLAT_CODEC = RecordCodecBuilder.create(
         instance -> instance.group(
             FluidIngredient.MAP_CODEC_NONEMPTY.fieldOf("ingredient").forGetter(FluidOption::ingredient),
             Codec.LONG.optionalFieldOf("amount", 1L).forGetter(FluidOption::amount),
-            FluidStack.CODEC.optionalFieldOf("remainder", FluidStack.EMPTY).forGetter(FluidOption::remainder)
+            Codec.BOOL.optionalFieldOf("unconsumed", false).forGetter(FluidOption::unconsumed)
         ).apply(instance, FluidOption::new)
     );
 
@@ -30,7 +35,7 @@ public record FluidOption(FluidIngredient ingredient, long amount, FluidStack re
         instance -> instance.group(
             FluidIngredient.CODEC_NON_EMPTY.fieldOf("ingredient").forGetter(FluidOption::ingredient),
             Codec.LONG.optionalFieldOf("amount", 1L).forGetter(FluidOption::amount),
-            FluidStack.CODEC.optionalFieldOf("remainder", FluidStack.EMPTY).forGetter(FluidOption::remainder)
+            Codec.BOOL.optionalFieldOf("unconsumed", false).forGetter(FluidOption::unconsumed)
         ).apply(instance, FluidOption::new)
     );
 
@@ -44,7 +49,7 @@ public record FluidOption(FluidIngredient ingredient, long amount, FluidStack re
     public static final StreamCodec<RegistryFriendlyByteBuf, FluidOption> STREAM_CODEC = StreamCodec.composite(
         FluidIngredient.STREAM_CODEC, FluidOption::ingredient,
         ByteBufCodecs.VAR_LONG, FluidOption::amount,
-        FluidStack.OPTIONAL_STREAM_CODEC, FluidOption::remainder,
+        ByteBufCodecs.BOOL, FluidOption::unconsumed,
         FluidOption::new
     );
 
@@ -67,12 +72,12 @@ public record FluidOption(FluidIngredient ingredient, long amount, FluidStack re
     public boolean equals(Object object) {
         if (object == null || getClass() != object.getClass()) return false;
         FluidOption that = (FluidOption) object;
-        return amount == that.amount && Objects.equals(remainder, that.remainder) && Objects.equals(ingredient, that.ingredient);
+        return amount == that.amount && unconsumed == that.unconsumed && Objects.equals(ingredient, that.ingredient);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(ingredient, amount, remainder);
+        return Objects.hash(ingredient, amount, unconsumed);
     }
 
     public List<FluidStack> intoFluidStackUncached() {
@@ -85,11 +90,11 @@ public record FluidOption(FluidIngredient ingredient, long amount, FluidStack re
             .toList();
     }
 
-    public static FluidOption of(@NotNull FluidIngredient ingredient, long amount, @NotNull FluidStack remainder) {
-        return new FluidOption(ingredient, amount, remainder);
+    public static FluidOption of(@NotNull FluidIngredient ingredient, long amount, boolean unconsumed) {
+        return new FluidOption(ingredient, amount, unconsumed);
     }
 
     public static FluidOption of(@NotNull FluidIngredient ingredient, long amount) {
-        return new FluidOption(ingredient, amount, FluidStack.EMPTY);
+        return new FluidOption(ingredient, amount, false);
     }
 }

@@ -25,72 +25,117 @@ public class ItemsFluidsRecipeInput extends RecipeWrapper {
     }
 
     public boolean test(List<ItemRecipeIngredient> inputItems, List<FluidRecipeIngredient> inputFluids) {
-        /* TODO
-        boolean itemsInvolveRemainder = false, fluidsInvolveRemainder = false;
-        int[] itemsPreferredSlot = new int[size()];
-        int[] fluidsPreferredSlot = new int[getFluids()];
-
-        int k = 0;
-        loop1:
-        for (FluidRecipeIngredient inputItem : inputItems) {
-            if (!inputItem.remainder().isEmpty()) itemsInvolveRemainder = true;
-            for (int i = 0; i < this.size(); i++) {
-                ItemStack toSearch = this.getItem(i);
-                if (inputItem.test(toSearch)) {
-                    itemsPreferredSlot[k++] = i;
-                    continue loop1;
-                }
-            }
-            return false;
-        }
-
-        k = 0;
-        loop2:
-        for (FluidRecipeIngredient fluidIngredient : inputFluids) {
-            if (!fluidIngredient.remainder().isEmpty()) fluidsInvolveRemainder = true;
-            for (int i = 0; i < this.getFluids(); i++) {
-                FluidStack toSearch = this.getFluid(i);
-                if (fluidIngredient.test(toSearch)) {
-                    fluidsPreferredSlot[k++] = i;
-                    continue loop2;
-                }
-            }
-            return false;
-        }
-        */
-        return true;
+        return testOrConsume(inputItems, inputFluids, false);
     }
 
     public boolean consume(List<ItemRecipeIngredient> inputItems, List<FluidRecipeIngredient> inputFluids) {
-                /* TODO
-        loop1:
-        for (FluidRecipeIngredient inputItem : inputItems) {
-            for (int i = 0; i < this.size(); i++) {
-                ItemStack toSearch = this.getItem(i);
-                if (inputItem.test(toSearch)) {
-                    inv.extractItem(i, inputItem.count(), false);
-                    continue loop1;
-                }
-            }
-            return false;
-        }
+        return testOrConsume(inputItems, inputFluids, true);
+    }
 
-        loop2:
-        for (FluidRecipeIngredient fluidIngredient : inputFluids) {
+    public boolean testOrConsume(List<ItemRecipeIngredient> inputItems, List<FluidRecipeIngredient> inputFluids, boolean shouldConsume) {
+        // Reserve (simulated consumed) items in the inventory to really test
+        {
+            long[] currentCountsLeft = new long[size()];
+            for (int i = 0; i < this.size(); i++) {
+                currentCountsLeft[i] = this.getItem(i).getCount();
+            }
+            loop:
+            for (ItemRecipeIngredient inputItem : inputItems) {
+                for (ItemOption option : inputItem.options()) {
+                    long[] countsLeft = currentCountsLeft.clone();
+                    long countLeft = option.count();
+                    for (int i = 0; i < this.size(); i++) {
+                        ItemStack toSearch = this.getItem(i);
+                        if (option.ingredient().test(toSearch)) {
+                            long left = countsLeft[i];
+                            int consumed = (int) Math.min(countLeft, left);
+                            countsLeft[i] -= consumed;
+                            countLeft -= consumed;
+                            if (countLeft <= 0) {
+                                currentCountsLeft = countsLeft;
+                                // EXECUTE
+                                if (shouldConsume) consume(option);
+                                continue loop;
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+        {
+            long[] currentAmountsLeft = new long[getFluids()];
             for (int i = 0; i < this.getFluids(); i++) {
-                FluidStack toSearch = this.getFluid(i);
-                if (fluidIngredient.test(toSearch)) for (FluidStack tester : fluidIngredient.getFluids()) {
-                    FluidStack drained = fluids.drain(tester, IFluidHandler.FluidAction.SIMULATE);
-                    if (drained.getAmount() == tester.getAmount()) {
-                        fluids.drain(tester, IFluidHandler.FluidAction.EXECUTE);
-                        continue loop2;
+                currentAmountsLeft[i] = this.getFluid(i).getAmount();
+            }
+            loop:
+            for (FluidRecipeIngredient inputFluid : inputFluids) {
+                for (FluidOption option : inputFluid.options()) {
+                    long[] amountsLeft = currentAmountsLeft.clone();
+                    long amountLeft = option.amount();
+                    for (int i = 0; i < this.getFluids(); i++) {
+                        FluidStack toSearch = this.getFluid(i).copy();
+                        long left = amountsLeft[i];
+                        int consumable = (int) Math.min(amountLeft, left);
+                        if (consumable == 0) continue; // skip empty
+                        toSearch.setAmount(consumable);
+                        if (option.ingredient().test(toSearch)) {
+                            amountsLeft[i] -= consumable;
+                            amountLeft -= consumable;
+                            if (amountLeft <= 0) {
+                                currentAmountsLeft = amountsLeft;
+                                // EXECUTE
+                                if (shouldConsume) consume(option);
+                                continue loop;
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void consume(ItemOption option) {
+        if (option.unconsumed()) {
+            if (option.loseDurability()) {
+                for (int i = 0; i < size(); i++) {
+                    ItemStack stack = getItem(i);
+                    if (option.ingredient().test(stack)) {
+                        if (stack.isDamageableItem()) {
+                            stack.setDamageValue(stack.getDamageValue() + 1);
+                            if (stack.getDamageValue() >= stack.getMaxDamage())
+                                stack.shrink(1);
+                        }
                     }
                 }
             }
-            return false;
+            return;
         }
-        */
-        return true;
+        long leftToConsume = option.count();
+        for (int i = 0; i < size(); i++) {
+            ItemStack stack = getItem(i);
+            int maxConsume = (int) Math.min(leftToConsume, Integer.MAX_VALUE);
+            if (option.ingredient().test(stack)) {
+                leftToConsume -= inv.extractItem(i, maxConsume, false).getCount();
+                if (leftToConsume <= 0) return;
+            }
+        }
+    }
+
+    public void consume(FluidOption option) {
+        if (option.unconsumed()) return;
+        long leftToConsume = option.amount();
+        for (int i = 0; i < getFluids(); i++) {
+            FluidStack stack = getFluid(i).copy();
+            int maxConsume = (int) Math.min(leftToConsume, Integer.MAX_VALUE);
+            stack.setAmount(maxConsume);
+            if (option.ingredient().test(stack)) {
+                leftToConsume -= fluids.drain(stack, IFluidHandler.FluidAction.EXECUTE).getAmount();
+                if (leftToConsume <= 0) return;
+            }
+        }
     }
 
     @Override
