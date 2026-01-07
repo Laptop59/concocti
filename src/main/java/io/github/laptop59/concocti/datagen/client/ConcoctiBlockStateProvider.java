@@ -49,6 +49,11 @@ public class ConcoctiBlockStateProvider extends BlockStateProvider {
             var builder = getVariantBuilder(block);
             builder.forAllStates(blockState -> getModelForConcoctiMachine(machine, blockState));
         }
+
+        for (ConcoctiFluidParent fluidParent : ConcoctiFluids.FLUIDS) {
+            if (fluidParent.BLOCK == null) continue; // Not an actual block to register.
+            this.simpleBlock(fluidParent.BLOCK.get(), models().getExistingFile(modLoc("block/" + fluidParent.ID)));
+        }
     }
 
     protected ConfiguredModel[] getModelForConcoctiMachine(ConcoctiMachine<?, ?, ?, ?, ?, ?, ?, ?, ?> machine, BlockState blockState) {

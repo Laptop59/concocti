@@ -1,5 +1,6 @@
 package io.github.laptop59.concocti.common.fluid;
 
+import io.github.laptop59.concocti.common.Concocti;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -159,6 +160,7 @@ public class ConcoctiFluids {
     private static ConcoctiFluidParent register(String id, FluidType.Properties fluidProps, BlockBehaviour.Properties blockProps, int tickRate, boolean isMolten, boolean hasBucket) {
         ConcoctiFluidParent parent = new ConcoctiFluidParent(id, tickRate, isMolten, fluidProps, blockProps, hasBucket);
         FLUIDS.add(parent);
+        Concocti.LOGGER.debug("Registering fluid: {}", id);
         return parent;
     }
 

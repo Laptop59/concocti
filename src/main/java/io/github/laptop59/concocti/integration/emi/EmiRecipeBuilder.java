@@ -5,6 +5,7 @@ import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.SlotWidget;
 import dev.emi.emi.api.widget.WidgetHolder;
+import io.github.laptop59.concocti.client.ConcoctiClient;
 import io.github.laptop59.concocti.common.Concocti;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
@@ -12,6 +13,7 @@ import io.github.laptop59.concocti.common.machine.RecipeBuilder;
 import io.github.laptop59.concocti.common.machine.RecipeSlotFlags;
 import io.github.laptop59.concocti.common.recipe.FluidRecipeIngredient;
 import io.github.laptop59.concocti.common.recipe.ItemRecipeIngredient;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -65,7 +67,11 @@ public final class EmiRecipeBuilder implements RecipeBuilder {
     @Override
     public void addOutputSlot(int x, int y, RecipeSlotFlags flags, float chance) {
         createSlot(x, y, flags, chance);
-        addEmiStack(outputs, flags.getInternalObject());
+        EmiStack output = addEmiStack(outputs, flags.getInternalObject());
+
+        if (output != null && chance != 1.0f) {
+            System.out.println(output);
+        }
     }
 
     private void createSlot(int x, int y, RecipeSlotFlags flags, float chance) {
@@ -73,7 +79,9 @@ public final class EmiRecipeBuilder implements RecipeBuilder {
             x--; //
             y--; // compensate, or else it looks off
 
-            EmiIngredient ingredient = intoIngredient(flags.getInternalObject(), flags.getRemainder(), emiRecipe, ingredientIndex);
+            Object internalObject = flags.getInternalObject();
+
+            EmiIngredient ingredient = intoIngredient(internalObject, flags.getRemainder(), emiRecipe, ingredientIndex);
 
             SlotWidget slot;
 
@@ -89,15 +97,17 @@ public final class EmiRecipeBuilder implements RecipeBuilder {
         }
     }
 
-    private void addEmiIngredient(List<EmiIngredient> list, Object element, @Nullable ItemStack remainder, int i) {
+    private EmiIngredient addEmiIngredient(List<EmiIngredient> list, Object element, @Nullable ItemStack remainder, int i) {
         EmiIngredient ingredient = intoIngredient(element, remainder, emiRecipe, i);
 
         if (isCatalyticInput(ingredient)) list = catalysts;
         if (list != null) list.add(ingredient);
+
+        return ingredient;
     }
 
-    private void addEmiStack(List<EmiStack> list, Object element) {
-        if (list == null) return;
+    private EmiStack addEmiStack(List<EmiStack> list, Object element) {
+        if (list == null) return null;
 
         EmiStack stack = switch (element) {
             case ItemStack itemStack -> EmiStack.of(itemStack);
@@ -110,6 +120,7 @@ public final class EmiRecipeBuilder implements RecipeBuilder {
         }
 
         list.add(stack);
+        return stack;
     }
 
     private EmiIngredient intoIngredient(Object element, @Nullable ItemStack remainder, ConcoctiEmiRecipe<?> recipe, int i) {

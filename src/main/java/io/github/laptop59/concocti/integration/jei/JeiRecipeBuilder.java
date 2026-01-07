@@ -1,7 +1,7 @@
 package io.github.laptop59.concocti.integration.jei;
 
-import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.widget.WidgetHolder;
+import io.github.laptop59.concocti.client.ConcoctiClient;
 import io.github.laptop59.concocti.common.Concocti;
 import io.github.laptop59.concocti.common.machine.RecipeBuilder;
 import io.github.laptop59.concocti.common.machine.RecipeSlotFlags;
@@ -17,7 +17,6 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.Objects;
 
 public final class JeiRecipeBuilder implements RecipeBuilder {
     WidgetHolder widgetHolder;
@@ -42,7 +41,12 @@ public final class JeiRecipeBuilder implements RecipeBuilder {
 
     @Override
     public void addOutputSlot(int x, int y, RecipeSlotFlags flags, float chance) {
-        addSlot(RecipeIngredientRole.OUTPUT, x, y, flags);
+        IRecipeSlotBuilder giz = addSlot(RecipeIngredientRole.OUTPUT, x, y, flags);
+        if (chance != 1f) {
+            giz.addRichTooltipCallback((view, tooltip) -> {
+                tooltip.add(ConcoctiClient.getChanceComponent(chance));
+            });
+        }
     }
 
     private IRecipeSlotBuilder addSlot(RecipeIngredientRole role, int x, int y, RecipeSlotFlags flags) {

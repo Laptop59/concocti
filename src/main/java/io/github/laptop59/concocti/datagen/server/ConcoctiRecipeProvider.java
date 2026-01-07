@@ -10,9 +10,7 @@ import io.github.laptop59.concocti.common.item.MoldItem;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachines;
 import io.github.laptop59.concocti.common.machine.ConcoctiMultiBlockMachine;
 import io.github.laptop59.concocti.common.machine.impl.*;
-import io.github.laptop59.concocti.common.recipe.FluidRecipeIngredient;
-import io.github.laptop59.concocti.common.recipe.ItemOption;
-import io.github.laptop59.concocti.common.recipe.ItemRecipeIngredient;
+import io.github.laptop59.concocti.common.recipe.*;
 import io.github.laptop59.concocti.common.util.ConcoctiConstants;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -30,11 +28,11 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
 import net.neoforged.neoforge.registries.DeferredItem;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -74,15 +72,18 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
         {
             concoctiMelterRecipe(output, ConcoctiItems.DIRTY_CONCOCTI_NUGGET, 10,
                     new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_NUGGET_PURIFIED),
-                    new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT, 3)
+                    new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT, 3),
+                    "dirty_concocti_nugget"
             );
             concoctiMelterRecipe(output, ConcoctiItems.DIRTY_CONCOCTI_INGOT, 10 * 8, // discount
                     new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_INGOT_PURIFIED),
-                    new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT, 3 * 9)
+                    new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT, 3 * 9),
+                    "dirty_concocti_ingot"
             );
             concoctiMelterRecipe(output, ConcoctiItems.DIRTY_CONCOCTI_BLOCK, 10 * 64,
                     new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_BLOCK_PURIFIED),
-                    new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT, 3 * 81)
+                    new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT, 3 * 81),
+                    "dirty_concoti_block"
             );
 
             concoctiMelterRecipes(output,
@@ -118,14 +119,14 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
             );
 
             concoctiMelterRecipe(output, Items.COPPER_INGOT, 5 * 8, // discount
-                    new FluidStack(ConcoctiFluids.MOLTEN_COPPER, ConcoctiConstants.MOLTEN_INGOT)
+                    new FluidStack(ConcoctiFluids.MOLTEN_COPPER, ConcoctiConstants.MOLTEN_INGOT), "copper_ingot"
             );
             concoctiMelterRecipe(output, Items.COPPER_BLOCK, 5 * 64,
-                    new FluidStack(ConcoctiFluids.MOLTEN_COPPER, ConcoctiConstants.MOLTEN_BLOCK)
+                    new FluidStack(ConcoctiFluids.MOLTEN_COPPER, ConcoctiConstants.MOLTEN_BLOCK), "copper_block"
             );
-            concoctiMelterRecipe(output, Items.ICE, 40, new FluidStack(Fluids.WATER, 1000));
-            concoctiMelterRecipe(output, Items.PACKED_ICE, 80, new FluidStack(Fluids.WATER, 9000));
-            concoctiMelterRecipe(output, Items.BLUE_ICE, 640, new FluidStack(Fluids.WATER, 81000));
+            concoctiMelterRecipe(output, Items.ICE, 40, new FluidStack(Fluids.WATER, 1000), "ice");
+            concoctiMelterRecipe(output, Items.PACKED_ICE, 80, new FluidStack(Fluids.WATER, 9000), "packet_ice");
+            concoctiMelterRecipe(output, Items.BLUE_ICE, 640, new FluidStack(Fluids.WATER, 81000), "blue_ice");
         }
 
         // Concocti Solidifier Recipes
@@ -378,7 +379,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     4 * 20,
                     List.of(
                             ItemRecipeIngredient.of(
-                                ItemOption.of(
+                                ItemRecipeIngredientOption.of(
                                     Ingredient.of(ConcoctiItems.INFINITY_CONCOCTI_SEEDS),
                                     1,
                                     true
@@ -436,91 +437,104 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     Ingredient.of(ConcoctiItems.CRYSTALIUM_NUGGET),
                     new FluidStack(ConcoctiFluids.SUPERSATURATED_CRYSTALIUM_SOLUTION, 50),
                     5 * 20,
-                    new ItemStack(ConcoctiItems.CRYSTALIUM_NUGGET.get(), 3)
+                    new ItemStack(ConcoctiItems.CRYSTALIUM_NUGGET.get(), 3),
+                    "crystalium_nugget"
             );
             concoctiCrystallizerRecipe(
                     output,
                     Ingredient.of(ConcoctiItems.CRYSTALIUM_INGOT),
                     new FluidStack(ConcoctiFluids.SUPERSATURATED_CRYSTALIUM_SOLUTION, 50 * 9 * 2 / 3),
                     5 * 8 * 20,
-                    new ItemStack(ConcoctiItems.CRYSTALIUM_INGOT.get(), 2)
+                    new ItemStack(ConcoctiItems.CRYSTALIUM_INGOT.get(), 2),
+                    "crystalium_ingot"
             );
             concoctiCrystallizerRecipe(
                     output,
                     Ingredient.of(ConcoctiItems.CRYSTALIUM_BLOCK),
                     new FluidStack(ConcoctiFluids.SUPERSATURATED_CRYSTALIUM_SOLUTION, 50 * 81 * 1 / 3),
                     5 * 64 * 20,
-                    new ItemStack(ConcoctiItems.CRYSTALIUM_BLOCK.get(), 1)
+                    new ItemStack(ConcoctiItems.CRYSTALIUM_BLOCK.get(), 1),
+                    "crystalium_block"
             );
             concoctiCrystallizerRecipe(
                     output,
                     Ingredient.of(Items.ICE),
                     new FluidStack(Fluids.WATER, 1000),
                     5,
-                    new ItemStack(Items.ICE, 1)
+                    new ItemStack(Items.ICE, 1),
+                    "ice"
             );
             concoctiCrystallizerRecipe(
                     output,
                     Ingredient.of(Items.PACKED_ICE),
                     new FluidStack(Fluids.WATER, 9000),
                     15,
-                    new ItemStack(Items.PACKED_ICE, 1)
+                    new ItemStack(Items.PACKED_ICE, 1),
+                   "packed_ice"
             );
             concoctiCrystallizerRecipe(
                     output,
                     Ingredient.of(Items.BLUE_ICE),
                     new FluidStack(Fluids.WATER, 81000),
                     75,
-                    new ItemStack(Items.BLUE_ICE, 1)
+                    new ItemStack(Items.BLUE_ICE, 1),
+                    "blue_ice"
             );
             concoctiCrystallizerRecipe(
                     output,
                     Ingredient.of(Items.AMETHYST_SHARD),
                     new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_INGOT),
                     15,
-                    new ItemStack(Items.AMETHYST_SHARD, 1)
+                    new ItemStack(Items.AMETHYST_SHARD, 1),
+                    "amethyst_shard"
             );
             concoctiCrystallizerRecipe(
                     output,
                     Ingredient.of(Items.AMETHYST_BLOCK),
                     new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_INGOT * 4),
                     60,
-                    new ItemStack(Items.AMETHYST_BLOCK, 1)
+                    new ItemStack(Items.AMETHYST_BLOCK, 1),
+                    "amethyst_block"
             );
             concoctiCrystallizerRecipe(
                     output,
                     Ingredient.of(ConcoctiItems.DIAMETHYST_CRYSTAL),
                     new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_INGOT * 4),
                     75,
-                    new ItemStack(ConcoctiItems.DIAMETHYST_CRYSTAL.get(), 1)
+                    new ItemStack(ConcoctiItems.DIAMETHYST_CRYSTAL.get(), 1),
+                    "diamethyst_crystal"
             );
             concoctiCrystallizerRecipe(
                     output,
                     Ingredient.of(ConcoctiItems.DIAMETHYST_BLOCK),
                     new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_BLOCK * 4),
                     75,
-                    new ItemStack(ConcoctiItems.DIAMETHYST_BLOCK.get(), 1)
+                    new ItemStack(ConcoctiItems.DIAMETHYST_BLOCK.get(), 1),
+                    "diamethyst_block"
             );
             concoctiCrystallizerRecipe(
                     output,
                     Ingredient.of(Items.WARPED_ROOTS),
                     new FluidStack(Fluids.LAVA, 100),
                     3 * 20,
-                    new ItemStack(Items.WARPED_ROOTS, 1)
+                    new ItemStack(Items.WARPED_ROOTS, 1),
+                    "warped_roots"
             );
             concoctiCrystallizerRecipe(
                     output,
                     Ingredient.of(Items.CRIMSON_ROOTS),
                     new FluidStack(Fluids.LAVA, 125),
                     2 * 20,
-                    new ItemStack(Items.CRIMSON_ROOTS, 1)
+                    new ItemStack(Items.CRIMSON_ROOTS, 1),
+                    "crimson_roots"
             );
             concoctiCrystallizerRecipe(
                     output,
                     Ingredient.of(Items.CALCITE),
                     new FluidStack(Fluids.WATER, 2000),
                     10 * 20,
-                    new ItemStack(Items.CALCITE, 1)
+                    new ItemStack(Items.CALCITE, 1),
+                    "calcite"
             );
         }
 
@@ -778,12 +792,16 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 output,
                 ConcoctiMachines.MAGNETIC_SEPARATOR,
                 "magnetic_extraction_of_molten_concocti",
-                10,
+                30,
                 List.of(),
                 List.of(
-                        FluidRecipeIngredient.of(ConcoctiFluids.MOLTEN_CONCOCTI.get(), ConcoctiConstants.MOLTEN_INGOT * 2)
+                        FluidRecipeIngredient.of(ConcoctiFluids.MOLTEN_CONCOCTI.get(), ConcoctiConstants.MOLTEN_INGOT * 4)
                 ),
-                List.of(new ItemStack(Items.IRON_NUGGET, 4), new ItemStack(ConcoctiItems.DENSE_CONCOCTI_PELLET.get(), 1)),
+                List.of(
+                        ItemOutput.of(Items.IRON_NUGGET, 6),
+                        ItemOutput.of(Items.COPPER_INGOT, 1),
+                        ItemOutput.of(ConcoctiItems.DENSE_CONCOCTI_PELLET.get(), 5)
+                ),
                 List.of()
         );
         concoctiMultiblockRecipe(
@@ -795,7 +813,95 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 List.of(
                         FluidRecipeIngredient.of(Fluids.LAVA, ConcoctiConstants.MOLTEN_BLOCK * 2)
                 ),
-                List.of(new ItemStack(Items.IRON_NUGGET, 1), new ItemStack(Items.STONE, 1)),
+                List.of(
+                        ItemOutput.of(Items.IRON_NUGGET, 1),
+                        ItemOutput.of(Items.STONE, 1)
+                ),
+                List.of()
+        );
+
+        concoctiMultiblockRecipe(
+                output,
+                ConcoctiMachines.CENTRIFUGE,
+                "centrifugation_of_molten_concocti",
+                5,
+                List.of(),
+                List.of(
+                        FluidRecipeIngredient.of(ConcoctiFluids.MOLTEN_CONCOCTI.get(), ConcoctiConstants.MOLTEN_NUGGET * 3)
+                ),
+                List.of(
+                        ItemOutput.of(Items.REDSTONE, 1),
+                        ItemOutput.of(Items.GOLD_NUGGET, 2),
+                        ItemOutput.of(ConcoctiItems.DENSE_CONCOCTI_PELLET.get(), 1)
+                ),
+                List.of()
+        );
+
+        concoctiMultiblockRecipe(
+                output,
+                ConcoctiMachines.CENTRIFUGE,
+                "centrifugation_of_molten_concoctized_dirt",
+                10,
+                List.of(),
+                List.of(
+                        FluidRecipeIngredient.of(ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT.get(), ConcoctiConstants.MOLTEN_INGOT * 2)
+                ),
+                List.of(
+                        ItemOutput.of(Items.BONE_MEAL, 8),
+                        ItemOutput.of(ConcoctiItems.CONCOCTI_SEEDS.get(), 1),
+                        ItemOutput.of(ConcoctiItems.PURIFIED_CONCOCTI_NUGGET.get(), 4)
+                ),
+                List.of()
+        );
+
+        concoctiMultiblockRecipe(
+                output,
+                ConcoctiMachines.CENTRIFUGE,
+                "centrifugation_of_water_with_clay",
+                4,
+                List.of(
+                        ItemRecipeIngredient.of(Ingredient.of(Items.CLAY), 1, true)
+                ),
+                List.of(
+                        FluidRecipeIngredient.of(Fluids.WATER, 1000)
+                ),
+                List.of(
+                        ItemOutput.of(Items.CLAY, 1, 0.04f)
+                ),
+                List.of()
+        );
+
+        concoctiMultiblockRecipe(
+                output,
+                ConcoctiMachines.CENTRIFUGE,
+                "centrifugation_of_water_with_sand",
+                4,
+                List.of(
+                        ItemRecipeIngredient.of(Ingredient.of(Items.SAND), 1, true)
+                ),
+                List.of(
+                        FluidRecipeIngredient.of(Fluids.WATER, 1000)
+                ),
+                List.of(
+                        ItemOutput.of(Items.SAND, 1, 0.0325f)
+                ),
+                List.of()
+        );
+
+        concoctiMultiblockRecipe(
+                output,
+                ConcoctiMachines.CENTRIFUGE,
+                "centrifugation_of_water_with_gravel",
+                4,
+                List.of(
+                        ItemRecipeIngredient.of(Ingredient.of(Items.GRAVEL), 1, true)
+                ),
+                List.of(
+                        FluidRecipeIngredient.of(Fluids.WATER, 1000)
+                ),
+                List.of(
+                        ItemOutput.of(Items.GRAVEL, 1, 0.025f)
+                ),
                 List.of()
         );
 
@@ -833,12 +939,12 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
     private static void concoctiSolidifierRecipe(RecipeOutput output, MoldItem.Type type, List<ConcoctiMoldingSolidifierRecipe> recipeList) {
         Ingredient molds = Ingredient.of(ConcoctiItems.Tags.MOLDS.get(type));
         for (ConcoctiMoldingSolidifierRecipe recipe : recipeList) {
-            ItemRecipeIngredient inputItem = recipe.input == null ? null : ItemRecipeIngredient.of(ItemOption.of(recipe.input));
+            ItemRecipeIngredient inputItem = recipe.input == null ? null : ItemRecipeIngredient.of(ItemRecipeIngredientOption.of(recipe.input));
             concoctiSolidifierRecipe(
                 output,
                 inputItem,
                 ItemRecipeIngredient.of(
-                    ItemOption.of(molds, true, true)
+                    ItemRecipeIngredientOption.of(molds, true, true)
                 ),
                 recipe.fluidStack,
                 recipe.ticks,
@@ -914,25 +1020,37 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
      * Generates a Concocti Melter Recipe that melts an item into fluids.
      */
     private static void concoctiMelterRecipe(RecipeOutput output, ItemLike input, int ticks,
-                                             FluidStack pureResult, FluidStack byproductResult) {
+                                             FluidStack pureResult, FluidStack byproductResult, String name) {
         new ConcoctiMelter.Recipe.Builder(
                 ItemRecipeIngredient.of(Ingredient.of(input.asItem())),
                 pureResult,
                 byproductResult,
                 ticks
-        ).save(output);
+        ).save(output, ResourceLocation.fromNamespaceAndPath(MODID, "melter/" + name));
     }
 
     /**
      * Generates a Concocti Melter Recipe that melts an item into fluids. Only has one fluid product.
      */
-    private static void concoctiMelterRecipe(RecipeOutput output, ItemLike input, int ticks, FluidStack pureResult) {
+    private static void concoctiMelterRecipe(RecipeOutput output, ItemLike input, int ticks, FluidStack pureResult, FluidStack byproductResult) {
+        new ConcoctiMelter.Recipe.Builder(
+            ItemRecipeIngredient.of(Ingredient.of(input.asItem())),
+            pureResult,
+            byproductResult,
+            ticks
+        ).save(output, ResourceLocation.fromNamespaceAndPath(MODID, "melter/" + BuiltInRegistries.ITEM.getKey(input.asItem()).getPath()));
+    }
+
+    /**
+     * Generates a Concocti Melter Recipe that melts an item into fluids. Only has one fluid product.
+     */
+    private static void concoctiMelterRecipe(RecipeOutput output, ItemLike input, int ticks, FluidStack pureResult, String name) {
         new ConcoctiMelter.Recipe.Builder(
             ItemRecipeIngredient.of(Ingredient.of(input.asItem())),
                 pureResult,
                 FluidStack.EMPTY,
                 ticks
-        ).save(output);
+        ).save(output, ResourceLocation.fromNamespaceAndPath(MODID, "melter/" + name));
     }
 
     /**
@@ -981,7 +1099,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 FluidRecipeIngredient.of(inputFluid),
                 outputItem,
                 ticks
-        ).save(output);
+        ).save(output, ResourceLocation.fromNamespaceAndPath(MODID, "solidifying/" + BuiltInRegistries.ITEM.getKey(outputItem.getItem()).getPath()));
     }
 
     /**
@@ -995,20 +1113,20 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
             inputFluid,
             outputItem,
             ticks
-        ).save(output);
+        ).save(output, ResourceLocation.fromNamespaceAndPath(MODID, "solidifying/" + BuiltInRegistries.ITEM.getKey(outputItem.getItem()).getPath()));
     }
 
     /**
      * Generates a Concocti Crystallizer Recipe that uses a seed crystal to crystallize a fluid.
      */
     private static void concoctiCrystallizerRecipe(RecipeOutput output, Ingredient seedCrystal,
-                                                   FluidStack inputFluid, int ticks, ItemStack outputItem) {
+                                                   FluidStack inputFluid, int ticks, ItemStack outputItem, String name) {
         new ConcoctiCrystallizer.Recipe.Builder(
                 ItemRecipeIngredient.of(seedCrystal, 1, true),
                 FluidRecipeIngredient.of(inputFluid),
                 outputItem,
                 ticks
-        ).save(output);
+        ).save(output, ResourceLocation.fromNamespaceAndPath(MODID, "crystallization/" + name));
     }
 
     /**
@@ -1065,8 +1183,8 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
             int ticks,
             List<ItemRecipeIngredient> inputItems,
             List<FluidRecipeIngredient> inputFluids,
-            List<ItemStack> outputItems,
-            List<FluidStack> outputFluids
+            List<ItemOutput> outputItems,
+            List<FluidOutput> outputFluids
     ) {
         new ConcoctiMultiBlockMachine.Recipe.Builder(
                 multiBlockMachine.ID,

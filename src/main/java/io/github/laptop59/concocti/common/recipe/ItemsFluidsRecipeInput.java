@@ -41,7 +41,7 @@ public class ItemsFluidsRecipeInput extends RecipeWrapper {
             }
             loop:
             for (ItemRecipeIngredient inputItem : inputItems) {
-                for (ItemOption option : inputItem.options()) {
+                for (ItemRecipeIngredientOption option : inputItem.options()) {
                     long[] countsLeft = currentCountsLeft.clone();
                     long countLeft = option.count();
                     for (int i = 0; i < this.size(); i++) {
@@ -70,7 +70,7 @@ public class ItemsFluidsRecipeInput extends RecipeWrapper {
             }
             loop:
             for (FluidRecipeIngredient inputFluid : inputFluids) {
-                for (FluidOption option : inputFluid.options()) {
+                for (FluidRecipeIngredientOption option : inputFluid.options()) {
                     long[] amountsLeft = currentAmountsLeft.clone();
                     long amountLeft = option.amount();
                     for (int i = 0; i < this.getFluids(); i++) {
@@ -97,7 +97,7 @@ public class ItemsFluidsRecipeInput extends RecipeWrapper {
         return true;
     }
 
-    public void consume(ItemOption option) {
+    public void consume(ItemRecipeIngredientOption option) {
         if (option.unconsumed()) {
             if (option.loseDurability()) {
                 for (int i = 0; i < size(); i++) {
@@ -124,7 +124,7 @@ public class ItemsFluidsRecipeInput extends RecipeWrapper {
         }
     }
 
-    public void consume(FluidOption option) {
+    public void consume(FluidRecipeIngredientOption option) {
         if (option.unconsumed()) return;
         long leftToConsume = option.amount();
         for (int i = 0; i < getFluids(); i++) {

@@ -10,10 +10,7 @@ import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMultibloc
 import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
 import io.github.laptop59.concocti.common.menu.ConcoctiMultiblockMenu;
 import io.github.laptop59.concocti.common.multiblock.MultiblockStructure;
-import io.github.laptop59.concocti.common.recipe.AbstractConcoctiMultiblockRecipe;
-import io.github.laptop59.concocti.common.recipe.FluidRecipeIngredient;
-import io.github.laptop59.concocti.common.recipe.ItemRecipeIngredient;
-import io.github.laptop59.concocti.common.recipe.ItemsFluidsRecipeInput;
+import io.github.laptop59.concocti.common.recipe.*;
 import io.github.laptop59.concocti.network.ConcoctiMachineSettingsBuildPreviewChangeC2S;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -196,12 +193,12 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
     public static class Recipe extends AbstractConcoctiMultiblockRecipe<Recipe> {
         String machineId;
 
-        public Recipe(String machineId, ResourceLocation id, List<ItemRecipeIngredient> inputItems, List<ItemStack> outputItems, List<FluidRecipeIngredient> inputFluids, List<FluidStack> outputFluids, int ticks) {
+        public Recipe(String machineId, ResourceLocation id, List<ItemRecipeIngredient> inputItems, List<ItemOutput> outputItems, List<FluidRecipeIngredient> inputFluids, List<FluidOutput> outputFluids, int ticks) {
             super(id, inputItems, outputItems, inputFluids, outputFluids, ticks);
             this.machineId = machineId;
         }
 
-        public Recipe(String machineId, List<ItemRecipeIngredient> inputItems, List<ItemStack> outputItems, List<FluidRecipeIngredient> inputFluids, List<FluidStack> outputFluids, int ticks) {
+        public Recipe(String machineId, List<ItemRecipeIngredient> inputItems, List<ItemOutput> outputItems, List<FluidRecipeIngredient> inputFluids, List<FluidOutput> outputFluids, int ticks) {
             super(inputItems, outputItems, inputFluids, outputFluids, ticks);
             this.machineId = machineId;
         }
@@ -224,7 +221,7 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
             }
 
             @Override
-            public Recipe construct(List<ItemRecipeIngredient> inputItems, List<ItemStack> outputItems, List<FluidRecipeIngredient> inputFluids, List<FluidStack> outputFluids, int ticks) {
+            public Recipe construct(List<ItemRecipeIngredient> inputItems, List<ItemOutput> outputItems, List<FluidRecipeIngredient> inputFluids, List<FluidOutput> outputFluids, int ticks) {
                 return new Recipe(machineId, inputItems, outputItems, inputFluids, outputFluids, ticks);
             }
         }
@@ -232,13 +229,13 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
         public static class Builder extends AbstractConcoctiMultiblockRecipe.Builder<Recipe> {
             String machineId;
 
-            public Builder(String machineId, ResourceLocation resourceLocation, List<ItemRecipeIngredient> inputItems, List<ItemStack> outputItems, List<FluidRecipeIngredient> inputFluids, List<FluidStack> outputFluids, int ticks) {
+            public Builder(String machineId, ResourceLocation resourceLocation, List<ItemRecipeIngredient> inputItems, List<ItemOutput> outputItems, List<FluidRecipeIngredient> inputFluids, List<FluidOutput> outputFluids, int ticks) {
                 super(resourceLocation, inputItems, outputItems, inputFluids, outputFluids, ticks);
                 this.machineId = machineId;
             }
 
             @Override
-            public Recipe construct(ResourceLocation id, List<ItemRecipeIngredient> inputItems, List<ItemStack> outputItems, List<FluidRecipeIngredient> inputFluids, List<FluidStack> outputFluids, int ticks) {
+            public Recipe construct(ResourceLocation id, List<ItemRecipeIngredient> inputItems, List<ItemOutput> outputItems, List<FluidRecipeIngredient> inputFluids, List<FluidOutput> outputFluids, int ticks) {
                 return new Recipe(machineId, id, inputItems, outputItems, inputFluids, outputFluids, ticks);
             }
         }

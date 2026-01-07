@@ -7,6 +7,7 @@ import io.github.laptop59.concocti.common.block.HatchType;
 import io.github.laptop59.concocti.common.machine.impl.*;
 import io.github.laptop59.concocti.common.multiblock.*;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.level.block.Blocks;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -24,6 +25,7 @@ public final class ConcoctiMachines {
     public static ConcoctiCompressor COMPRESSOR;
 
     public static ConcoctiMultiBlockMachine MAGNETIC_SEPARATOR;
+    public static ConcoctiMultiBlockMachine CENTRIFUGE;
 
     public static int MAX_RADIUS_SEARCHABLE = 0;
     public static int MAX_SQ_RADIUS_SEARCHABLE = 0;
@@ -93,7 +95,35 @@ public final class ConcoctiMachines {
                 )
         ));
 
-        Concocti.LOGGER.info("Max radii searchable are: X = {}, Y = {}, Z = {} | Max searchable squared radius = {} | Max searchable radius = {}",
+        CENTRIFUGE = registerMultiblock(new ConcoctiMultiBlockMachine(
+            "concocti_centrifuge",
+            400.0f,
+            MultiblockStructure.from(MultiblockStructure.Builder.create(-2, -1, -4, 3, 2, 1), builder -> builder.load(
+                    Map.of(
+                        'B', new MultiblockSimpleBlockPredicate(ConcoctiBlocks.TOUGH_CONCOCTI_BRICKS),
+                        'H', new MultiblockToughConcoctiBrickLikePredicate(
+                            ConcoctiBlocks.getDeferredHatch(HatchPurpose.INPUT, HatchType.ITEM),
+                            ConcoctiBlocks.getDeferredHatch(HatchPurpose.INPUT, HatchType.FLUID),
+                            ConcoctiBlocks.getDeferredHatch(HatchPurpose.OUTPUT, HatchType.ITEM),
+                            ConcoctiBlocks.getDeferredHatch(HatchPurpose.OUTPUT, HatchType.FLUID),
+                            ConcoctiBlocks.getDeferredHatch(HatchPurpose.INPUT, HatchType.ENERGY)
+                        ),
+                        'C', new MultiblockSimpleBlockPredicate(ConcoctiBlocks.CONDUCTIVIUM_BLOCK),
+                        'A', new MultiblockBlockTagPredicate(BlockTags.AIR),
+                        'U', new MultiblockSimpleBlockPredicate(Blocks.CAULDRON),
+                        '+', new MultiblockSimpleBlockPredicate(Blocks.GRINDSTONE)
+                    ),
+                    null,
+                    "BBBBB BHHHB BBBBB",
+                    "BBHBB HAUAH BBHBB",
+                    "BHHHB HU+UH BHHHB",
+                    "BBHBB HAUAH BBHBB",
+                    "BBBBB BH HB BBBBB"
+                )
+            )
+        ));
+
+        Concocti.LOGGER.debug("Max radii searchable are: X = {}, Y = {}, Z = {} | Max searchable squared radius = {} | Max searchable radius = {}",
                 MAX_X_RADIUS_SEARCHABLE,
                 MAX_Y_RADIUS_SEARCHABLE,
                 MAX_Z_RADIUS_SEARCHABLE,

@@ -2,7 +2,9 @@ package io.github.laptop59.concocti.common.machine;
 
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
+import io.github.laptop59.concocti.common.recipe.FluidOutput;
 import io.github.laptop59.concocti.common.recipe.FluidRecipeIngredient;
+import io.github.laptop59.concocti.common.recipe.ItemOutput;
 import io.github.laptop59.concocti.common.recipe.ItemRecipeIngredient;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -57,6 +59,14 @@ public interface RecipeBuilder {
 
     default void addOutputSlot(int x, int y, FluidStack stack, float chance) {
         addOutputSlot(x, y, new RecipeSlotFlags(stack), chance);
+    }
+
+    default void addOutputSlot(int x, int y, ItemOutput output) {
+        addOutputSlot(x, y, new RecipeSlotFlags(output.stack()), output.chance());
+    }
+
+    default void addOutputSlot(int x, int y, FluidOutput output) {
+        addOutputSlot(x, y, new RecipeSlotFlags(output.stack()), output.chance());
     }
 
     default void addInputSlot(int x, int y, Ingredient ingredient) {

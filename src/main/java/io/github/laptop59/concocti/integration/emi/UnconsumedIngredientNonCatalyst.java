@@ -3,6 +3,7 @@ package io.github.laptop59.concocti.integration.emi;
 import dev.emi.emi.api.render.EmiRender;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
+import io.github.laptop59.concocti.client.ConcoctiClient;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.chat.Component;
@@ -57,11 +58,7 @@ public record UnconsumedIngredientNonCatalyst(EmiIngredient ingredient) implemen
     public List<ClientTooltipComponent> getTooltip() {
         ArrayList<ClientTooltipComponent> components = new ArrayList<>();
         components.addAll(ingredient.getTooltip());
-        components.add(ClientTooltipComponent.create(getUnconsumedComponent().getVisualOrderText()));
+        components.add(ClientTooltipComponent.create(ConcoctiClient.UNCONSUMED.getVisualOrderText()));
         return components;
-    }
-
-    public static MutableComponent getUnconsumedComponent() {
-        return Component.translatable("screen.concocti.unconsumed").withColor(0xC7C7C7);
     }
 }

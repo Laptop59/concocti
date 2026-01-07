@@ -21,58 +21,58 @@ import java.util.Optional;
 public final class ItemRecipeIngredient {
     public static final Codec<ItemRecipeIngredient> CODEC = RecordCodecBuilder.create(instance ->
         instance.group(
-            ItemOption.CODEC.listOf().fieldOf("options").forGetter(ItemRecipeIngredient::options)
+            ItemRecipeIngredientOption.CODEC.listOf().fieldOf("options").forGetter(ItemRecipeIngredient::options)
         ).apply(instance, ItemRecipeIngredient::new)
     );
 
     public static final StreamCodec<RegistryFriendlyByteBuf, ItemRecipeIngredient> STREAM_CODEC = StreamCodec.composite(
-        ItemOption.STREAM_CODEC.apply(ByteBufCodecs.list()), ItemRecipeIngredient::options,
+        ItemRecipeIngredientOption.STREAM_CODEC.apply(ByteBufCodecs.list()), ItemRecipeIngredient::options,
         ItemRecipeIngredient::new
     );
 
-    public static ItemRecipeIngredient of(@NotNull ItemOption... options) {
+    public static ItemRecipeIngredient of(@NotNull ItemRecipeIngredientOption... options) {
         return new ItemRecipeIngredient(options);
     }
 
     public static ItemRecipeIngredient of(@NotNull Ingredient ingredient, long count, boolean unconsumed) {
         Objects.requireNonNull(ingredient);
-        return ItemRecipeIngredient.of(ItemOption.of(ingredient, count, unconsumed));
+        return ItemRecipeIngredient.of(ItemRecipeIngredientOption.of(ingredient, count, unconsumed));
     }
 
     public static ItemRecipeIngredient of(@NotNull Ingredient ingredient, long count) {
-        return ItemRecipeIngredient.of(ItemOption.of(ingredient, count, false));
+        return ItemRecipeIngredient.of(ItemRecipeIngredientOption.of(ingredient, count, false));
     }
 
     public static ItemRecipeIngredient of(@NotNull ItemLike itemLike, long count) {
-        return ItemRecipeIngredient.of(ItemOption.of(Ingredient.of(itemLike), count, false));
+        return ItemRecipeIngredient.of(ItemRecipeIngredientOption.of(Ingredient.of(itemLike), count, false));
     }
 
     public static ItemRecipeIngredient of(@NotNull TagKey<Item> tag, long count) {
-        return ItemRecipeIngredient.of(ItemOption.of(Ingredient.of(tag), count, false));
+        return ItemRecipeIngredient.of(ItemRecipeIngredientOption.of(Ingredient.of(tag), count, false));
     }
 
     public static ItemRecipeIngredient of(@NotNull Ingredient ingredient, boolean unconsumed) {
-        return ItemRecipeIngredient.of(ItemOption.of(ingredient, 1, unconsumed));
+        return ItemRecipeIngredient.of(ItemRecipeIngredientOption.of(ingredient, 1, unconsumed));
     }
 
     public static ItemRecipeIngredient of(@NotNull Ingredient ingredient) {
-        return ItemRecipeIngredient.of(ItemOption.of(ingredient, 1, false));
+        return ItemRecipeIngredient.of(ItemRecipeIngredientOption.of(ingredient, 1, false));
     }
 
     @NotNull
-    private final List<ItemOption> options;
+    private final List<ItemRecipeIngredientOption> options;
 
     private List<ItemStack> cachedStacks;
 
-    public ItemRecipeIngredient(@NotNull List<ItemOption> options) {
+    public ItemRecipeIngredient(@NotNull List<ItemRecipeIngredientOption> options) {
         this.options = List.copyOf(options);
     }
 
-    public ItemRecipeIngredient(@NotNull ItemOption... options) {
+    public ItemRecipeIngredient(@NotNull ItemRecipeIngredientOption... options) {
         this.options = List.of(options);
     }
 
-    public List<ItemOption> options() {
+    public List<ItemRecipeIngredientOption> options() {
         return options;
     }
 
@@ -104,20 +104,20 @@ public final class ItemRecipeIngredient {
     private List<ItemStack> getItemStacksUncached() {
         return options
             .stream()
-            .map(ItemOption::intoItemStackUncached)
+            .map(ItemRecipeIngredientOption::intoItemStackUncached)
             .flatMap(List::stream)
             .toList();
     }
 
-    public Optional<ItemOption> testOpt(ItemStack stack) {
-        for (ItemOption option : options) {
+    public Optional<ItemRecipeIngredientOption> testOpt(ItemStack stack) {
+        for (ItemRecipeIngredientOption option : options) {
             if (option.matches(stack)) return Optional.of(option);
         }
         return Optional.empty();
     }
 
-    public Optional<ItemOption> consumeOpt(ItemStack stack) {
-        for (ItemOption option : options) {
+    public Optional<ItemRecipeIngredientOption> consumeOpt(ItemStack stack) {
+        for (ItemRecipeIngredientOption option : options) {
             if (option.consume(stack)) return Optional.of(option);
         }
         return Optional.empty();
@@ -131,8 +131,8 @@ public final class ItemRecipeIngredient {
         return consumeOpt(stack).isPresent();
     }
 
-    public Optional<ItemOption> testOpt(IItemHandler handler) {
-        for (ItemOption option : options) {
+    public Optional<ItemRecipeIngredientOption> testOpt(IItemHandler handler) {
+        for (ItemRecipeIngredientOption option : options) {
             long countLeft = option.count();
             for (int i = 0; i < handler.getSlots(); i++) {
                 ItemStack itemStack = handler.getStackInSlot(i);
@@ -144,8 +144,8 @@ public final class ItemRecipeIngredient {
         return Optional.empty();
     }
 
-    public Optional<ItemOption> consumeOpt(IItemHandler handler) {
-        for (ItemOption option : options) {
+    public Optional<ItemRecipeIngredientOption> consumeOpt(IItemHandler handler) {
+        for (ItemRecipeIngredientOption option : options) {
             long countLeft = option.count();
             for (int i = 0; i < handler.getSlots(); i++) {
                 ItemStack itemStack = handler.getStackInSlot(i);

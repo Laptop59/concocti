@@ -6,6 +6,7 @@ import io.github.laptop59.concocti.common.Concocti;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachines;
 import io.github.laptop59.concocti.common.machine.ConcoctiMultiBlockMachine;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
@@ -30,7 +31,7 @@ import static io.github.laptop59.concocti.common.Concocti.MODID;
 @Mod(value = MODID, dist = Dist.CLIENT)
 public class ConcoctiClient {
     public static Set<UUID> concoctizedEntities = Set.of();
-    public static final Component UNCONSUMED =Component.translatable("screen.concocti.unconsumed").withColor(0xC7C7C7);
+    public static final Component UNCONSUMED = Component.translatable("screen.concocti.unconsumed").withStyle(ChatFormatting.RESET).withColor(0xC7C7C7);
 
     // For rendering through walls
     public static final RenderType GHOST_RENDER_TYPE = RenderType.create(
@@ -83,5 +84,10 @@ public class ConcoctiClient {
                 return ResourceLocation.fromNamespaceAndPath(MODID, "block/" + fluid.ID + "_flow");
             }
         }, fluid.FLUID_TYPE));
+    }
+
+    public static MutableComponent getChanceComponent(float chance) {
+        String chanceStr = String.format("%.2f", chance * 100);
+        return Component.translatable("screen.concocti.chance", chanceStr).withStyle(ChatFormatting.RESET).withColor(0xE563FF);
     }
 }

@@ -50,6 +50,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiMachines.CRYSTALLIZER, "Concocti Crystallizer");
         add(ConcoctiMachines.COMPRESSOR, "Concocti Compressor");
         add(ConcoctiMachines.MAGNETIC_SEPARATOR, "Concocti Magnetic Separator");
+        add(ConcoctiMachines.CENTRIFUGE, "Concocti Centrifuge");
 
         // Blocks go here.
         add(ConcoctiBlocks.DIAMETHYST_BLOCK, "Block of Diamethyst");

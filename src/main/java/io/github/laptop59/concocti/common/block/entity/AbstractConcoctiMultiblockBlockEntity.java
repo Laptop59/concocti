@@ -26,6 +26,8 @@ import io.github.laptop59.concocti.common.multiblock.MultiblockResult;
 import io.github.laptop59.concocti.common.multiblock.MultiblockStructure;
 import io.github.laptop59.concocti.common.multiblock.MultiblockToughConcoctiBrickLikePredicate;
 import io.github.laptop59.concocti.common.recipe.AbstractConcoctiMultiblockRecipe;
+import io.github.laptop59.concocti.common.recipe.FluidOutput;
+import io.github.laptop59.concocti.common.recipe.ItemOutput;
 import io.github.laptop59.concocti.common.recipe.ItemsFluidsRecipeInput;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -255,10 +257,10 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
     protected abstract @NotNull Component getDefaultName();
 
     protected boolean canInsertOutputsSeparately(R recipe) {
-        for (ItemStack result : recipe.getOutputItems())
-            if (!ItemHandlerHelper.insertItem(itemStackOutputHandler, result.copy(), true).isEmpty()) return false;
-        for (FluidStack result : recipe.getOutputFluids())
-            if (fluidStackInputHandler.fill(result, IFluidHandler.FluidAction.SIMULATE) < result.getAmount()) return false;
+        for (ItemOutput result : recipe.getOutputItems())
+            if (!ItemHandlerHelper.insertItem(itemStackOutputHandler, result.stack().copy(), true).isEmpty()) return false;
+        for (FluidOutput result : recipe.getOutputFluids())
+            if (fluidStackInputHandler.fill(result.stack(), IFluidHandler.FluidAction.SIMULATE) < result.stack().getAmount()) return false;
         return true;
     }
 
@@ -275,10 +277,10 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
         ItemsFluidsRecipeInput recipeInput = recipeInputFrom(input);
         recipeInput.consume(recipe.getInputItems(), recipe.getInputFluids());
         // Now add the finished products.
-        for (ItemStack result : recipe.getOutputItems())
-            ItemHandlerHelper.insertItem(itemStackOutputHandler, result.copy(), false);
-        for (FluidStack result : recipe.getOutputFluids())
-            fluidStackInputHandler.fill(result, IFluidHandler.FluidAction.EXECUTE);
+        for (ItemOutput result : recipe.getOutputItems())
+            if (result.roll()) ItemHandlerHelper.insertItem(itemStackOutputHandler, result.stack().copy(), false);
+        for (FluidOutput result : recipe.getOutputFluids())
+            if (result.roll()) fluidStackInputHandler.fill(result.stack(), IFluidHandler.FluidAction.EXECUTE);
     }
 
     /**
