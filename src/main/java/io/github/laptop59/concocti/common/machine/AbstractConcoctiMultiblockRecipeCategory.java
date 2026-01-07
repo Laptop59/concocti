@@ -1,8 +1,6 @@
 package io.github.laptop59.concocti.common.machine;
 
-import io.github.laptop59.concocti.common.recipe.AbstractConcoctiMultiblockRecipe;
-import io.github.laptop59.concocti.common.recipe.FluidRecipeIngredient;
-import io.github.laptop59.concocti.common.recipe.ItemRecipeIngredient;
+import io.github.laptop59.concocti.common.recipe.*;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
@@ -60,11 +58,11 @@ public abstract class AbstractConcoctiMultiblockRecipeCategory<R extends Abstrac
         }
         left += 11;
         left += 22 + 11;
-        for (ItemStack itemStack : recipe.getOutputItems()) {
+        for (ItemOutput itemStack : recipe.getOutputItems()) {
             builder.addOutputSlot(left, 6, itemStack);
             left += 18;
         }
-        for (FluidStack fluidStack : recipe.getOutputFluids()) {
+        for (FluidOutput fluidStack : recipe.getOutputFluids()) {
             builder.addOutputSlot(left, 6, fluidStack);
             left += 18;
         }

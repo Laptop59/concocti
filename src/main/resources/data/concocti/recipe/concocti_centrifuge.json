@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "#G#",
+    "GRG",
+    "#G#"
+  ],
+  "key": {
+    "#": {
+      "item": "concocti:tough_concocti_bricks"
+    },
+    "G": {
+      "item": "minecraft:grindstone"
+    },
+    "R": {
+      "item": "concocti:conductivium_lightning_rod"
+    }
+  },
+  "result": {
+    "id": "concocti:concocti_centrifuge",
+    "count": 1
+  }
+}

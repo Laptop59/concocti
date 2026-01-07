@@ -10,6 +10,11 @@ import net.minecraft.world.level.block.Blocks;
 import java.util.function.Supplier;
 
 public record MultiblockSimpleBlockPredicate(Supplier<? extends Block> block) implements MultiblockBlockPredicate {
+
+    public MultiblockSimpleBlockPredicate(Block block) {
+        this(() -> block);
+    }
+
     @Override
     public MultiblockResult getResult(Level level, BlockPos absolutePos, Direction controllerDirection) {
         Block currentBlock = level.getBlockState(absolutePos).getBlock();

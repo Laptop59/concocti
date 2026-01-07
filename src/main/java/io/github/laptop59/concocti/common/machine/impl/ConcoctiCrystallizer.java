@@ -246,7 +246,7 @@ public class ConcoctiCrystallizer extends ConcoctiMachineOnlyItemsFluids<
         static ResourceLocation makeResourceLocation(ItemRecipeIngredient seedCrystal, FluidRecipeIngredient inputFluid) {
             long hash = (long) seedCrystal.hashCode() << 32 | inputFluid.hashCode();
             ResourceLocation fluidLoc = ResourceLocation.fromNamespaceAndPath(MODID, String.format("%016x", hash));
-            fluidLoc = fluidLoc.withPrefix("seed_crystallization/").withSuffix("_with_" + String.format("%016x", seedCrystal.hashCode()));
+            fluidLoc = fluidLoc.withPrefix("crystallization/").withSuffix("_with_" + String.format("%016x", seedCrystal.hashCode()));
             return fluidLoc;
         }
 

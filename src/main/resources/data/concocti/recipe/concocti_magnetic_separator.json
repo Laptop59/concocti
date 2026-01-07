@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "#C#",
+    "#H#",
+    "#C#"
+  ],
+  "key": {
+    "#": {
+      "item": "concocti:tough_concocti_bricks"
+    },
+    "C": {
+      "item": "concocti:conductivium_block"
+    },
+    "H": {
+      "item": "minecraft:chest"
+    }
+  },
+  "result": {
+    "id": "concocti:concocti_magnetic_separator",
+    "count": 1
+  }
+}

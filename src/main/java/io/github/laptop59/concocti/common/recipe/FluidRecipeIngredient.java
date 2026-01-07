@@ -18,52 +18,52 @@ import java.util.Optional;
 public final class FluidRecipeIngredient {
     public static final Codec<FluidRecipeIngredient> CODEC = RecordCodecBuilder.create(instance ->
         instance.group(
-            FluidOption.CODEC.listOf().fieldOf("options").forGetter(FluidRecipeIngredient::options)
+            FluidRecipeIngredientOption.CODEC.listOf().fieldOf("options").forGetter(FluidRecipeIngredient::options)
         ).apply(instance, FluidRecipeIngredient::new)
     );
 
     public static final StreamCodec<RegistryFriendlyByteBuf, FluidRecipeIngredient> STREAM_CODEC = StreamCodec.composite(
-        FluidOption.STREAM_CODEC.apply(ByteBufCodecs.list()), FluidRecipeIngredient::options,
+        FluidRecipeIngredientOption.STREAM_CODEC.apply(ByteBufCodecs.list()), FluidRecipeIngredient::options,
         FluidRecipeIngredient::new
     );
 
-    public static FluidRecipeIngredient of(@NotNull FluidOption... options) {
+    public static FluidRecipeIngredient of(@NotNull FluidRecipeIngredientOption... options) {
         return new FluidRecipeIngredient(options);
     }
 
     @NotNull
-    private final List<FluidOption> options;
+    private final List<FluidRecipeIngredientOption> options;
     private List<FluidStack> cachedStacks;
 
-    public FluidRecipeIngredient(@NotNull List<FluidOption> options) {
+    public FluidRecipeIngredient(@NotNull List<FluidRecipeIngredientOption> options) {
         this.options = List.copyOf(options);
     }
 
-    public FluidRecipeIngredient(@NotNull FluidOption... options) {
+    public FluidRecipeIngredient(@NotNull FluidRecipeIngredientOption... options) {
         this.options = List.of(options);
     }
 
     public static FluidRecipeIngredient of(FluidIngredient ingredient, long amount, boolean unconsumed) {
-        return new FluidRecipeIngredient(FluidOption.of(ingredient, amount, unconsumed));
+        return new FluidRecipeIngredient(FluidRecipeIngredientOption.of(ingredient, amount, unconsumed));
     }
 
     public static FluidRecipeIngredient of(Fluid fluid, long amount) {
-        return new FluidRecipeIngredient(FluidOption.of(FluidIngredient.of(fluid), amount));
+        return new FluidRecipeIngredient(FluidRecipeIngredientOption.of(FluidIngredient.of(fluid), amount));
     }
 
     public static FluidRecipeIngredient of(FluidIngredient ingredient, long amount) {
-        return new FluidRecipeIngredient(FluidOption.of(ingredient, amount));
+        return new FluidRecipeIngredient(FluidRecipeIngredientOption.of(ingredient, amount));
     }
 
     public static FluidRecipeIngredient of(FluidStack ingredient, boolean unconsumed) {
-        return new FluidRecipeIngredient(FluidOption.of(FluidIngredient.of(ingredient.getFluid()), ingredient.getAmount(), unconsumed));
+        return new FluidRecipeIngredient(FluidRecipeIngredientOption.of(FluidIngredient.of(ingredient.getFluid()), ingredient.getAmount(), unconsumed));
     }
 
     public static FluidRecipeIngredient of(FluidStack ingredient) {
-        return new FluidRecipeIngredient(FluidOption.of(FluidIngredient.of(ingredient.getFluid()), ingredient.getAmount()));
+        return new FluidRecipeIngredient(FluidRecipeIngredientOption.of(FluidIngredient.of(ingredient.getFluid()), ingredient.getAmount()));
     }
 
-    public List<FluidOption> options() {
+    public List<FluidRecipeIngredientOption> options() {
         return options;
     }
 
@@ -95,20 +95,20 @@ public final class FluidRecipeIngredient {
     private List<FluidStack> getFluidStacksUncached() {
         return options
             .stream()
-            .map(FluidOption::intoFluidStackUncached)
+            .map(FluidRecipeIngredientOption::intoFluidStackUncached)
             .flatMap(List::stream)
             .toList();
     }
 
-    public Optional<FluidOption> testOpt(FluidStack fluid) {
-        for (FluidOption option : options) {
+    public Optional<FluidRecipeIngredientOption> testOpt(FluidStack fluid) {
+        for (FluidRecipeIngredientOption option : options) {
             if (option.matches(fluid)) return Optional.of(option);
         }
         return Optional.empty();
     }
 
-    public Optional<FluidOption> consumeOpt(FluidStack fluid) {
-        for (FluidOption option : options) {
+    public Optional<FluidRecipeIngredientOption> consumeOpt(FluidStack fluid) {
+        for (FluidRecipeIngredientOption option : options) {
             if (option.consume(fluid)) return Optional.of(option);
         }
         return Optional.empty();
@@ -122,8 +122,8 @@ public final class FluidRecipeIngredient {
         return consumeOpt(fluid).isPresent();
     }
 
-    public Optional<FluidOption> testOpt(IFluidHandler handler) {
-        for (FluidOption option : options) {
+    public Optional<FluidRecipeIngredientOption> testOpt(IFluidHandler handler) {
+        for (FluidRecipeIngredientOption option : options) {
             long amountLeft = option.amount();
             for (int i = 0; i < handler.getTanks(); i++) {
                 FluidStack fluidStack = handler.getFluidInTank(i);
@@ -135,8 +135,8 @@ public final class FluidRecipeIngredient {
         return Optional.empty();
     }
 
-    public Optional<FluidOption> consumeOpt(IFluidHandler handler) {
-        for (FluidOption option : options) {
+    public Optional<FluidRecipeIngredientOption> consumeOpt(IFluidHandler handler) {
+        for (FluidRecipeIngredientOption option : options) {
             long amountLeft = option.amount();
             for (int i = 0; i < handler.getTanks(); i++) {
                 FluidStack fluidStack = handler.getFluidInTank(i);

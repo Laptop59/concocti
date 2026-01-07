@@ -1,5 +1,6 @@
 package io.github.laptop59.concocti.datagen;
 
+import io.github.laptop59.concocti.datagen.client.ConcoctiBlockModelProvider;
 import io.github.laptop59.concocti.datagen.client.ConcoctiBlockStateProvider;
 import io.github.laptop59.concocti.datagen.client.ConcoctiItemModelProvider;
 import io.github.laptop59.concocti.datagen.client.ConcoctiItemTextureProvider;
@@ -38,6 +39,7 @@ public class ConcoctiDatagenHandler {
 
         // Register the client providers.
         generator.addProvider(event.includeClient(), new ConcoctiItemTextureProvider(output, MODID, existingFileHelper));
+        generator.addProvider(event.includeClient(), new ConcoctiBlockModelProvider(output, MODID, existingFileHelper));
         generator.addProvider(event.includeClient(), new ConcoctiBlockStateProvider(output, MODID, existingFileHelper));
         generator.addProvider(event.includeClient(), new ConcoctiItemModelProvider(output, MODID, existingFileHelper));
 
