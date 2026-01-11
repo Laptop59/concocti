@@ -722,7 +722,7 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
             super.render(recipe, guiGraphics, mouseX, mouseY);
             DrawInfo drawInfo = createDrawInfo(recipe);
             for (int x : drawInfo.slots) {
-                guiGraphics.blit(slot, x - 1, 6 - 1, 0, 0, 18, 18, 18, 18);
+                guiGraphics.blit(SLOT, x - 1, 6 - 1, 0, 0, 18, 18, 18, 18);
             }
         }
 

@@ -79,7 +79,7 @@ public final class ConcoctiMachines {
                 100.0f,
                 MultiblockStructure.from(MultiblockStructure.Builder.create(-1, -1, -2, 2, 4, 1), builder -> builder.load(
                             Map.of(
-                                    'B', new MultiblockToughConcoctiBrickLikePredicate(
+                                    'B', new MultiblockHatchAllowedPredicate(
                                             ConcoctiBlocks.getDeferredHatch(HatchPurpose.INPUT, HatchType.FLUID),
                                             ConcoctiBlocks.getDeferredHatch(HatchPurpose.OUTPUT, HatchType.ITEM),
                                             ConcoctiBlocks.getDeferredHatch(HatchPurpose.INPUT, HatchType.ENERGY)
@@ -101,7 +101,7 @@ public final class ConcoctiMachines {
             MultiblockStructure.from(MultiblockStructure.Builder.create(-2, -1, -4, 3, 2, 1), builder -> builder.load(
                     Map.of(
                         'B', new MultiblockSimpleBlockPredicate(ConcoctiBlocks.TOUGH_CONCOCTI_BRICKS),
-                        'H', new MultiblockToughConcoctiBrickLikePredicate(
+                        'H', new MultiblockHatchAllowedPredicate(
                             ConcoctiBlocks.getDeferredHatch(HatchPurpose.INPUT, HatchType.ITEM),
                             ConcoctiBlocks.getDeferredHatch(HatchPurpose.INPUT, HatchType.FLUID),
                             ConcoctiBlocks.getDeferredHatch(HatchPurpose.OUTPUT, HatchType.ITEM),
@@ -115,9 +115,9 @@ public final class ConcoctiMachines {
                     ),
                     null,
                     "BBBBB BHHHB BBBBB",
-                    "BBHBB HAUAH BBHBB",
-                    "BHHHB HU+UH BHHHB",
-                    "BBHBB HAUAH BBHBB",
+                    "BBBBB HAUAH BBBBB",
+                    "BBHBB HU+UH BBHBB",
+                    "BBBBB HAUAH BBBBB",
                     "BBBBB BH HB BBBBB"
                 )
             )

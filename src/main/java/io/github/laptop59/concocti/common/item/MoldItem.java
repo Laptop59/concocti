@@ -57,7 +57,8 @@ public class MoldItem extends Item {
      */
     public enum Type implements Comparable<Type> {
         NUGGET("nugget", ResourceLocation.fromNamespaceAndPath("c", "nuggets")),
-        INGOT("ingot", ResourceLocation.fromNamespaceAndPath("c", "ingots"));
+        INGOT("ingot", ResourceLocation.fromNamespaceAndPath("c", "ingots")),
+        DUST("dust", ResourceLocation.fromNamespaceAndPath("c", "dusts"));
 
         public final String id;
         public final ResourceLocation tag;

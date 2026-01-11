@@ -31,6 +31,12 @@ public final class ConcoctiConstants {
      */
     public static int MOLTEN_BLOCK_PURIFIED = MOLTEN_INGOT_PURIFIED * 9;
 
+    /**
+     * Number of mB of metal obtained from melting one piece of dust.
+     */
+    public static int MOLTEN_DUST = MOLTEN_INGOT;
+
+
     private ConcoctiConstants() {
     }
 }

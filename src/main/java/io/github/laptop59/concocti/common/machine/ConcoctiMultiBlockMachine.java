@@ -4,8 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.laptop59.concocti.client.gui.AbstractConcoctiMachineScreen;
 import io.github.laptop59.concocti.client.gui.components.*;
 import io.github.laptop59.concocti.common.abstraction.Complexion;
-import io.github.laptop59.concocti.common.block.AbstractConcoctiMultiBlockControllerBlock;
-import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
+import io.github.laptop59.concocti.common.block.*;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMultiblockBlockEntity;
 import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
 import io.github.laptop59.concocti.common.menu.ConcoctiMultiblockMenu;
@@ -30,7 +29,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
@@ -153,6 +151,7 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
             // Now the rest of the object is constructed here.
             super.postConstructor(blockEntityType, pos, blockState, extraData);
             this.structure = (MultiblockStructure) extraData[1];
+            updateHatchPositions();
         }
 
         public Complexion getDataAccess() {
@@ -287,7 +286,7 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
         public ResourceLocation getTexturePath() {
             return ResourceLocation.fromNamespaceAndPath(
                     MODID,
-                    "textures/gui/jei/concocti_multiblock.png"
+                    "textures/gui/recipe_viewer/recipe_background.png"
             );
         }
 
@@ -311,7 +310,7 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
             super.render(recipe, guiGraphics, mouseX, mouseY);
             RecipeCategory.DrawInfo drawInfo = createDrawInfo(recipe);
             for (int x : drawInfo.slots()) {
-                guiGraphics.blit(slot, x - 1, 6 - 1, 0, 0, 18, 18, 18, 18);
+                guiGraphics.blit(SLOT, x - 1, 6 - 1, 0, 0, 18, 18, 18, 18);
             }
         }
 
@@ -361,7 +360,7 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
             renderChildren(guiGraphics, renderInfo, this.getUniqueChildren());
             boolean pullOn = menu.showBuildPreview();
             int color = menu.isValid() ? 0xFF00FF00 : 0xFFFF0000;
-            guiGraphics.drawString(font, menu.isValid() ? "VALID" : "INVALID", leftPos + 8, topPos + 16, color);
+            guiGraphics.drawString(font, Component.translatable("screen.concocti." + (menu.isValid() ? "valid" : "invalid")), leftPos + 8, topPos + 16, color);
 
             {
                 RenderInfo pullRenderInfo = renderInfo.offset(imageWidth - 24, 64);

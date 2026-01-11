@@ -157,6 +157,38 @@ public class ConcoctiFluids {
         true
     );
 
+    public static final ConcoctiFluidParent MOLTEN_IRON = register(
+            "molten_iron",
+            FluidType.Properties.create()
+                    .temperature(1500)
+                    .lightLevel(0)
+                    .viscosity(7)
+                    .density(40)
+                    .canConvertToSource(false)
+                    .canDrown(false)
+                    .canSwim(true),
+            BlockBehaviour.Properties.ofFullCopy(Blocks.LAVA).mapColor(DyeColor.BROWN),
+            5,
+            true,
+            true
+    );
+
+    public static final ConcoctiFluidParent MOLTEN_REDSTONE = register(
+            "molten_redstone",
+            FluidType.Properties.create()
+                    .temperature(4500)
+                    .lightLevel(6)
+                    .viscosity(30)
+                    .density(5)
+                    .canConvertToSource(false)
+                    .canDrown(false)
+                    .canSwim(true),
+            BlockBehaviour.Properties.ofFullCopy(Blocks.LAVA).mapColor(DyeColor.RED),
+            5,
+            true,
+            true
+    );
+
     private static ConcoctiFluidParent register(String id, FluidType.Properties fluidProps, BlockBehaviour.Properties blockProps, int tickRate, boolean isMolten, boolean hasBucket) {
         ConcoctiFluidParent parent = new ConcoctiFluidParent(id, tickRate, isMolten, fluidProps, blockProps, hasBucket);
         FLUIDS.add(parent);

@@ -122,6 +122,8 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiFluids.CRYSTALIUM_SOLUTION, "Crystalium Solution");
         add(ConcoctiFluids.SUPERSATURATED_CRYSTALIUM_SOLUTION, "Supersaturated Crystalium Solution");
         add(ConcoctiFluids.MOLTEN_LATTICIUM, "Molten Latticium");
+        add(ConcoctiFluids.MOLTEN_IRON, "Molten Iron");
+        add(ConcoctiFluids.MOLTEN_REDSTONE, "Molten Redstone");
 
         // Miscellaneous things go here.
         add("effect.concocti.concoctized", "Concoctized");
@@ -161,6 +163,8 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add("screen.concocti.directly_on_top_of_machine", "Directly on top of machine");
         add("screen.concocti.struck_by_lightning", "Struck by lightning");
         add("screen.concocti.unconsumed", "Unconsumed");
+        add("screen.concocti.valid", "Valid");
+        add("screen.concocti.invalid", "Invalid");
 
         add("screen.concocti.slot_compound", "%s (%s)");
         add("screen.concocti.slot_up", "Up");

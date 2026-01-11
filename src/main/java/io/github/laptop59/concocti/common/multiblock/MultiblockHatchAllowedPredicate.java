@@ -2,6 +2,7 @@ package io.github.laptop59.concocti.common.multiblock;
 
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.ConcoctiHatchBlock;
+import io.github.laptop59.concocti.common.block.Hatch;
 import io.github.laptop59.concocti.common.block.entity.ConcoctiHatchBlockEntity;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import net.minecraft.core.BlockPos;
@@ -12,16 +13,16 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.registries.DeferredHolder;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Supplier;
 
-public final class MultiblockToughConcoctiBrickLikePredicate implements MultiblockBlockPredicate {
+public final class MultiblockHatchAllowedPredicate implements MultiblockBlockPredicate {
     private final Supplier<? extends ConcoctiHatchBlock>[] blocks;
 
     @SafeVarargs
-    public MultiblockToughConcoctiBrickLikePredicate(Supplier<? extends ConcoctiHatchBlock>... blocks) {
+    public MultiblockHatchAllowedPredicate(Supplier<? extends ConcoctiHatchBlock>... blocks) {
         this.blocks = blocks;
     }
 
@@ -42,11 +43,22 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     @Override
     public Data getExtraData(Level level, BlockPos absolutePos, Direction controllerDirection) {
         BlockEntity blockEntity = level.getBlockEntity(absolutePos);
-        if (blockEntity instanceof ConcoctiHatchBlockEntity entity) return new Data(entity);
+        if (blockEntity instanceof ConcoctiHatchBlockEntity entity) return new Data(entity, blocks);
         return null;
     }
 
-    public record Data(ConcoctiHatchBlockEntity entity) {}
+    public boolean allows(Hatch hatch) {
+        return Arrays.stream(blocks).anyMatch(supplier -> supplier.get().getType() == hatch.type() && supplier.get().getPurpose() == hatch.purpose());
+    }
+
+    public List<Hatch> getAllowed() {
+        return Arrays.stream(blocks).map(hatch -> {
+            ConcoctiHatchBlock block = hatch.get();
+            return new Hatch(block.getType(), block.getPurpose());
+        }).toList();
+    }
+
+    public record Data(ConcoctiHatchBlockEntity entity, Supplier<? extends ConcoctiHatchBlock>[] allowedHatches) {}
 
     @Override
     public Item getIcon() {
@@ -54,14 +66,14 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1
     ) {
         this.blocks = new Supplier[]{s1};
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2
     ) {
@@ -69,7 +81,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3
@@ -78,7 +90,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -88,7 +100,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -99,7 +111,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -111,7 +123,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -124,7 +136,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -138,7 +150,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -153,7 +165,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -169,7 +181,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -186,7 +198,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -204,7 +216,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -223,7 +235,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -243,7 +255,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -264,7 +276,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -286,7 +298,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -309,7 +321,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -333,7 +345,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -358,7 +370,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -384,7 +396,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -411,7 +423,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -439,7 +451,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -468,7 +480,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -498,7 +510,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -529,7 +541,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -561,7 +573,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -594,7 +606,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -628,7 +640,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -663,7 +675,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -699,7 +711,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,
@@ -736,7 +748,7 @@ public final class MultiblockToughConcoctiBrickLikePredicate implements Multiblo
     }
 
     @SuppressWarnings("unchecked")
-    public MultiblockToughConcoctiBrickLikePredicate(
+    public MultiblockHatchAllowedPredicate(
             Supplier<? extends ConcoctiHatchBlock> s1,
             Supplier<? extends ConcoctiHatchBlock> s2,
             Supplier<? extends ConcoctiHatchBlock> s3,

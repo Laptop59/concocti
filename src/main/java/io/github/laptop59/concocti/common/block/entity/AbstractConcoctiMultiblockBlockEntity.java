@@ -4,6 +4,7 @@ import io.github.laptop59.concocti.common.abstraction.Complexion;
 import io.github.laptop59.concocti.common.abstraction.Properties;
 import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.ConcoctiHatchBlock;
+import io.github.laptop59.concocti.common.block.Hatch;
 import io.github.laptop59.concocti.common.block.HatchPurpose;
 import io.github.laptop59.concocti.common.block.HatchType;
 import io.github.laptop59.concocti.common.block.frame.FrameAttributes;
@@ -22,9 +23,10 @@ import io.github.laptop59.concocti.common.machine.FluidTankHolder;
 import io.github.laptop59.concocti.common.machine.ItemsFluidsInputValue;
 import io.github.laptop59.concocti.common.machine.SettingsHolder;
 import io.github.laptop59.concocti.common.menu.*;
+import io.github.laptop59.concocti.common.multiblock.MultiblockBlockPredicate;
+import io.github.laptop59.concocti.common.multiblock.MultiblockHatchAllowedPredicate;
 import io.github.laptop59.concocti.common.multiblock.MultiblockResult;
 import io.github.laptop59.concocti.common.multiblock.MultiblockStructure;
-import io.github.laptop59.concocti.common.multiblock.MultiblockToughConcoctiBrickLikePredicate;
 import io.github.laptop59.concocti.common.recipe.AbstractConcoctiMultiblockRecipe;
 import io.github.laptop59.concocti.common.recipe.FluidOutput;
 import io.github.laptop59.concocti.common.recipe.ItemOutput;
@@ -52,7 +54,6 @@ import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.energy.IEnergyStorage;
-import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -84,6 +85,8 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
     public DetailHolders detailHolders = new DetailHolders();
     public MultiblockStructure structure;
     public Map<BlockPos, MultiblockResult> unmatchingBlockStates = null;
+    public Map<Hatch, ArrayList<BlockPos>> hatchPositionsMap = new HashMap<>();
+    public ListTag hatchPositionsMapListTag = new ListTag();
 
     // Slots
     public static final int UPGRADE_SLOT = 0;
@@ -248,6 +251,61 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
         return lastRecipe == null || lastRecipe == recipe;
     }
 
+    public void updateHatchPositions() {
+        this.hatchPositionsMap = new HashMap<>();
+
+        for (HatchType type : HatchType.values())
+            for (HatchPurpose purpose : HatchPurpose.values())
+                hatchPositionsMap.put(new Hatch(type, purpose), new ArrayList<>());
+
+        BlockPos blockPos = getBlockPos();
+        for (int dz = structure.zStart(); dz < structure.zEnd(); dz++)
+            for (int dy = structure.yStart(); dy < structure.yEnd(); dy++)
+                for (int dx = structure.xStart(); dx < structure.xEnd(); dx++) {
+                    BlockPos hatchBlockPos = blockPos.offset(dx, dy, dz);
+                    MultiblockBlockPredicate predicate = structure.at(dx, dy, dz);
+                    if (predicate instanceof MultiblockHatchAllowedPredicate predicate1) {
+                        for (Hatch hatch : predicate1.getAllowed())
+                            hatchPositionsMap.get(hatch).add(hatchBlockPos);
+                    }
+                }
+
+    }
+
+    public void updateHatchPositionsToNbt() {
+        hatchPositionsMapListTag = new ListTag();
+        for (Map.Entry<Hatch, ArrayList<BlockPos>> entry : this.hatchPositionsMap.entrySet()) {
+            CompoundTag compoundTag = new CompoundTag();
+            HatchType hatchType = entry.getKey().type();
+            HatchPurpose hatchPurpose = entry.getKey().purpose();
+            compoundTag.putString("hatch_type", hatchType.getId());
+            compoundTag.putString("hatch_purpose", hatchPurpose.getId());
+            ListTag positions = new ListTag();
+            for (BlockPos pos : entry.getValue())
+                positions.add(NbtUtils.writeBlockPos(pos));
+            compoundTag.put("positions", positions);
+
+            hatchPositionsMapListTag.add(compoundTag);
+        };
+    }
+
+    public void loadHatchPositionsFromNbt() {
+        for (Tag entry : hatchPositionsMapListTag) {
+            if (entry instanceof CompoundTag tag) {
+                HatchType hatchType = HatchType.of(tag.getString("hatch_type"));
+                HatchPurpose hatchPurpose = HatchPurpose.of(tag.getString("hatch_purpose"));
+                Hatch hatch = new Hatch(hatchType, hatchPurpose);
+                ListTag positions = tag.getList("positions", Tag.TAG_INT_ARRAY);
+                ArrayList<BlockPos> positionsList = new ArrayList<>();
+                for (int i = 0; i < positions.size(); i++) {
+                    int[] blockPosTag = positions.getIntArray(i);
+                    positionsList.add(new BlockPos(blockPosTag[0], blockPosTag[1], blockPosTag[2]));
+                }
+                hatchPositionsMap.put(hatch, positionsList);
+            }
+        }
+    }
+
     @Override
     protected ItemsFluidsInputValue getInput() {
         return new ItemsFluidsInputValue(itemStackInputHandler, fluidStackInputHandler);
@@ -325,7 +383,9 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
         for (Map.Entry<BlockPos, Object> entry : dataMap.entrySet()) {
             // BlockPos pos = entry.getKey();
             Object data = entry.getValue();
-            if (data instanceof MultiblockToughConcoctiBrickLikePredicate.Data(ConcoctiHatchBlockEntity entity)) {
+            if (data instanceof MultiblockHatchAllowedPredicate.Data(
+                    ConcoctiHatchBlockEntity entity, Supplier<? extends ConcoctiHatchBlock>[] allowedHatches
+            )) {
                 // Get the entity.
                 ConcoctiHatchBlock block = entity.getBlock();
                 HatchType type = block.getType();
@@ -369,6 +429,11 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
 
         level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         invalidateCapabilities();
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
     }
 
     /**
@@ -470,6 +535,7 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
 
     @Override
     public @NotNull CompoundTag getUpdateTag(HolderLookup.@NotNull Provider registries) {
+        super.getUpdateTag(registries);
         CompoundTag tag = new CompoundTag();
         saveAdditional(tag, registries);
         ListTag listTagKeys = new ListTag();
@@ -489,6 +555,10 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
         tag.put("unmatched_block_states_keys", listTagKeys);
         tag.put("unmatched_block_states_values", listTagValues);
         tag.put("unmatched_block_states_instead_was_air", new ByteArrayTag(listTagInsteadWasAirBytes));
+
+        updateHatchPositions();
+        updateHatchPositionsToNbt();
+        tag.put("allowed_hatch_positions", hatchPositionsMapListTag);
         return tag;
     }
 
@@ -521,6 +591,10 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
                 map.put(blockPos, new MultiblockResult(blockState, insteadWasAir));
             }
             this.unmatchingBlockStates = map;
+        }
+        if (tag.contains("allowed_hatch_positions")) {
+            hatchPositionsMapListTag = tag.getList("allowed_hatch_positions", Tag.TAG_COMPOUND);
+            loadHatchPositionsFromNbt();
         }
     }
 

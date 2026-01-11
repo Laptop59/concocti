@@ -166,23 +166,29 @@ public class Concocti {
 
     @SubscribeEvent
     private static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        ConcoctiRegisters.BLOCK_ENTITY_TYPES.getEntries().forEach(blockEntityTypeDeferredHolder -> {
-            BlockEntityType<?> type = blockEntityTypeDeferredHolder.get();
-            event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, type, (o, direction) -> {
-                if (o instanceof EnergyStorageBlockEntity energyStorageBlockEntity)
-                    return energyStorageBlockEntity.getSidedEnergyStorage(direction);
-                return null; // Nothing happens if null is returned, at least that's what I think.
-            });
-            event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, type, (o, direction) -> {
-                if (o instanceof FluidHandlerBlockEntity fluidHandlerBlockEntity)
-                    return fluidHandlerBlockEntity.getSidedFluidHandler(direction);
-                return null; // Nothing happens if null is returned, at least that's what I think.
-            });
-            event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, type, (o, direction) -> {
-                if (o instanceof ItemHandlerBlockEntity itemHandlerBlockEntity)
-                    return itemHandlerBlockEntity.getSidedItemHandler(direction);
-                return null; // Nothing happens if null is returned, at least that's what I think.
-            });
+        ConcoctiRegisters.BLOCK_ENTITY_TYPES
+                .getEntries()
+                .forEach(
+                        blockEntityTypeDeferredHolder -> registerCapabilities(event, blockEntityTypeDeferredHolder)
+                );
+    }
+
+    private static void registerCapabilities(RegisterCapabilitiesEvent event, DeferredHolder<BlockEntityType<?>, ? extends BlockEntityType<?>> blockEntityTypeDeferredHolder) {
+        BlockEntityType<?> type = blockEntityTypeDeferredHolder.get();
+        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, type, (o, direction) -> {
+            if (o instanceof EnergyStorageBlockEntity energyStorageBlockEntity)
+                return energyStorageBlockEntity.getSidedEnergyStorage(direction);
+            return null; // Nothing happens if null is returned, at least that's what I think.
+        });
+        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, type, (o, direction) -> {
+            if (o instanceof FluidHandlerBlockEntity fluidHandlerBlockEntity)
+                return fluidHandlerBlockEntity.getSidedFluidHandler(direction);
+            return null; // Nothing happens if null is returned, at least that's what I think.
+        });
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, type, (o, direction) -> {
+            if (o instanceof ItemHandlerBlockEntity itemHandlerBlockEntity)
+                return itemHandlerBlockEntity.getSidedItemHandler(direction);
+            return null; // Nothing happens if null is returned, at least that's what I think.
         });
     }
 

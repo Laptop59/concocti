@@ -14,6 +14,7 @@ import io.github.laptop59.concocti.common.machine.RecipeSlotFlags;
 import io.github.laptop59.concocti.common.recipe.FluidRecipeIngredient;
 import io.github.laptop59.concocti.common.recipe.ItemRecipeIngredient;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -24,6 +25,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static io.github.laptop59.concocti.client.gui.AbstractConcoctiMachineScreen.SLOT_SPRITE;
 
 public final class EmiRecipeBuilder implements RecipeBuilder {
     List<EmiIngredient> inputs;
@@ -68,10 +71,6 @@ public final class EmiRecipeBuilder implements RecipeBuilder {
     public void addOutputSlot(int x, int y, RecipeSlotFlags flags, float chance) {
         createSlot(x, y, flags, chance);
         EmiStack output = addEmiStack(outputs, flags.getInternalObject());
-
-        if (output != null && chance != 1.0f) {
-            System.out.println(output);
-        }
     }
 
     private void createSlot(int x, int y, RecipeSlotFlags flags, float chance) {
@@ -94,6 +93,16 @@ public final class EmiRecipeBuilder implements RecipeBuilder {
 
             if (emiRecipe != null)
                 slot.recipeContext(emiRecipe);
+
+            boolean isChanceBased = chance != 1.0f;
+            int uv = isChanceBased ? 18 : 0;
+            slot.customBackground(
+                    ResourceLocation.fromNamespaceAndPath(Concocti.MODID, "textures/gui/recipe_viewer/widgets.png"),
+                    0,
+                    uv,
+                    18,
+                    18
+            );
         }
     }
 

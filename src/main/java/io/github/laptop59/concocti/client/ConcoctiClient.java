@@ -31,11 +31,11 @@ import static io.github.laptop59.concocti.common.Concocti.MODID;
 @Mod(value = MODID, dist = Dist.CLIENT)
 public class ConcoctiClient {
     public static Set<UUID> concoctizedEntities = Set.of();
-    public static final Component UNCONSUMED = Component.translatable("screen.concocti.unconsumed").withStyle(ChatFormatting.RESET).withColor(0xC7C7C7);
+    public static final Component UNCONSUMED = Component.translatable("screen.concocti.unconsumed").withStyle(style -> style.withItalic(false).withColor(0xC7C7C7));
 
     // For rendering through walls
     public static final RenderType GHOST_RENDER_TYPE = RenderType.create(
-            "concocti:ghost_block",
+            "concocti:ghost",
             DefaultVertexFormat.BLOCK,
             VertexFormat.Mode.QUADS,
             256,
@@ -47,6 +47,25 @@ public class ConcoctiClient {
                     .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
                     .setDepthTestState(RenderStateShard.NO_DEPTH_TEST)
                     .setCullState(RenderStateShard.NO_CULL)
+                    .setLightmapState(RenderStateShard.LIGHTMAP)
+                    .setOverlayState(RenderStateShard.OVERLAY)
+                    .setLayeringState(RenderStateShard.POLYGON_OFFSET_LAYERING)
+                    .createCompositeState(true)
+    );
+
+    public static final RenderType GHOST_RENDER_CULL_TYPE = RenderType.create(
+            "concocti:ghost_cull",
+            DefaultVertexFormat.BLOCK,
+            VertexFormat.Mode.QUADS,
+            256,
+            false,
+            true, // needs sorting for translucency
+            RenderType.CompositeState.builder()
+                    .setShaderState(RenderStateShard.RENDERTYPE_TRANSLUCENT_SHADER)
+                    .setTextureState(new RenderStateShard.TextureStateShard(InventoryMenu.BLOCK_ATLAS, false, false))
+                    .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+                    .setDepthTestState(RenderStateShard.NO_DEPTH_TEST)
+                    .setCullState(RenderStateShard.CULL)
                     .setLightmapState(RenderStateShard.LIGHTMAP)
                     .setOverlayState(RenderStateShard.OVERLAY)
                     .setLayeringState(RenderStateShard.POLYGON_OFFSET_LAYERING)
@@ -88,6 +107,6 @@ public class ConcoctiClient {
 
     public static MutableComponent getChanceComponent(float chance) {
         String chanceStr = String.format("%.2f", chance * 100);
-        return Component.translatable("screen.concocti.chance", chanceStr).withStyle(ChatFormatting.RESET).withColor(0xE563FF);
+        return Component.translatable("screen.concocti.chance", chanceStr).withStyle(style -> style.withItalic(false).withColor(ChatFormatting.GOLD));
     }
 }

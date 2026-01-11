@@ -37,7 +37,7 @@ public class ConcoctiBlockModelProvider extends BlockModelProvider {
             if (machine instanceof ConcoctiMultiBlockMachine multiBlockMachine) {
                 ResourceLocation OFF = modLoc("block/" + multiBlockMachine.ID + "_front");
                 ResourceLocation ON = modLoc("block/" + multiBlockMachine.ID + "_front_on");
-                ResourceLocation OTHER = modLoc("block/" + ConcoctiBlocks.TOUGH_CONCOCTI_BLOCK.getId().getPath());
+                ResourceLocation OTHER = modLoc("block/" + ConcoctiBlocks.TOUGH_CONCOCTI_BRICKS.getId().getPath());
 
                 withExistingParent(machine.ID, mcLoc("block/orientable"))
                         .texture("top", OTHER).texture("front", OFF).texture("side", OTHER);

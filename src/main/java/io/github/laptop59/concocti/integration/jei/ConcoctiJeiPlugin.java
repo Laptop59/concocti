@@ -15,6 +15,7 @@ import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
+import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -29,6 +30,8 @@ import java.util.function.Consumer;
 
 @JeiPlugin
 public class ConcoctiJeiPlugin implements IModPlugin {
+    public static IJeiHelpers JEI_HELPERS;
+
     @Override
     public @NotNull ResourceLocation getPluginUid() {
         return ResourceLocation.fromNamespaceAndPath(Concocti.MODID, "jei");
@@ -42,6 +45,7 @@ public class ConcoctiJeiPlugin implements IModPlugin {
     @Override
     public void registerCategories(IRecipeCategoryRegistration registration) {
         IJeiHelpers jeiHelpers = registration.getJeiHelpers();
+        JEI_HELPERS = jeiHelpers;
         IGuiHelper guiHelper = jeiHelpers.getGuiHelper();
 
         registerForAllMachines(machine -> registerRecipeCategoryFor(registration, guiHelper, machine));
