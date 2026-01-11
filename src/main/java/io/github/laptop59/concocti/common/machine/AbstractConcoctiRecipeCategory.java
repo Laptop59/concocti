@@ -21,7 +21,7 @@ import static io.github.laptop59.concocti.common.Concocti.MODID;
  * @param <R> The type of recipe represented by this category.
  */
 public abstract class AbstractConcoctiRecipeCategory<R extends ProcessingRecipe<R, ? extends RecipeInput>> {
-    protected final ResourceLocation slot = ResourceLocation.fromNamespaceAndPath(MODID, "textures/gui/jei/slot.png");
+    public final static ResourceLocation SLOT = ResourceLocation.fromNamespaceAndPath(MODID, "textures/gui/recipe_viewer/slot.png");
 
     private final ArrowProgress arrowProgress;
     private final Lazy<ResourceLocation> texture =
@@ -34,7 +34,7 @@ public abstract class AbstractConcoctiRecipeCategory<R extends ProcessingRecipe<
     public ResourceLocation getTexturePath() {
         return ResourceLocation.fromNamespaceAndPath(
                 MODID,
-                "textures/gui/jei/" + getMachineInstance().ID + ".png"
+                "textures/gui/recipe_viewer/recipe_background.png"
         );
     }
 

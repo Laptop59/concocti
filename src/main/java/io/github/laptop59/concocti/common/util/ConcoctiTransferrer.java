@@ -18,7 +18,7 @@ public class ConcoctiTransferrer {
      *
      * @param from Handler to take items from.
      * @param to   Handler to put items to.
-     * @return The total number of items that can be transferred summed up from each slot.
+     * @return The total number of items that can be transferred summed up from each SLOT.
      */
     public static int simulatePossibleItemsToTransfer(@NotNull IItemHandler from, @NotNull IItemHandler to, boolean fillExistingStacks) {
         int insertCount = 0;

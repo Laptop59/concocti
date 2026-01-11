@@ -305,15 +305,15 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
             fluidTank.get().setCapacity(0);
         }
 
+        this.setEnergyModeSupplier(DynamicEnergyStorage.Mode.NONE.toSupplier());
         if (type == HatchType.ENERGY) {
             energy.setMaxEnergy(ENERGY_CAPACITY);
             energy.setMaxEnergyTransfer(ENERGY_CAPACITY);
+            this.setEnergyModeSupplier(DynamicEnergyStorage.Mode.INPUT_OUTPUT.toSupplier());
         }
 
         this.machineSettings.availableTypes = new ArrayList<>(getAllowedSlotTypes());
         this.machineSettings.availableTypes.addFirst(SlotType.NONE);
-
-        this.setEnergyModeSupplier(DynamicEnergyStorage.Mode.INPUT_OUTPUT.toSupplier());
 
         this.fluidHandler = new ConcoctiFluidTankHandler(() -> List.of(fluidTank.get()));
 

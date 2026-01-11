@@ -118,6 +118,28 @@ public class ConcoctiBlocks {
             new BlockData(BlockToolRank.DIAMOND, BlockToolType.PICKAXE)
     );
 
+    // BLOCKS ONLY FOR SHOW (NO ITEM EQUIVALENT)
+    public static final DeferredBlock<Block> BAD_BLOCK = registerBlock("bad_block", TransparentBlock::new,
+            BlockBehaviour.Properties.of()
+                    .mapColor(DyeColor.RED)
+                    .requiresCorrectToolForDrops()
+                    .explosionResistance(0)
+                    .strength(0f)
+                    .noOcclusion()
+                    .isViewBlocking((blockState, blockGetter, blockPos) -> false),
+            new BlockData(BlockToolRank.STONE, BlockToolType.PICKAXE)
+    );
+    public static final DeferredBlock<Block> GOOD_BLOCK = registerBlock("good_block", TransparentBlock::new,
+            BlockBehaviour.Properties.of()
+                    .mapColor(DyeColor.GREEN)
+                    .requiresCorrectToolForDrops()
+                    .explosionResistance(0)
+                    .strength(0f)
+                    .noOcclusion()
+                    .isViewBlocking((blockState, blockGetter, blockPos) -> false),
+            new BlockData(BlockToolRank.STONE, BlockToolType.PICKAXE)
+    );
+
     public static final List<DeferredBlock<? extends ConcoctiHatchBlock>> HATCHES_LIST =
             HATCHES.values().stream().flatMap(map -> map.values().stream()).toList();
 

@@ -19,6 +19,7 @@ import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachineDetails;
 import io.github.laptop59.concocti.common.machine.InputOutput;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
+import io.github.laptop59.concocti.common.recipe.FluidOutput;
 import io.github.laptop59.concocti.common.recipe.LightningRecipeInput;
 import io.github.laptop59.concocti.common.recipe.LightningState;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
@@ -178,7 +179,7 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
             if (!super.canProcess()) return false;
             Recipe recipe = getRecipe(lightningState.get());
             // Check whether the fluids obtained from this item will not exceed our fluid limit.
-            FluidStack result = recipe.getOutputFluid().copy();
+            FluidStack result = recipe.getOutput().stack().copy();
             return fluidOutput.get().fill(result, IFluidHandler.FluidAction.SIMULATE) == result.getAmount();
         }
 
@@ -194,8 +195,8 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
 
         @Override
         protected void onRecipeCompleted(Recipe recipe) {
-            if (Math.random() < recipe.getChance())
-                fluidOutput.get().fill(recipe.getOutputFluid(), IFluidHandler.FluidAction.EXECUTE);
+            if (Math.random() < recipe.getOutput().chance())
+                fluidOutput.get().fill(recipe.getOutput().stack(), IFluidHandler.FluidAction.EXECUTE);
             lightningState.get().setLightningCollected(false);
         }
 
@@ -229,39 +230,30 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
         // An in-code representation of our recipe data. This can be basically anything you want.
         // Common things to have here is a processing time integer of some kind, or an experience reward.
         // Note that we now use an ingredient instead of an item stack for the input.
-        private final float chance;
-        private final FluidStack outputFluid;
-
+        private final FluidOutput output;
         private final ResourceLocation id;
-
         private final int ticks;
 
         // Add a constructor that sets all properties.
-        public Recipe(ResourceLocation id, float chance, FluidStack outputFluid, int ticks) {
-            this.chance = chance;
-            this.outputFluid = outputFluid;
+        public Recipe(ResourceLocation id, FluidOutput output, int ticks) {
+            this.output = output;
             this.ticks = ticks;
             this.id = id;
         }
 
-        public Recipe(float chance, FluidStack outputFluid, int ticks) {
-            this.chance = chance;
-            this.outputFluid = outputFluid;
+        public Recipe(FluidOutput output, int ticks) {
+            this.output = output;
             this.ticks = ticks;
-            this.id = getWouldBeResourceLocation(outputFluid);
+            this.id = getWouldBeResourceLocation(output);
         }
 
-        public static ResourceLocation getWouldBeResourceLocation(FluidStack outputFluid) {
-            return ResourceLocation.fromNamespaceAndPath(MODID, "electron_collecting/" + BuiltInRegistries.FLUID.getKey(outputFluid.getFluid()).getPath());
+        public static ResourceLocation getWouldBeResourceLocation(FluidOutput outputFluid) {
+            return ResourceLocation.fromNamespaceAndPath(MODID, "electron_collecting/" + BuiltInRegistries.FLUID.getKey(outputFluid.stack().getFluid()).getPath());
         }
 
         @NotNull
-        public FluidStack getOutputFluid() {
-            return outputFluid;
-        }
-
-        public float getChance() {
-            return chance;
+        public FluidOutput getOutput() {
+            return output;
         }
 
         // Grid-based recipes should return whether their recipe can fit in the given dimensions.
@@ -318,13 +310,11 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
         }
 
         public static class Builder implements RecipeBuilder {
-            private final float chance;
-            private final FluidStack outputFluid;
+            private final FluidOutput output;
             private final int ticks;
 
-            public Builder(float chance, FluidStack outputFluid, int ticks) {
-                this.chance = chance;
-                this.outputFluid = outputFluid;
+            public Builder(FluidOutput output, int ticks) {
+                this.output = output;
                 this.ticks = ticks;
             }
 
@@ -349,26 +339,23 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
             public void save(RecipeOutput recipeOutput, @NotNull ResourceLocation id) {
                 Recipe recipe = new Recipe(
                         id,
-                        this.chance,
-                        this.outputFluid,
+                        this.output,
                         this.ticks
                 );
-                recipeOutput.accept(getWouldBeResourceLocation(recipe.outputFluid), recipe, null);
+                recipeOutput.accept(getWouldBeResourceLocation(recipe.output), recipe, null);
             }
         }
 
 
         public static class Serializer implements RecipeSerializer<Recipe> {
             public static final MapCodec<Recipe> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
-                    Codec.FLOAT.fieldOf("chance").forGetter(Recipe::getChance),
-                    FluidStack.CODEC.fieldOf("output_fluid").forGetter(Recipe::getOutputFluid),
+                    FluidOutput.CODEC.fieldOf("output").forGetter(Recipe::getOutput),
                     Codec.INT.fieldOf("ticks").forGetter(Recipe::getTicks)
             ).apply(inst, Recipe::new));
 
             public static final StreamCodec<RegistryFriendlyByteBuf, Recipe> STREAM_CODEC =
                     StreamCodec.composite(
-                            ByteBufCodecs.FLOAT, Recipe::getChance,
-                            FluidStack.STREAM_CODEC, Recipe::getOutputFluid,
+                            FluidOutput.STREAM_CODEC, Recipe::getOutput,
                             ByteBufCodecs.INT, Recipe::getTicks,
                             Recipe::new
                     );
@@ -513,19 +500,9 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
         }
 
         @Override
-        public void tooltip(@NotNull List<Component> tooltipBuilder, @NotNull Recipe recipe, double mouseX, double mouseY) {
-            // Show the duration, if needed.
-            if (isCursorTouchingArrow(mouseX, mouseY, recipe)) {
-                String chance = String.format("%.2f", recipe.getChance() * 100);
-                tooltipBuilder.add(Component.translatable("screen.concocti.duration", (double) getTicks(recipe) / 20));
-                tooltipBuilder.add(Component.translatable("screen.concocti.chance", chance));
-            }
-        }
-
-        @Override
         public void set(@NotNull io.github.laptop59.concocti.common.machine.RecipeBuilder builder, @NotNull Recipe recipe) {
             // Add the fluid output.
-            builder.addOutputSlot(113, 6, recipe.getOutputFluid());
+            builder.addOutputSlot(113, 6, recipe.getOutput());
 
             ItemStack rod = new ItemStack(ConcoctiItems.CONDUCTIVIUM_LIGHTNING_ROD.get());
             ArrayList<MutableComponent> mutableComponents = new ArrayList<>();
