@@ -562,10 +562,10 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
         @Override
         public void set(@NotNull io.github.laptop59.concocti.common.machine.RecipeBuilder builder, @NotNull Recipe recipe) {
             // Add the recipe inputs (fluid + tank + base item).
-            builder.addInputSlot(12, 6, recipe.getInputFluid());
-            builder.addInputSlot(30, 6, recipe.getMold());
-            builder.addInputSlot(48, 6, recipe.getBaseItem().orElse(null));
-            builder.addOutputSlot(137 - 9, 6, recipe.getOutputItem());
+            builder.addInputSlot(12, 16, recipe.getInputFluid());
+            builder.addInputSlot(30, 16, recipe.getMold());
+            builder.addInputSlot(48, 16, recipe.getBaseItem().orElse(null));
+            builder.addOutputSlot(137 - 9, 16, recipe.getOutputItem());
         }
     }
 

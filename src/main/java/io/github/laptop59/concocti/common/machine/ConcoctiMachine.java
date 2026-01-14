@@ -6,6 +6,7 @@ import io.github.laptop59.concocti.common.ConcoctiRegisters;
 import io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
+import io.github.laptop59.concocti.common.machine.impl.ConcoctiEnergyGenerator;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
 import io.github.laptop59.concocti.common.util.Lazy;
@@ -34,6 +35,7 @@ import net.neoforged.neoforge.registries.DeferredItem;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.function.Supplier;
 
 import static io.github.laptop59.concocti.common.ConcoctiRegisters.*;
@@ -194,4 +196,11 @@ public abstract class ConcoctiMachine<
      * Get the class of this machine's recipe class.
      */
     public abstract Class<R> getRecipeClass();
+
+    /**
+     * Get all 'fake' recipes of this machine. Only shown via a recipe manager.
+     */
+    public List<R> getRecipeProxies() {
+        return List.of();
+    }
 }

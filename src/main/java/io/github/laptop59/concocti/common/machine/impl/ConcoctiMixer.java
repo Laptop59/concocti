@@ -22,12 +22,10 @@ import io.github.laptop59.concocti.common.machine.InputOutput;
 import io.github.laptop59.concocti.common.machine.ItemsFluidsInputValue;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.menu.ResultSlot;
-import io.github.laptop59.concocti.common.recipe.FluidRecipeIngredient;
-import io.github.laptop59.concocti.common.recipe.ItemRecipeIngredient;
-import io.github.laptop59.concocti.common.recipe.ItemsFluidsRecipeInput;
-import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
+import io.github.laptop59.concocti.common.recipe.*;
 import io.github.laptop59.concocti.common.machine.AbstractConcoctiRecipeCategory;
 import net.minecraft.advancements.Criterion;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -668,7 +666,7 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
             return INSTANCE;
         }
 
-        private final int WIDTH = 176;
+        private final int WIDTH = 216;
 
         @Override
         public @NotNull Object getJeiRecipeType() {
@@ -680,75 +678,63 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
             return Component.translatable("block.concocti.concocti_mixer");
         }
 
-        public record DrawInfo(List<Integer> slots, int arrowPos) {
-        }
-
-        public DrawInfo createDrawInfo(Recipe recipe) {
-            int drawnSlots = 0;
-            if (recipe.getOutputItem() != null && !recipe.getOutputItem().isEmpty()) drawnSlots++;
-            if (recipe.getOutputFluid() != null && !recipe.getOutputFluid().isEmpty()) drawnSlots++;
-            drawnSlots += recipe.getInputItems().size() + recipe.getInputFluids().size();
-            int drawnWidth = drawnSlots * 18 + (11 + 22 + 11);
-            int left = (WIDTH - drawnWidth) / 2 - 3;
-            ArrayList<Integer> toBeDrawnSlots = new ArrayList<>(drawnSlots);
-            // Add the recipe inputs.
-            int drawnInputSlots = recipe.getInputItems().size() + recipe.getInputFluids().size();
-            for (int i = 0; i < drawnInputSlots; i++) {
-                toBeDrawnSlots.add(left);
-                left += 18;
-            }
-            left += 11;
-            int arrowPos = left;
-            left += 22 + 11;
-            if (recipe.getOutputItem() != null && !recipe.getOutputItem().isEmpty()) {
-                toBeDrawnSlots.add(left);
-                left += 18;
-            }
-            if (recipe.getOutputFluid() != null && !recipe.getOutputFluid().isEmpty()) {
-                toBeDrawnSlots.add(left);
-            }
-            return new DrawInfo(toBeDrawnSlots, arrowPos);
+        @Override
+        public int getSlotsHeight(@NotNull Recipe recipe) {
+            return 2;
         }
 
         @Override
         public void set(@NotNull io.github.laptop59.concocti.common.machine.RecipeBuilder builder, @NotNull Recipe recipe) {
-            int drawnSlots = 0;
-            if (recipe.getOutputItem() != null && !recipe.getOutputItem().isEmpty()) drawnSlots++;
-            if (recipe.getOutputFluid() != null && !recipe.getOutputFluid().isEmpty()) drawnSlots++;
-            drawnSlots += recipe.getInputItems().size() + recipe.getInputFluids().size();
-            int drawnWidth = drawnSlots * 18 + (11 + 22 + 11);
-            int left = (WIDTH - drawnWidth) / 2 - 3;
-            // Add the recipe inputs.
-            for (ItemRecipeIngredient ingredient : recipe.getInputItems()) {
-                builder.addInputSlot(left, 6, ingredient);
-                left += 18;
+            int left = WIDTH / 2 - 5 * 18 + 28;
+            int top = 16 + 18;
+
+            for (int i = 0; i < 4; i++) {
+                int x = left + i * 18;
+                List<ItemRecipeIngredient> ingredients = recipe.getInputItems();
+                if (i < ingredients.size())
+                    builder.addInputSlot(x, top, ingredients.get(i));
+                else
+                    builder.addInputSlot(x, top, false);
+
+                ItemStack output = recipe.getOutputItem();
+                x = WIDTH / 2 + 24 + 34;
+                if (output != null)
+                    builder.addOutputSlot(x, top, output);
+                else
+                    builder.addOutputSlot(x, top, false);
             }
-            for (FluidRecipeIngredient ingredient : recipe.getInputFluids()) {
-                builder.addInputSlot(left, 6, ingredient);
-                left += 18;
+
+            top -= 18;
+            for (int i = 0; i < 4; i++) {
+                int x = left + i * 18;
+                List<FluidRecipeIngredient> ingredients = recipe.getInputFluids();
+                if (i < ingredients.size())
+                    builder.addInputSlot(x, top, ingredients.get(i));
+                else
+                    builder.addInputSlot(x, top, true);
+
+                FluidStack output = recipe.getOutputFluid();
+                x = WIDTH / 2 + 24 + 34;
+                if (output != null)
+                    builder.addOutputSlot(x, top, output);
+                else
+                    builder.addOutputSlot(x, top, true);
             }
-            left += 11 + 22 + 11;
-            if (recipe.getOutputItem() != null && !recipe.getOutputItem().isEmpty()) {
-                builder.addOutputSlot(left, 6, recipe.getOutputItem());
-                left += 18;
-            }
-            if (recipe.getOutputFluid() != null && !recipe.getOutputFluid().isEmpty()) {
-                builder.addOutputSlot(left, 6, recipe.getOutputFluid());
-            }
+        }
+
+        @Override
+        protected int getHorizontalArrowOffset(@NotNull Recipe recipe) {
+            return 34;
+        }
+
+        @Override
+        public int getWidth(@NotNull Recipe recipe) {
+            return WIDTH;
         }
 
         @Override
         public void render(@NotNull ConcoctiMixer.Recipe recipe, @NotNull GuiGraphics guiGraphics, double mouseX, double mouseY) {
             super.render(recipe, guiGraphics, mouseX, mouseY);
-            DrawInfo drawInfo = createDrawInfo(recipe);
-            for (int x : drawInfo.slots) {
-                guiGraphics.blit(SLOT, x - 1, 6 - 1, 0, 0, 18, 18, 18, 18);
-            }
-        }
-
-        @Override
-        protected int getHorizontalArrowOffset(@NotNull ConcoctiMixer.Recipe recipe) {
-            return createDrawInfo(recipe).arrowPos - 72;
         }
     }
 

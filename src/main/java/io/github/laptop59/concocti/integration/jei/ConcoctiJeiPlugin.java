@@ -4,7 +4,6 @@ import io.github.laptop59.concocti.common.Concocti;
 import io.github.laptop59.concocti.common.machine.AbstractConcoctiRecipeCategory;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachines;
-import io.github.laptop59.concocti.common.machine.impl.ConcoctiEnergyGenerator;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
@@ -15,7 +14,6 @@ import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
-import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -27,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @JeiPlugin
 public class ConcoctiJeiPlugin implements IModPlugin {
@@ -72,9 +71,22 @@ public class ConcoctiJeiPlugin implements IModPlugin {
             ConcoctiMachine<?, ?, ?, I, R, ?, ?, ?, ?> machine
     ) {
         registerRecipesFor(registration, manager, machine.RECIPE_TYPE.get(), getJeiRecipeType(machine));
-        if (machine == ConcoctiMachines.ENERGY_GENERATOR) {
-            registration.addRecipes(getJeiRecipeType(ConcoctiMachines.ENERGY_GENERATOR), ConcoctiEnergyGenerator.getRecipeProxies());
-        }
+        registration.addRecipes(getJeiRecipeType(machine), machine.getRecipeProxies());
+    }
+
+    public static <R extends ProcessingRecipe<R, I>, I extends RecipeInput> List<R> getJeiRecipes(
+            ConcoctiMachine<?, ?, ?, I, R, ?, ?, ?, ?> machine
+    ) {
+        RecipeManager manager = Minecraft.getInstance().level.getRecipeManager();
+        net.minecraft.world.item.crafting.RecipeType<R> recipeType = machine.getDetails().get().recipeType().get();
+        List<R> recipes = manager
+                .getAllRecipesFor(recipeType)
+                .stream()
+                .map(RecipeHolder::value)
+                .sorted()
+                .collect(Collectors.toCollection(ArrayList::new));
+        recipes.addAll(machine.getRecipeProxies());
+        return recipes;
     }
 
     private <R extends ProcessingRecipe<R, I>, I extends RecipeInput> void registerRecipeCatalystFor(
@@ -90,7 +102,7 @@ public class ConcoctiJeiPlugin implements IModPlugin {
             ConcoctiMachine<?, ?, ?, I, R, ?, ?, ?, C> machine
     ) {
         var category = machine.newRecipeCategory();
-        JeiRecipeCategory<R> jeiRecipeCategory = new JeiRecipeCategory<>(category, guiHelper, new ItemStack(machine.ITEM.get(), 1));
+        JeiRecipeCategory<R, I> jeiRecipeCategory = new JeiRecipeCategory<>(category, guiHelper, new ItemStack(machine.ITEM.get(), 1), machine);
         registration.addRecipeCategories(jeiRecipeCategory);
     }
 

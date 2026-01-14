@@ -5,6 +5,7 @@ import io.github.laptop59.concocti.client.gui.components.RenderInfo;
 import io.github.laptop59.concocti.client.gui.components.Renderable;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
 import io.github.laptop59.concocti.common.util.Lazy;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -24,26 +25,17 @@ public abstract class AbstractConcoctiRecipeCategory<R extends ProcessingRecipe<
     public final static ResourceLocation SLOT = ResourceLocation.fromNamespaceAndPath(MODID, "textures/gui/recipe_viewer/slot.png");
 
     private final ArrowProgress arrowProgress;
-    private final Lazy<ResourceLocation> texture =
-            new Lazy<>(this::getTexturePath);
 
     public AbstractConcoctiRecipeCategory() {
         arrowProgress = new ArrowProgress(-1_000_000_000, 10 - 4);
     }
 
-    public ResourceLocation getTexturePath() {
-        return ResourceLocation.fromNamespaceAndPath(
-                MODID,
-                "textures/gui/recipe_viewer/recipe_background.png"
-        );
-    }
-
-    public int getWidth() {
+    public int getWidth(@NotNull R recipe) {
         return 176 - 8;
     }
 
-    public int getHeight() {
-        return 36 - 8;
+    public int getHeight(@NotNull R recipe) {
+        return 18 + getSlotsHeight(recipe) * 18;
     }
 
     public abstract @NotNull Object getJeiRecipeType();
@@ -55,11 +47,15 @@ public abstract class AbstractConcoctiRecipeCategory<R extends ProcessingRecipe<
     }
 
     protected int getTotalArrowLeft(@NotNull R recipe) {
-        return 75 - 4 + getHorizontalArrowOffset(recipe);
+        return getWidth(recipe) / 2 - 11 + getHorizontalArrowOffset(recipe);
     }
 
-    protected final ResourceLocation getTexture() {
-        return texture.get();
+    protected int getTotalArrowTop(@NotNull R recipe) {
+        return 16 - 9 + getSlotsHeight(recipe) * 9;
+    }
+
+    protected int getSlotsHeight(@NotNull R recipe) {
+        return 1;
     }
 
     /**
@@ -78,14 +74,12 @@ public abstract class AbstractConcoctiRecipeCategory<R extends ProcessingRecipe<
      */
     protected boolean isCursorTouchingArrow(double mouseX, double mouseY, @NotNull R recipe) {
         double dx = mouseX - getTotalArrowLeft(recipe);
-        double dy = mouseY - (10 - 4);
+        double dy = mouseY - getTotalArrowTop(recipe);
         return dx >= 0 && dx <= 22 && dy >= 0 && dy <= 16;
     }
 
     public void tooltip(@NotNull List<Component> tooltipBuilder, @NotNull R recipe, double mouseX, double mouseY) {
         // Show the duration, if needed.
-        if (isCursorTouchingArrow(mouseX, mouseY, recipe))
-            tooltipBuilder.add(Component.translatable("screen.concocti.duration", (double) getTicks(recipe) / 20));
     }
 
     /**
@@ -98,19 +92,71 @@ public abstract class AbstractConcoctiRecipeCategory<R extends ProcessingRecipe<
      */
     protected abstract ConcoctiMachine<?, ?, ?, ?, R, ?, ?, ?, ?> getMachineInstance();
 
-    public void render(@NotNull R recipe, GuiGraphics guiGraphics, double mouseX, double mouseY) {
+    protected void renderBackground(GuiGraphics guiGraphics, R recipe) {
+        int width = getWidth(recipe) + 8;
+        int height = getHeight(recipe) + 8;
+
         int left = -4;
         int top = -4;
-        // Draw the background texture.
-        guiGraphics.blit(getTexture(), left, top, 0, 0, 176, 36, 176, 36);
+        int u = (256 - width) / 2;
+        int v = (256 - height) / 2;
+
+        guiGraphics.blit(
+                ResourceLocation.fromNamespaceAndPath(MODID, "textures/gui/recipe_viewer/recipe_background_edges_template.png"),
+                left + 1,
+                top + 1,
+                width - 2,
+                height - 2,
+                u + 1,
+                v + 1,
+                width,
+                height,
+                256,
+                256
+        );
+        guiGraphics.blit(
+                ResourceLocation.fromNamespaceAndPath(MODID, "textures/gui/recipe_viewer/recipe_background_template.png"),
+                left + 3,
+                top + 3,
+                width - 6,
+                height - 6,
+                u + 3,
+                v + 3,
+                width,
+                height,
+                256,
+                256
+        );
+        guiGraphics.blitSprite(
+                ResourceLocation.fromNamespaceAndPath(MODID, "recipe_viewer/recipe_background_edges"),
+                left,
+                top,
+                width,
+                height
+        );
+    }
+
+    public void render(@NotNull R recipe, GuiGraphics guiGraphics, double mouseX, double mouseY) {
+        renderBackground(guiGraphics, recipe);
+
         // Draw the arrow progress.
         long absoluteTicks = System.currentTimeMillis() / 50;
         int tickDuration = getTicks(recipe);
         long passedTicks = absoluteTicks % tickDuration;
         double progress = (double) passedTicks / tickDuration;
         arrowProgress.setGuiLeft(getTotalArrowLeft(recipe));
-        arrowProgress.setGuiTop(6);
+        arrowProgress.setGuiTop(getTotalArrowTop(recipe));
         arrowProgress.update((float) (progress * 23) / 22);
         Renderable.renderChildAbsolute(guiGraphics, RenderInfo.withNullifiedOffset(null), arrowProgress);
+
+        String toDraw = String.format("%.1fs", recipe.getTicks() / 20d);
+        guiGraphics.drawString(
+                Minecraft.getInstance().font,
+                toDraw,
+                getWidth(recipe) - 2 - Minecraft.getInstance().font.width(toDraw),
+                2,
+                0xFF26174a,
+                false
+        );
     }
 }

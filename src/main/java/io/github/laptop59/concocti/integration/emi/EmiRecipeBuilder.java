@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static io.github.laptop59.concocti.client.gui.AbstractConcoctiMachineScreen.SLOT_SPRITE;
-
 public final class EmiRecipeBuilder implements RecipeBuilder {
     List<EmiIngredient> inputs;
     List<EmiStack> outputs;
@@ -52,8 +50,8 @@ public final class EmiRecipeBuilder implements RecipeBuilder {
     }
 
     @Override
-    public void addInputSlot(int x, int y, RecipeSlotFlags flags) {
-        createSlot(x, y, flags, 1f);
+    public void addInputSlot(int x, int y, RecipeSlotFlags flags, boolean isFluidSlot) {
+        createSlot(x, y, flags, 1f, isFluidSlot);
         addEmiIngredient(inputs, flags.getInternalObject(), flags.getRemainder(), ingredientIndex++);
     }
 
@@ -62,18 +60,18 @@ public final class EmiRecipeBuilder implements RecipeBuilder {
     }
 
     @Override
-    public void addCatalystSlot(int x, int y, RecipeSlotFlags flags) {
-        createSlot(x, y, flags, 1f);
+    public void addCatalystSlot(int x, int y, RecipeSlotFlags flags, boolean isFluidSlot) {
+        createSlot(x, y, flags, 1f, isFluidSlot);
         addEmiIngredient(catalysts, flags.getInternalObject(), flags.getRemainder(), ingredientIndex++);
     }
 
     @Override
-    public void addOutputSlot(int x, int y, RecipeSlotFlags flags, float chance) {
-        createSlot(x, y, flags, chance);
+    public void addOutputSlot(int x, int y, RecipeSlotFlags flags, float chance, boolean isFluidSlot) {
+        createSlot(x, y, flags, chance, isFluidSlot);
         EmiStack output = addEmiStack(outputs, flags.getInternalObject());
     }
 
-    private void createSlot(int x, int y, RecipeSlotFlags flags, float chance) {
+    private void createSlot(int x, int y, RecipeSlotFlags flags, float chance, boolean isFluidSlot) {
         if (widgetHolder != null) {
             x--; //
             y--; // compensate, or else it looks off
@@ -95,11 +93,12 @@ public final class EmiRecipeBuilder implements RecipeBuilder {
                 slot.recipeContext(emiRecipe);
 
             boolean isChanceBased = chance != 1.0f;
-            int uv = isChanceBased ? 18 : 0;
+            int u = isFluidSlot ? 18 : 0;
+            int v = isChanceBased ? 18 : 0;
             slot.customBackground(
                     ResourceLocation.fromNamespaceAndPath(Concocti.MODID, "textures/gui/recipe_viewer/widgets.png"),
-                    0,
-                    uv,
+                    u,
+                    v,
                     18,
                     18
             );

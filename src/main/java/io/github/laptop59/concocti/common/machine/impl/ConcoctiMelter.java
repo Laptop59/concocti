@@ -581,10 +581,10 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
         @Override
         public void set(@NotNull io.github.laptop59.concocti.common.machine.RecipeBuilder builder, @NotNull Recipe recipe) {
             // Add the recipe input.
-            builder.addInputSlot(22, 6, recipe.getInputItem());
+            builder.addInputSlot(36, 16, recipe.getInputItem());
             // Add the fluid outputs.
-            builder.addOutputSlot(113, 6, recipe.getOutputPureFluid());
-            builder.addOutputSlot(113 + 18, 6, recipe.getOutputByproductFluid());
+            builder.addOutputSlot(113, 16, recipe.getOutputPureFluid());
+            builder.addOutputSlot(113 + 18, 16, recipe.getOutputByproductFluid());
         }
     }
 

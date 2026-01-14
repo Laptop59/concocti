@@ -2,7 +2,9 @@ package io.github.laptop59.concocti.common.machine;
 
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
+import io.github.laptop59.concocti.common.recipe.FluidOutput;
 import io.github.laptop59.concocti.common.recipe.FluidRecipeIngredient;
+import io.github.laptop59.concocti.common.recipe.ItemOutput;
 import io.github.laptop59.concocti.common.recipe.ItemRecipeIngredient;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -59,5 +61,13 @@ public class RecipeSlotFlags {
 
     public @Nullable Object getInternalObject() {
         return internalObject;
+    }
+
+    public boolean isItemLike() {
+        return internalObject instanceof ItemRecipeIngredient || internalObject instanceof ItemOutput || internalObject instanceof ItemStack;
+    }
+
+    public boolean isFluidLike() {
+        return internalObject instanceof FluidRecipeIngredient || internalObject instanceof FluidOutput || internalObject instanceof FluidStack;
     }
 }

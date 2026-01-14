@@ -529,7 +529,7 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
 
     // This serves as a dummy RecipeCategory.
     public static class RecipeCategory extends AbstractConcoctiRecipeCategory<Recipe> {
-        private FlameProgress flameProgress = new FlameProgress(0, 10);
+        private final FlameProgress flameProgress = new FlameProgress(0, 10);
 
         @Override
         protected ConcoctiEnergyGenerator getMachineInstance() {
@@ -547,38 +547,63 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
         }
 
         @Override
+        public int getWidth(@NotNull Recipe recipe) {
+            return 120 - 8;
+        }
+
+        @Override
+        public int getHeight(@NotNull Recipe recipe) {
+            return 32 - 8;
+        }
+
+        protected int getTotalArrowTop(@NotNull Recipe recipe) {
+            return 5;
+        }
+
+        @Override
         public void set(@NotNull io.github.laptop59.concocti.common.machine.RecipeBuilder builder, @NotNull Recipe recipe) {
             // Add the recipe input.
-            builder.addInputSlot(48, 6, recipe.getInputItem());
+            builder.addInputSlot(4, 4, recipe.getInputItem());
+        }
+
+        @Override
+        protected int getHorizontalArrowOffset(@NotNull ConcoctiEnergyGenerator.Recipe recipe) {
+            return -22;
+        }
+
+        public void tooltip(@NotNull List<Component> tooltipBuilder, @NotNull Recipe recipe, double mouseX, double mouseY) {
+            // Show the duration, if needed.
+            super.tooltip(tooltipBuilder, recipe, mouseX, mouseY);
+            if (isCursorTouchingArrow(mouseX, mouseY, recipe))
+                tooltipBuilder.add(Component.translatable("screen.concocti.duration", (double) getTicks(recipe) / 20));
         }
 
         @Override
         public void render(@NotNull Recipe recipe, @NotNull GuiGraphics guiGraphics, double mouseX, double mouseY) {
-            int left = -4;
-            int top = -4;
-            // Draw the background texture.
-            guiGraphics.blit(this.getTexture(), left, top, 0, 0, 176, 36, 176, 36);
+            renderBackground(guiGraphics, recipe);
             // Draw the arrow progress.
             long absoluteTicks = System.currentTimeMillis() / 50;
             int tickDuration = getTicks(recipe);
             long passedTicks = absoluteTicks % tickDuration;
             double progress = (double) passedTicks / tickDuration;
-            flameProgress.setGuiLeft(77);
-            flameProgress.setGuiTop(6);
+            flameProgress.setGuiLeft(28);
+            flameProgress.setGuiTop(5);
             flameProgress.update((float) (progress * 23) / 22);
             Renderable.renderChildAbsolute(guiGraphics, RenderInfo.withNullifiedOffset(null), flameProgress);
+            String rate = EnergyBar.formatEnergy(recipe.getFePerTick())  + "/t";
             guiGraphics.drawString(
                     Minecraft.getInstance().font,
-                    EnergyBar.formatEnergy(recipe.getFePerTick())  + "/t",
-                    100,
-                    5,
+                    rate,
+                    110 - Minecraft.getInstance().font.width(rate),
+                    3,
                     0xFF2d3366, false
             );
+            String totalEnergy = EnergyBar.formatEnergy((long) recipe.getFePerTick() * recipe.getTicks());
             guiGraphics.drawString(
                     Minecraft.getInstance().font,
-                    EnergyBar.formatEnergy((long) recipe.getFePerTick() * recipe.getTicks()),
-                    100,
-                    15,
+                    totalEnergy,
+                    110 - Minecraft.getInstance().font.width(totalEnergy),
+                    13,
                     0xFF363e7e, false
             );
         }
@@ -613,7 +638,7 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
     }
 
     /** Gets ''fake'' recipes (proxies) of fuels. MUST BE CALLED ONLY WHEN IN-GAME! */
-    public static List<Recipe> getRecipeProxies() {
+    public List<Recipe> getRecipeProxies() {
         assert Minecraft.getInstance().level != null;
 
         RecipeManager recipeManager = Minecraft.getInstance().level.getRecipeManager();
