@@ -4,7 +4,6 @@ import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.ConcoctiHatchBlock;
 import io.github.laptop59.concocti.common.block.HatchPurpose;
 import io.github.laptop59.concocti.common.block.HatchType;
-import io.github.laptop59.concocti.common.fluid.ConcoctiFluid;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.item.MoldItem;
@@ -33,7 +32,6 @@ import net.neoforged.neoforge.registries.DeferredItem;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -354,8 +352,8 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     concoctiMixerRecipe(
                             output,
                             recipeName,
-                            2 * 20,
-                            List.of(ItemRecipeIngredient.of(moldBase.get(), 1), ItemRecipeIngredient.of(type.getTag(), 1)),
+                            material.ticksToMake,
+                            List.of(ItemRecipeIngredient.of(moldBase.get(), 1), ItemRecipeIngredient.of(Ingredient.of(type.getTag()), 1, true)),
                             List.of(),
                             new ItemStack(mold.get()),
                             null

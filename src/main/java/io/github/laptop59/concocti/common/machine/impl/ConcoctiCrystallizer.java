@@ -534,10 +534,10 @@ public class ConcoctiCrystallizer extends ConcoctiMachineOnlyItemsFluids<
         @Override
         public void set(@NotNull io.github.laptop59.concocti.common.machine.RecipeBuilder builder, @NotNull Recipe recipe) {
             // Add the recipe inputs (fluid + tank + base item).
-            builder.addInputSlot(30, 6, recipe.getInputFluid());
-            builder.addInputSlot(48, 6, recipe.getSeedCrystal());
+            builder.addInputSlot(30, 16, recipe.getInputFluid());
+            builder.addInputSlot(48, 16, recipe.getSeedCrystal());
             // Add the item output.
-            builder.addOutputSlot(137 - 9, 6, recipe.getOutputItem());
+            builder.addOutputSlot(137 - 9, 16, recipe.getOutputItem());
         }
     }
 

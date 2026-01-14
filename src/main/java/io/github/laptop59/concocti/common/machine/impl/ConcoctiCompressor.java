@@ -696,24 +696,24 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
             // Add the recipe inputs.
             int i = 1;
             for (ItemRecipeIngredient ingredient : recipe.getInputItems()) {
-                builder.addInputSlot(left, 6, ingredient);
+                builder.addInputSlot(left, 16, ingredient);
                 i++;
                 left += 18;
             }
             i = 1;
             for (FluidRecipeIngredient ingredient : recipe.getInputFluids()) {
-                builder.addInputSlot(left, 6, ingredient);
+                builder.addInputSlot(left, 16, ingredient);
                 i++;
                 left += 18;
             }
             left += 11;
             left += 22 + 11;
             if (recipe.getOutputItem() != null && !recipe.getOutputItem().isEmpty()) {
-                builder.addOutputSlot(left, 6, recipe.getOutputItem());
+                builder.addOutputSlot(left, 16, recipe.getOutputItem());
                 left += 18;
             }
             if (recipe.getOutputFluid() != null && !recipe.getOutputFluid().isEmpty()) {
-                builder.addOutputSlot(left, 6, recipe.getOutputFluid());
+                builder.addOutputSlot(left, 16, recipe.getOutputFluid());
             }
         }
 
@@ -722,7 +722,7 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
             super.render(recipe, guiGraphics, mouseX, mouseY);
             DrawInfo drawInfo = createDrawInfo(recipe);
             for (int x : drawInfo.slots) {
-                guiGraphics.blit(SLOT, x - 1, 6 - 1, 0, 0, 18, 18, 18, 18);
+                guiGraphics.blit(SLOT, x - 1, 16 - 1, 0, 0, 18, 18, 18, 18);
             }
         }
 

@@ -1,6 +1,7 @@
 package io.github.laptop59.concocti.client.gui;
 
 import io.github.laptop59.concocti.client.gui.components.*;
+import io.github.laptop59.concocti.common.machine.impl.ConcoctiEnergyGenerator;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.menu.ConcoctiFrameSlot;
 import io.github.laptop59.concocti.common.menu.ConcoctiUpgradeSlot;
@@ -63,12 +64,12 @@ public abstract class AbstractConcoctiMachineScreen<M extends AbstractConcoctiMa
             super.renderTooltip(guiGraphics, mouseX, mouseY);
 
         Slot slot = this.menu.slots.get(0);
-        if (this.isHovering(slot.x, slot.y, 16, 16, mouseX, mouseY)) {
+        if (!slot.hasItem() && this.isHovering(slot.x, slot.y, 16, 16, mouseX, mouseY)) {
             guiGraphics.renderTooltip(this.font, Component.translatable("screen.concocti.no_upgrade").withStyle(ChatFormatting.GRAY), mouseX, mouseY);
         }
 
         slot = this.menu.slots.get(1);
-        if (this.isHovering(slot.x, slot.y, 16, 16, mouseX, mouseY)) {
+        if (!slot.hasItem() && this.isHovering(slot.x, slot.y, 16, 16, mouseX, mouseY)) {
             guiGraphics.renderTooltip(this.font, Component.translatable("screen.concocti.no_frame").withStyle(ChatFormatting.GRAY), mouseX, mouseY);
         }
     }

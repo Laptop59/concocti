@@ -283,14 +283,6 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
         }
 
         @Override
-        public ResourceLocation getTexturePath() {
-            return ResourceLocation.fromNamespaceAndPath(
-                    MODID,
-                    "textures/gui/recipe_viewer/recipe_background.png"
-            );
-        }
-
-        @Override
         public @NotNull Object getJeiRecipeType() {
             return getMachineInstance().getJeiRecipeType();
         }
@@ -308,15 +300,11 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
         @Override
         public void render(@NotNull Recipe recipe, @NotNull GuiGraphics guiGraphics, double mouseX, double mouseY) {
             super.render(recipe, guiGraphics, mouseX, mouseY);
-            RecipeCategory.DrawInfo drawInfo = createDrawInfo(recipe);
+            /*
             for (int x : drawInfo.slots()) {
-                guiGraphics.blit(SLOT, x - 1, 6 - 1, 0, 0, 18, 18, 18, 18);
+                guiGraphics.blit(SLOT, x - 1, 16 - 1, 0, 0, 18, 18, 18, 18);
             }
-        }
-
-        @Override
-        protected int getHorizontalArrowOffset(@NotNull Recipe recipe) {
-            return createDrawInfo(recipe).arrowPos() - 72;
+             */
         }
     }
 

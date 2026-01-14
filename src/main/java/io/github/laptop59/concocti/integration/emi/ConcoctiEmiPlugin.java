@@ -26,7 +26,7 @@ public class ConcoctiEmiPlugin implements EmiPlugin {
         }
     }
 
-    private void registerMachine(EmiRegistry registry, ConcoctiMachine<?,?,?,?,?,?,?,?,?> machine) {
+    private <R extends ProcessingRecipe<R, I>, I extends RecipeInput> void registerMachine(EmiRegistry registry, ConcoctiMachine<?,?,?,I,R,?,?,?,?> machine) {
         // First, we need to create the category.
         EmiStack workstation = EmiStack.of(machine.ITEM);
         EmiRecipeCategory category = new EmiRecipeCategory(
@@ -41,13 +41,11 @@ public class ConcoctiEmiPlugin implements EmiPlugin {
         RecipeManager recipeManager = Minecraft.getInstance().level.getRecipeManager();
         registerRecipesFor(registry, recipeManager, machine, category);
 
-        if (machine == ConcoctiMachines.ENERGY_GENERATOR) {
-            for (ConcoctiEnergyGenerator.Recipe recipe : ConcoctiEnergyGenerator.getRecipeProxies()) {
-                // No indices: indices only exist when there can be multiple different inputs
-                // (as given in the ConcoctiEmiRecipe construction documentation) in one recipe.
-                // Here, an ingredient does not count as such.
-                registry.addRecipe(new ConcoctiEmiRecipe<>(category, recipe, ConcoctiMachines.ENERGY_GENERATOR.newRecipeCategory(), new int[0]));
-            }
+        for (R recipe : machine.getRecipeProxies()) {
+            // No indices: indices only exist when there can be multiple different inputs
+            // (as given in the ConcoctiEmiRecipe construction documentation) in one recipe.
+            // Here, an ingredient does not count as such.
+            registry.addRecipe(new ConcoctiEmiRecipe<>(category, recipe, machine.newRecipeCategory(), new int[0]));
         }
     }
 

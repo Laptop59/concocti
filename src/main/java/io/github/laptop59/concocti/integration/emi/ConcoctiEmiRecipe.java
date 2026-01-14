@@ -80,12 +80,12 @@ public class ConcoctiEmiRecipe<R extends ProcessingRecipe<R, ? extends RecipeInp
 
     @Override
     public int getDisplayWidth() {
-        return internalCategory.getWidth();
+        return internalCategory.getWidth(recipe);
     }
 
     @Override
     public int getDisplayHeight() {
-        return internalCategory.getHeight();
+        return internalCategory.getHeight(recipe);
     }
 
     @Override
@@ -93,7 +93,7 @@ public class ConcoctiEmiRecipe<R extends ProcessingRecipe<R, ? extends RecipeInp
         widgets.add(new Widget() {
             @Override
             public Bounds getBounds() {
-                return new Bounds(0, 0, internalCategory.getWidth(), internalCategory.getHeight());
+                return new Bounds(0, 0, internalCategory.getWidth(recipe), internalCategory.getHeight(recipe));
             }
 
             @Override

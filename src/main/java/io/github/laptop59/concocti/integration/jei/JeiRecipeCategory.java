@@ -1,7 +1,9 @@
 package io.github.laptop59.concocti.integration.jei;
 
 import io.github.laptop59.concocti.common.machine.AbstractConcoctiRecipeCategory;
+import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
+import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.ITooltipBuilder;
@@ -20,13 +22,18 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 
-public class JeiRecipeCategory<R extends ProcessingRecipe<R, ? extends RecipeInput>> implements IRecipeCategory<R> {
+public class JeiRecipeCategory<R extends ProcessingRecipe<R, I>, I extends RecipeInput> implements IRecipeCategory<R> {
     AbstractConcoctiRecipeCategory<R> category;
     IDrawable icon;
+    ConcoctiMachine<?, ?, ?, I, R, ?, ?, ?, ?> machine;
 
-    public JeiRecipeCategory(AbstractConcoctiRecipeCategory<R> category, IGuiHelper guiHelper, ItemStack icon) {
+    @Nullable Integer cachedWidth = null;
+    @Nullable Integer cachedHeight = null;
+
+    public JeiRecipeCategory(AbstractConcoctiRecipeCategory<R> category, IGuiHelper guiHelper, ItemStack icon, ConcoctiMachine<?, ?, ?, I, R, ?, ?, ?, ?> machine) {
         this.category = category;
         this.icon = guiHelper == null ? null : guiHelper.createDrawableIngredient(VanillaTypes.ITEM_STACK, icon);
+        this.machine = machine;
     }
 
     @Override
@@ -47,12 +54,26 @@ public class JeiRecipeCategory<R extends ProcessingRecipe<R, ? extends RecipeInp
 
     @Override
     public int getWidth() {
-        return category.getWidth();
+        if (cachedWidth == null) {
+            int width = 0;
+            for (R recipe : ConcoctiJeiPlugin.getJeiRecipes(machine)) {
+                width = Math.max(width, category.getWidth(recipe));
+            }
+            cachedWidth = width;
+        }
+        return cachedWidth;
     }
 
     @Override
     public int getHeight() {
-        return category.getHeight();
+        if (cachedHeight == null) {
+            int height = 0;
+            for (R recipe : ConcoctiJeiPlugin.getJeiRecipes(machine)) {
+                height = Math.max(height, category.getHeight(recipe));
+            }
+            cachedHeight = height;
+        }
+        return cachedHeight;
     }
 
     @Override

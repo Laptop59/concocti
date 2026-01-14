@@ -21,30 +21,33 @@ public class MoldItem extends Item {
      * Material of a mold.
      */
     public enum Material implements Comparable<Material> {
-        COPPER(32, "copper", 19),
-        DIAMOND(128, "diamond", 184),
-        LATTICIUM(Integer.MAX_VALUE, "latticium", 0, 0, 0.3f);
+        COPPER(32, "copper", 19, 40),
+        DIAMOND(128, "diamond", 184, 160),
+        LATTICIUM(Integer.MAX_VALUE, "latticium", 0, 0, 0.3f, 640);
 
         public final int durability;
         public final String prefix;
         public final float hue;
         public final float saturation;
         public final float brightness;
+        public final int ticksToMake;
 
-        Material(int durability, String prefix, float hue) {
+        Material(int durability, String prefix, float hue, int ticksToMake) {
             this.durability = durability;
             this.prefix = prefix;
             this.hue = hue;
             this.saturation = 0.40f;
             this.brightness = 1f;
+            this.ticksToMake = ticksToMake;
         }
 
-        Material(int durability, String prefix, float hue, float saturation, float brightness) {
+        Material(int durability, String prefix, float hue, float saturation, float brightness,  int ticksToMake) {
             this.durability = durability;
             this.prefix = prefix;
             this.hue = hue;
             this.saturation = saturation;
             this.brightness = brightness;
+            this.ticksToMake = ticksToMake;
         }
 
         public int getColor() {

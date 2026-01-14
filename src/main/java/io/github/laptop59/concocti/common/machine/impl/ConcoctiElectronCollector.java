@@ -500,9 +500,14 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
         }
 
         @Override
+        public int getWidth(@NotNull Recipe recipe) {
+            return 108 - 8;
+        }
+
+        @Override
         public void set(@NotNull io.github.laptop59.concocti.common.machine.RecipeBuilder builder, @NotNull Recipe recipe) {
             // Add the fluid output.
-            builder.addOutputSlot(113, 6, recipe.getOutput());
+            builder.addOutputSlot(getWidth(recipe) - 6 - 18, 16, recipe.getOutput());
 
             ItemStack rod = new ItemStack(ConcoctiItems.CONDUCTIVIUM_LIGHTNING_ROD.get());
             ArrayList<MutableComponent> mutableComponents = new ArrayList<>();
@@ -521,7 +526,7 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
             ItemLore itemLore = new ItemLore(components);
             rod.set(DataComponents.LORE, itemLore);
 
-            builder.addCatalystSlot(40, 6, Ingredient.of(rod));
+            builder.addCatalystSlot(8, 16, Ingredient.of(rod));
         }
     }
 
