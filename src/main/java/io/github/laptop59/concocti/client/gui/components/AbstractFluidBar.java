@@ -85,11 +85,11 @@ public abstract class AbstractFluidBar<T extends AbstractContainerMenu> extends 
         }
 
         // Draw the fluid bar highlight if needed.
-        if (renderInfo.isHovering(getWidth(), getHeight()))
+        if (renderInfo.isHovering(getWidth(), getHeight() - 3))
             guiGraphics.fillGradient(RenderType.guiOverlay(), renderInfo.left(), renderInfo.top(),
                     renderInfo.left() + 16, renderInfo.top() + getHeight() - 2, -2130706433, -2130706433, 0);
 
-        if (renderInfo.isHovering(16, getHeight() - 2)) {
+        if (renderInfo.isHovering(getWidth(), getHeight() - 3)) {
             renderInfo.renderTooltip(guiGraphics, Component.translatable("screen.concocti.fluid_bar",
                     Component.translatable(getFluidTranslation()).getString(), stack.getAmount(), max));
         }

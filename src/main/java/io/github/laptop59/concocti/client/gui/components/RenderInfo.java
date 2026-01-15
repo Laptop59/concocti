@@ -50,6 +50,22 @@ public record RenderInfo(
     }
 
     /**
+     * Renders a tooltip conditionally based on the current {@code Block}s.
+     *
+     * @param guiGraphics Graphics object to use for rendering.
+     * @param text        The text of the tooltip to render, with each component given in the list being rendered in a different line.
+     */
+    public void renderTooltip(GuiGraphics guiGraphics, List<Component> text) {
+        for (Block block : blocks()) {
+            if (mouseX > block.left &&
+                    mouseX < block.left + block.width &&
+                    mouseY > block.top &&
+                    mouseY < block.top + block.height) return;
+        }
+        guiGraphics.renderTooltip(font, text.stream().map(Component::getVisualOrderText).toList(), mouseX, mouseY);
+    }
+
+    /**
      * Checks if a cursor position is within the provided left, top, width, height of a rectangular region.
      *
      * @param x      The left position of the rectangular region.

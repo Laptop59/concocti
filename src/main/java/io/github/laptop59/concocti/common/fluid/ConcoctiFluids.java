@@ -19,7 +19,7 @@ public class ConcoctiFluids {
             .temperature(300)
             .lightLevel(13)
             .viscosity(1500)
-            .density(10)
+            .density(1000)
             .canConvertToSource(false)
             .canDrown(false)
             .canSwim(true),
@@ -29,13 +29,14 @@ public class ConcoctiFluids {
         true
     );
 
+
     public static final ConcoctiFluidParent MOLTEN_TOUGH_CONCOCTI = register(
         "molten_tough_concocti",
         FluidType.Properties.create()
             .temperature(500)
             .lightLevel(12)
             .viscosity(1250)
-            .density(15)
+            .density(1500)
             .canConvertToSource(false)
             .canDrown(false)
             .canSwim(true),
@@ -51,7 +52,7 @@ public class ConcoctiFluids {
                 .temperature(200)
                 .lightLevel(10)
                 .viscosity(1000)
-                .density(5)
+                .density(500)
                 .canConvertToSource(false)
                 .canDrown(false)
                 .canSwim(true),
@@ -67,7 +68,7 @@ public class ConcoctiFluids {
                 .temperature(1084)
                 .lightLevel(12)
                 .viscosity(1000)
-                .density(3)
+                .density(300)
                 .canConvertToSource(false)
                 .canDrown(false)
                 .canSwim(true),
@@ -83,7 +84,7 @@ public class ConcoctiFluids {
                 .temperature(2000)
                 .lightLevel(15)
                 .viscosity(1000)
-                .density(3)
+                .density(300)
                 .canConvertToSource(false)
                 .canDrown(false)
                 .canSwim(true),
@@ -98,8 +99,8 @@ public class ConcoctiFluids {
         FluidType.Properties.create()
                 .temperature(1000000000)
                 .lightLevel(15)
-                .viscosity(10)
-                .density(33)
+                .viscosity(1000)
+                .density(3300)
                 .canConvertToSource(false)
                 .canDrown(false)
                 .canSwim(true),
@@ -114,8 +115,8 @@ public class ConcoctiFluids {
         FluidType.Properties.create()
                 .temperature(50)
                 .lightLevel(1)
-                .viscosity(40)
-                .density(2)
+                .viscosity(4000)
+                .density(200)
                 .canConvertToSource(false)
                 .canDrown(false)
                 .canSwim(true),
@@ -130,8 +131,8 @@ public class ConcoctiFluids {
         FluidType.Properties.create()
                 .temperature(50)
                 .lightLevel(2)
-                .viscosity(30)
-                .density(5)
+                .viscosity(3000)
+                .density(500)
                 .canConvertToSource(false)
                 .canDrown(false)
                 .canSwim(true),
@@ -146,8 +147,8 @@ public class ConcoctiFluids {
         FluidType.Properties.create()
                 .temperature(2500)
                 .lightLevel(0)
-                .viscosity(10)
-                .density(10)
+                .viscosity(1000)
+                .density(25000)
                 .canConvertToSource(false)
                 .canDrown(false)
                 .canSwim(true),
@@ -162,8 +163,8 @@ public class ConcoctiFluids {
             FluidType.Properties.create()
                     .temperature(1500)
                     .lightLevel(0)
-                    .viscosity(7)
-                    .density(40)
+                    .viscosity(700)
+                    .density(4000)
                     .canConvertToSource(false)
                     .canDrown(false)
                     .canSwim(true),
@@ -178,13 +179,29 @@ public class ConcoctiFluids {
             FluidType.Properties.create()
                     .temperature(4500)
                     .lightLevel(6)
-                    .viscosity(30)
-                    .density(5)
+                    .viscosity(3000)
+                    .density(5000)
                     .canConvertToSource(false)
                     .canDrown(false)
                     .canSwim(true),
             BlockBehaviour.Properties.ofFullCopy(Blocks.LAVA).mapColor(DyeColor.RED),
             5,
+            true,
+            true
+    );
+
+    public static final ConcoctiFluidParent MOLTEN_SOLARIUM = register(
+            "molten_solarium",
+            FluidType.Properties.create()
+                    .temperature(450)
+                    .lightLevel(15)
+                    .viscosity(2500)
+                    .density(1000)
+                    .canConvertToSource(false)
+                    .canDrown(false)
+                    .canSwim(true),
+            BlockBehaviour.Properties.ofFullCopy(Blocks.LAVA).mapColor(DyeColor.YELLOW),
+            8,
             true,
             true
     );

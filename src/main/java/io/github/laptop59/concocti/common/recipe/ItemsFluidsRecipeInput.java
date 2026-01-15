@@ -32,7 +32,7 @@ public class ItemsFluidsRecipeInput extends RecipeWrapper {
         return testOrConsume(inputItems, inputFluids, true);
     }
 
-    public boolean testOrConsume(List<ItemRecipeIngredient> inputItems, List<FluidRecipeIngredient> inputFluids, boolean shouldConsume) {
+    protected boolean testOrConsume(List<ItemRecipeIngredient> inputItems, List<FluidRecipeIngredient> inputFluids, boolean shouldConsume) {
         // Reserve (simulated consumed) items in the inventory to really test
         {
             long[] currentCountsLeft = new long[size()];

@@ -3,6 +3,7 @@ package io.github.laptop59.concocti.common.abstraction;
 import io.github.laptop59.concocti.client.gui.components.MachineSettingsSlots;
 import io.github.laptop59.concocti.client.gui.components.SlotType;
 import io.github.laptop59.concocti.common.recipe.LightningState;
+import io.github.laptop59.concocti.common.recipe.SolarState;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -159,6 +160,16 @@ public record ComplexionCodec<T>(
             (object, instance) -> BOOLEAN.serialize(object.getLightningCollected(), instance),
             instance -> new LightningState(BOOLEAN.deserialize(instance)),
             "LIGHTNING_STATE"
+    );
+
+    public static final ComplexionCodec<SolarState> SOLAR_STATE = new ComplexionCodec<>(
+            4,
+            (object, instance) -> {
+                LONG.serialize(object.getSolarAmount(), instance);
+                LONG.serialize(object.getMaxSolarAmount(), instance);
+            },
+            instance -> new SolarState(LONG.deserialize(instance), LONG.deserialize(instance)),
+            "SOLAR_STATE"
     );
 
     /**

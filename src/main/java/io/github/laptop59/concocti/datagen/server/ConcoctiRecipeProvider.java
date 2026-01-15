@@ -4,6 +4,7 @@ import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.ConcoctiHatchBlock;
 import io.github.laptop59.concocti.common.block.HatchPurpose;
 import io.github.laptop59.concocti.common.block.HatchType;
+import io.github.laptop59.concocti.common.fluid.ConcoctiFluid;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.item.MoldItem;
@@ -735,6 +736,17 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 new ItemStack(Items.COBWEB, 1), null
         );
 
+        concoctiSolarCollectorRecipe(
+                output,
+                "converting_solar_to_molten_solarium",
+                20,
+                ItemRecipeIngredient.of(Ingredient.of(ConcoctiItems.SOLARIUM_CATALYST), 1, true),
+                null,
+                null,
+                FluidOutput.of(ConcoctiFluids.MOLTEN_SOLARIUM.get(), ConcoctiConstants.MOLTEN_NUGGET),
+                100
+        );
+
         concoctiMultiblockRecipe(
                 output,
                 ConcoctiMachines.MAGNETIC_SEPARATOR,
@@ -1253,6 +1265,29 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 outputFluids,
                 ticks
         ).save(output);
+    }
+
+    /**
+     * Generates a Concocti Solar Collector Recipe.
+     */
+    private static void concoctiSolarCollectorRecipe(
+            RecipeOutput output,
+            String name,
+            int ticks,
+            ItemRecipeIngredient inputItem,
+            FluidRecipeIngredient inputFluid,
+            ItemOutput outputItem,
+            FluidOutput outputFluid,
+            long solar
+    ) {
+        new ConcoctiSolarCollector.Recipe.Builder(
+                inputItem,
+                inputFluid,
+                outputItem,
+                outputFluid,
+                solar,
+                ticks
+        ).save(output, ResourceLocation.fromNamespaceAndPath(MODID, "solar_collecting/" + name));
     }
 
     /**

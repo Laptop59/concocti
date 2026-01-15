@@ -178,6 +178,7 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
         public boolean canProcess() {
             if (!super.canProcess()) return false;
             Recipe recipe = getRecipe(lightningState.get());
+            if (recipe == null) return false;
             // Check whether the fluids obtained from this item will not exceed our fluid limit.
             FluidStack result = recipe.getOutput().stack().copy();
             return fluidOutput.get().fill(result, IFluidHandler.FluidAction.SIMULATE) == result.getAmount();

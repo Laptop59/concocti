@@ -245,9 +245,12 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
             // Check whether the fluids obtained from this item will not exceed our fluid limit.
             ItemStack outputSlotItems = getItem(OUTPUT_SLOT);
             ItemStack resultItems = recipe.getOutputItem();
-            if (!outputSlotItems.isEmpty() &&
+            if (
+                    !outputSlotItems.isEmpty() &&
                     resultItems != null &&
-                    outputSlotItems.getCount() + resultItems.getCount() > outputSlotItems.getMaxStackSize())
+                    (!ItemStack.isSameItemSameComponents(outputSlotItems, resultItems) ||
+                            outputSlotItems.getCount() + resultItems.getCount() > outputSlotItems.getMaxStackSize())
+            )
                 return false;
             FluidStack resultFluid = recipe.getOutputFluid();
             if (resultFluid != null && !resultFluid.isEmpty()) {

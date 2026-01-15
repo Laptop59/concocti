@@ -2,6 +2,7 @@ package io.github.laptop59.concocti.common.abstraction;
 
 import io.github.laptop59.concocti.client.gui.components.MachineSettingsSlots;
 import io.github.laptop59.concocti.common.recipe.LightningState;
+import io.github.laptop59.concocti.common.recipe.SolarState;
 import net.minecraft.core.Direction;
 import net.neoforged.neoforge.fluids.FluidStack;
 
@@ -34,6 +35,8 @@ public final class Properties {
     public static final Property<FluidStack> FLUID_TANK = ComplexionCodec.FLUID_STACK.unique();
 
     public static final Property<LightningState> LIGHTNING_STATE = ComplexionCodec.LIGHTNING_STATE.unique();
+    public static final Property<SolarState> SOLAR_STATE = ComplexionCodec.SOLAR_STATE.unique();
+    public static final Property<Long> SOLAR_PRODUCTION_RATE = ComplexionCodec.LONG.unique();
 
     private Properties() {}
 }

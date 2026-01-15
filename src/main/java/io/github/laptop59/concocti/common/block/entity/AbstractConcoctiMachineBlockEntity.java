@@ -549,60 +549,63 @@ public abstract class AbstractConcoctiMachineBlockEntity
         return List.of();
     }
 
+    protected void onUpgradeUnitsChange() {
+        this.setNewEnergyMultiplier(this.getInefficientEnergyMultiplier());
+    }
+
     /**
      * A basic implementation of a Concocti Machine's server tick.
      */
     public void tick(Level level, BlockPos pos, BlockState state) {
-        AbstractConcoctiMachineBlockEntity<T, M, V, I, R> entity = this;
-        int currentUpgradeUnits = ConcoctiUpgradeSlot.getUpgradeUnits(entity.getItem(UPGRADE_SLOT));
-        if (currentUpgradeUnits != entity.lastUpgradeUnits) {
-            entity.lastUpgradeUnits = currentUpgradeUnits;
-            entity.setNewEnergyMultiplier(entity.getInefficientEnergyMultiplier());
+        int currentUpgradeUnits = ConcoctiUpgradeSlot.getUpgradeUnits(this.getItem(UPGRADE_SLOT));
+        if (currentUpgradeUnits != this.lastUpgradeUnits) {
+            this.lastUpgradeUnits = currentUpgradeUnits;
+            this.onUpgradeUnitsChange();
         }
-        if (entity.ticksLeft >= entity.totalTicks) entity.lastRecipe = null;
-        if (--entity.autoCooldown <= 0) {
-            entity.autoCooldown = AUTO_COOLDOWN;
-            entity.attemptToEject();
-            entity.attemptToPull();
+        if (this.ticksLeft >= this.totalTicks) this.lastRecipe = null;
+        if (--this.autoCooldown <= 0) {
+            this.autoCooldown = AUTO_COOLDOWN;
+            this.attemptToEject();
+            this.attemptToPull();
         }
         int consumableTicks = getTickMultiplier();
         int subticks = 0;
         while (consumableTicks > 0) {
-            if (entity.canProcess()) {
-                V input = entity.getInput();
-                R toBeProcessed = entity.getRecipe(input);
-                R recipe = entity.getRecipe(input);
-                if (recipe != null && (entity.lastRecipe == null || !entity.lastRecipe.equals(toBeProcessed))) {
-                    entity.lastRecipe = toBeProcessed;
-                    entity.totalTicks = recipe.getTicks();
-                    entity.ticksLeft = entity.totalTicks;
+            if (this.canProcess()) {
+                V input = this.getInput();
+                R toBeProcessed = this.getRecipe(input);
+                R recipe = this.getRecipe(input);
+                if (recipe != null && (this.lastRecipe == null || !this.lastRecipe.equals(toBeProcessed))) {
+                    this.lastRecipe = toBeProcessed;
+                    this.totalTicks = recipe.getTicks();
+                    this.ticksLeft = this.totalTicks;
                 }
-                int ticksConsumed = Math.min(consumableTicks, entity.ticksLeft);
-                entity.ticksLeft -= ticksConsumed;
+                int ticksConsumed = Math.min(consumableTicks, this.ticksLeft);
+                this.ticksLeft -= ticksConsumed;
                 consumableTicks -= ticksConsumed;
-                entity.energy.forceExtractEnergy((int) (rateConsumption * ticksConsumed), false);
-                if (recipe != null && entity.ticksLeft <= 0) {
+                this.energy.forceExtractEnergy((int) (rateConsumption * ticksConsumed), false);
+                if (recipe != null && this.ticksLeft <= 0) {
                     // Produce the result.
-                    entity.onRecipeCompleted(recipe);
+                    this.onRecipeCompleted(recipe);
                     subticks++;
                     if (subticks % 16 == 0 || consumableTicks <= 0) {
-                        entity.attemptToEject();
-                        entity.attemptToPull();
+                        this.attemptToEject();
+                        this.attemptToPull();
                     }
-                    entity.totalTicks = recipe.getTicks();
-                    entity.ticksLeft = entity.totalTicks;
+                    this.totalTicks = recipe.getTicks();
+                    this.ticksLeft = this.totalTicks;
                 }
             } else {
-                if (entity.ticksLeft < entity.totalTicks) entity.ticksLeft += entity.getTickMultiplier();
+                if (this.ticksLeft < this.totalTicks) this.ticksLeft += this.getTickMultiplier();
                 break;
             }
         }
-        if (state.getValue(LIT) != entity.canProcess()) {
-            level.setBlock(pos, state.setValue(LIT, entity.canProcess()), 1 | 2);
+        if (state.getValue(LIT) != this.canProcess()) {
+            level.setBlock(pos, state.setValue(LIT, this.canProcess()), 1 | 2);
         }
-        if (entity.autoCooldown == AUTO_COOLDOWN) {
-            entity.attemptToEject();
-            entity.attemptToPull();
+        if (this.autoCooldown == AUTO_COOLDOWN) {
+            this.attemptToEject();
+            this.attemptToPull();
         }
     }
 

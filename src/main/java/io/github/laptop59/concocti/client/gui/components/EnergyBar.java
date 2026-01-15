@@ -49,7 +49,7 @@ public class EnergyBar<T extends AbstractContainerMenu> extends Renderable {
             renderInfo.renderTooltip(guiGraphics, Component.translatable(
                     "screen.concocti.energy_bar",
                     Component.literal(formatEnergy(left)).withColor(0xFFD7D7),
-                    Component.literal(Integer.toString(percent)).withColor(0xFFB7B7)
+                    Component.literal(formatEnergy(max)).withColor(0xFFB7B7)
             ).withColor(0xFF9F9F));
         }
     }

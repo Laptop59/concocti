@@ -325,7 +325,7 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
         // Check whether the given input matches this recipe. The first parameter matches the generic.
         // We check our block state and our item stack, and only return true if both match.
         @Override
-        public boolean matches(ItemsFluidsRecipeInput input, Level level) {
+        public boolean matches(ItemsFluidsRecipeInput input, @NotNull Level level) {
             return input.test(List.of(inputItem), List.of());
         }
 
