@@ -23,6 +23,7 @@ public final class ConcoctiMachines {
     public static ConcoctiElectronCollector ELECTRON_COLLECTOR;
     public static ConcoctiCrystallizer CRYSTALLIZER;
     public static ConcoctiCompressor COMPRESSOR;
+    public static ConcoctiSolarCollector SOLAR_COLLECTOR;
 
     public static ConcoctiMultiBlockMachine MAGNETIC_SEPARATOR;
     public static ConcoctiMultiBlockMachine CENTRIFUGE;
@@ -70,6 +71,7 @@ public final class ConcoctiMachines {
         ELECTRON_COLLECTOR = register(new ConcoctiElectronCollector());
         CRYSTALLIZER = register(new ConcoctiCrystallizer());
         COMPRESSOR = register(new ConcoctiCompressor());
+        SOLAR_COLLECTOR = register(new ConcoctiSolarCollector());
 
         // Multiblocks
         // Note: we do not need a predicate in the controller position.

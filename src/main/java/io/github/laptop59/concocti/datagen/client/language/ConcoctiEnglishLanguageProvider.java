@@ -51,6 +51,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiMachines.COMPRESSOR, "Concocti Compressor");
         add(ConcoctiMachines.MAGNETIC_SEPARATOR, "Concocti Magnetic Separator");
         add(ConcoctiMachines.CENTRIFUGE, "Concocti Centrifuge");
+        add(ConcoctiMachines.SOLAR_COLLECTOR, "Concocti Solar Collector");
 
         // Blocks go here.
         add(ConcoctiBlocks.DIAMETHYST_BLOCK, "Block of Diamethyst");
@@ -91,6 +92,9 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiFluids.CRYSTALIUM_SOLUTION.BUCKET, "Bucket of Crystalium Solution");
         add(ConcoctiFluids.SUPERSATURATED_CRYSTALIUM_SOLUTION.BUCKET, "Bucket of Supersaturated Crystalium Solution");
         add(ConcoctiFluids.MOLTEN_LATTICIUM.BUCKET, "Bucket of Molten Latticium");
+        add(ConcoctiFluids.MOLTEN_IRON.BUCKET, "Bucket of Molten Iron");
+        add(ConcoctiFluids.MOLTEN_REDSTONE.BUCKET, "Bucket of Molten Redstone");
+        add(ConcoctiFluids.MOLTEN_SOLARIUM.BUCKET, "Bucket of Molten Solarium");
 
         add(ConcoctiItems.COMPACT_CONCOCTI_UPGRADE, "Compact Concocti Upgrade");
         add(ConcoctiItems.COMPACTER_CONCOCTI_UPGRADE, "Compacter Concocti Upgrade");
@@ -103,6 +107,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiItems.LATTICIUM_NUGGET, "Latticium Nugget");
         add(ConcoctiItems.LATTICIUM_INGOT, "Latticium Ingot");
         add(ConcoctiItems.DENSE_CONCOCTI_PELLET, "Dense Concocti Pellet");
+        add(ConcoctiItems.SOLARIUM_CATALYST, "Solarium Catalyst");
 
         add(ConcoctiItems.Tags.CONCOCTI_UPGRADES, "Concocti Upgrades");
         add(ConcoctiItems.Tags.CONCOCTI_HATCHES, "Concocti Hatches");
@@ -124,6 +129,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiFluids.MOLTEN_LATTICIUM, "Molten Latticium");
         add(ConcoctiFluids.MOLTEN_IRON, "Molten Iron");
         add(ConcoctiFluids.MOLTEN_REDSTONE, "Molten Redstone");
+        add(ConcoctiFluids.MOLTEN_SOLARIUM, "Molten Solarium");
 
         // Miscellaneous things go here.
         add("effect.concocti.concoctized", "Concoctized");
@@ -141,7 +147,9 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         addCommonTag("storage_blocks.concocti", "Concocti Storage Blocks");
 
         // GUI elements go here.
-        add("screen.concocti.energy_bar", "Energy: %s (%s%%)");
+        add("screen.concocti.energy_bar", "Energy: %s/%s");
+        add("screen.concocti.solar_bar", "Solar: %s/%s");
+        add("screen.concocti.solar_collection_rate", "Collection Rate: %s/t");
         add("screen.concocti.fluid_bar", "%s: %s/%s mB");
         add("screen.concocti.fluid_amount", "%s mB");
         add("screen.concocti.no_upgrade", "Put a Concocti Upgrade here to speed up this block.");

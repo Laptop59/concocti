@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "#D#",
+    "#G#",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "concocti:purified_concocti_ingot"
+    },
+    "D": {
+      "item": "minecraft:daylight_detector"
+    },
+    "G": {
+      "item": "minecraft:black_stained_glass"
+    }
+  },
+  "result": {
+    "id": "concocti:concocti_solar_collector",
+    "count": 1
+  }
+}

@@ -69,16 +69,6 @@ public abstract class ConcoctiFluid extends BaseFlowingFluid {
 
     @Override
     protected void spreadTo(@NotNull LevelAccessor level, @NotNull BlockPos pos, @NotNull BlockState blockState, @NotNull Direction direction, @NotNull FluidState fluidState) {
-        if (direction == Direction.DOWN) {
-            FluidState otherFluidState = level.getFluidState(pos);
-            if (parent.IS_MOLTEN && otherFluidState.is(FluidTags.WATER)) {
-                if (blockState.getBlock() instanceof LiquidBlock) {
-                    level.setBlock(pos, net.neoforged.neoforge.event.EventHooks.fireFluidPlaceBlockEvent(level, pos, pos, Blocks.COBBLESTONE.defaultBlockState()), 3);
-                }
-                this.fizz(level, pos);
-                return;
-            }
-        }
         super.spreadTo(level, pos, blockState, direction, fluidState);
     }
 

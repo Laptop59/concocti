@@ -1,8 +1,8 @@
 package io.github.laptop59.concocti.common.detail;
 
 import io.github.laptop59.concocti.common.recipe.LightningState;
+import io.github.laptop59.concocti.common.recipe.SolarState;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
@@ -33,6 +33,18 @@ public class DetailCodec<T> implements DetailSerializer<T>, DetailDeserializer<T
             boolean result = context.tag().contains(context.id()) && context.tag().getBoolean(context.id());
             holder.get().setLightningCollected(result);
         }
+    );
+
+    public static final DetailCodec<SolarState> SOLAR_STATE = new DetailCodec<>(
+            (context, holder) -> {
+                SolarState solarState = holder.get();
+                context.tag().putLongArray(context.id(), new long[] {solarState.getSolarAmount(), solarState.getMaxSolarAmount()});
+            },
+            (context, holder) -> {
+                long[] amounts = context.tag().contains(context.id()) ? context.tag().getLongArray(context.id()) : new long[] {0, 0};
+                holder.get().setSolarAmount(amounts[0]);
+                holder.get().setMaxSolarAmount(amounts[1]);
+            }
     );
 
     protected final DetailSerializer<T> serializer;

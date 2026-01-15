@@ -69,6 +69,8 @@ public class ConcoctiItems {
     public static final DeferredItem<Item> ELECTROSTATIC_CONDUCTIVIUM_NUGGET = registerItem("electrostatic_conductivium_nugget", new Item.Properties());
     public static final DeferredItem<Item> ELECTROSTATIC_CONDUCTIVIUM_INGOT = registerItem("electrostatic_conductivium_ingot", new Item.Properties());
 
+    public static final DeferredItem<Item> SOLARIUM_CATALYST = registerItem("solarium_catalyst", new Item.Properties());
+
     // Buckets of fluids are now automatically defined by the ConcoctiFluid class.
 
     public static final DeferredItem<? extends Item> COMPACT_CONCOCTI_UPGRADE = registerItem("compact_concocti_upgrade", ConcoctiUpgradeItem::new, new Item.Properties().stacksTo(8));
@@ -269,6 +271,8 @@ public class ConcoctiItems {
 
         acceptStack(output, ELECTROSTATIC_CONDUCTIVIUM_NUGGET);
         acceptStack(output, ELECTROSTATIC_CONDUCTIVIUM_INGOT);
+
+        acceptStack(output, SOLARIUM_CATALYST);
 
         ConcoctiMachines.forEach(concoctiMachine ->
             acceptStack(output, concoctiMachine.ITEM)
