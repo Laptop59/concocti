@@ -581,9 +581,9 @@ public abstract class AbstractConcoctiMachineBlockEntity
                     this.ticksLeft = this.totalTicks;
                 }
                 int ticksConsumed = Math.min(consumableTicks, this.ticksLeft);
-                this.ticksLeft -= ticksConsumed;
+
                 consumableTicks -= ticksConsumed;
-                this.energy.forceExtractEnergy((int) (rateConsumption * ticksConsumed), false);
+                this.processConsumableTicks(ticksConsumed);
                 if (recipe != null && this.ticksLeft <= 0) {
                     // Produce the result.
                     this.onRecipeCompleted(recipe);
@@ -607,6 +607,11 @@ public abstract class AbstractConcoctiMachineBlockEntity
             this.attemptToEject();
             this.attemptToPull();
         }
+    }
+
+    protected void processConsumableTicks(int ticksConsumed) {
+        this.ticksLeft -= ticksConsumed;
+        this.energy.forceExtractEnergy((int) (rateConsumption * ticksConsumed), false);
     }
 
     /**

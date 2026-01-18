@@ -4,6 +4,7 @@
     "concocti:conductivium_ingot",
     "concocti:electrostatic_conductivium_ingot",
     "concocti:crystalium_ingot",
-    "concocti:latticium_ingot"
+    "concocti:latticium_ingot",
+    "concocti:solarium_ingot"
   ]
 }

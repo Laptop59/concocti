@@ -4,7 +4,6 @@ import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.ConcoctiHatchBlock;
 import io.github.laptop59.concocti.common.block.HatchPurpose;
 import io.github.laptop59.concocti.common.block.HatchType;
-import io.github.laptop59.concocti.common.fluid.ConcoctiFluid;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.item.MoldItem;
@@ -108,7 +107,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     ConcoctiItems.CONDUCTIVIUM_NUGGET,
                     ConcoctiItems.CONDUCTIVIUM_INGOT,
                     ConcoctiItems.CONDUCTIVIUM_BLOCK,
-                    900,
+                    400,
                     45,
                     ConcoctiFluids.MOLTEN_CONDUCTIVIUM.get()
             );
@@ -129,6 +128,15 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     60,
                     30,
                     ConcoctiFluids.MOLTEN_IRON.get()
+            );
+
+            concoctiMelterSolidifierRecipes(output,
+                    ConcoctiItems.SOLARIUM_NUGGET,
+                    ConcoctiItems.SOLARIUM_INGOT,
+                    ConcoctiItems.SOLARIUM_BLOCK,
+                    270,
+                    35,
+                    ConcoctiFluids.MOLTEN_SOLARIUM.get()
             );
 
             concoctiMelterSolidifierRecipes(output,
@@ -337,6 +345,44 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     List.of(),
                     null,
                     new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_NUGGET * 12)
+            );
+
+            concoctiMixerRecipe(output,
+                    "seed_base",
+                    20,
+                    List.of(
+                            ItemRecipeIngredient.of(
+                                    ItemRecipeIngredientOption.of(
+                                            Ingredient.of(ConcoctiItems.SMALL_SEED_CATALYST),
+                                            1,
+                                            false
+                                    )
+                            ),
+                            ItemRecipeIngredient.of(
+                                    ItemRecipeIngredientOption.of(
+                                            Ingredient.of(ConcoctiItems.MEDIUM_SEED_CATALYST),
+                                            1,
+                                            false
+                                    )
+                            ),
+                            ItemRecipeIngredient.of(
+                                    ItemRecipeIngredientOption.of(
+                                            Ingredient.of(ConcoctiItems.LARGE_SEED_CATALYST),
+                                            1,
+                                            false
+                                    )
+                            ),
+                            ItemRecipeIngredient.of(
+                                    ItemRecipeIngredientOption.of(
+                                            Ingredient.of(ConcoctiItems.SOLARIUM_INGOT),
+                                            1,
+                                            false
+                                    )
+                            )
+                    ),
+                    List.of(),
+                    new ItemStack(ConcoctiItems.SEED_BASE.get(), 1),
+                    null
             );
 
             // Mold recipes
@@ -738,13 +784,118 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
 
         concoctiSolarCollectorRecipe(
                 output,
-                "converting_solar_to_molten_solarium",
-                20,
+                "converting_solar_to_molten_solarium_with_solarium_catalyst",
+                40,
                 ItemRecipeIngredient.of(Ingredient.of(ConcoctiItems.SOLARIUM_CATALYST), 1, true),
                 null,
                 null,
-                FluidOutput.of(ConcoctiFluids.MOLTEN_SOLARIUM.get(), ConcoctiConstants.MOLTEN_NUGGET),
+                FluidOutput.of(ConcoctiFluids.MOLTEN_SOLARIUM.get(), 1),
+                25
+        );
+
+        concoctiSolarCollectorRecipe(
+                output,
+                "converting_solar_to_molten_solarium_with_conductive_solarium_catalyst",
+                100,
+                ItemRecipeIngredient.of(Ingredient.of(ConcoctiItems.CONDUCTIVE_SOLARIUM_CATALYST), 1, true),
+                null,
+                null,
+                FluidOutput.of(ConcoctiFluids.MOLTEN_SOLARIUM.get(), 25),
+                250
+        );
+
+        concoctiSolarCollectorRecipe(
+                output,
+                "converting_solar_to_molten_lightning_with_electrophilic_catalyst",
+                200,
+                ItemRecipeIngredient.of(Ingredient.of(ConcoctiItems.ELECTROPHILIC_CATALYST), 1, true),
+                null,
+                null,
+                FluidOutput.of(ConcoctiFluids.MOLTEN_LIGHTNING.get(), 1),
+                1000
+        );
+
+        concoctiSolarCollectorRecipe(
+                output,
+                "making_solar_catalyst_with_solar",
+                1000,
+                ItemRecipeIngredient.of(Ingredient.of(Items.SUNFLOWER), 1, false),
+                null,
+                ItemOutput.of(ConcoctiItems.SOLARIUM_CATALYST, 1),
+                null,
+                200
+        );
+
+        concoctiSolarCollectorRecipe(
+                output,
+                "small_seed_catalyst",
+                250,
+                ItemRecipeIngredient.of(Ingredient.of(ConcoctiItems.SOLARIUM_NUGGET), 1, false),
+                null,
+                ItemOutput.of(ConcoctiItems.SMALL_SEED_CATALYST, 8),
+                null,
                 100
+        );
+
+        concoctiSolarCollectorRecipe(
+                output,
+                "medium_seed_catalyst",
+                500,
+                ItemRecipeIngredient.of(Ingredient.of(ConcoctiItems.SMALL_SEED_CATALYST), 4, false),
+                null,
+                ItemOutput.of(ConcoctiItems.MEDIUM_SEED_CATALYST, 1),
+                null,
+                150
+        );
+
+        concoctiSolarCollectorRecipe(
+                output,
+                "large_seed_catalyst",
+                1000,
+                ItemRecipeIngredient.of(Ingredient.of(ConcoctiItems.MEDIUM_SEED_CATALYST), 4, false),
+                null,
+                ItemOutput.of(ConcoctiItems.LARGE_SEED_CATALYST, 1),
+                null,
+                200
+        );
+
+        concoctiSolarCollectorRecipe(
+                output,
+                "adding_molten_concocti_to_seed_base",
+                60,
+                ItemRecipeIngredient.of(Ingredient.of(ConcoctiItems.SEED_BASE), 1, false),
+                FluidRecipeIngredient.of(ConcoctiFluids.MOLTEN_CONCOCTI.get(), ConcoctiConstants.MOLTEN_SEED_LIFE),
+                ItemOutput.of(ConcoctiItems.CONCOCTI_SEEDS, 1),
+                null,
+                10
+        );
+
+        concoctiSolarCollectorRecipe(
+                output,
+                "making_solarium_catalyst_conductive",
+                1000,
+                ItemRecipeIngredient.of(Ingredient.of(ConcoctiItems.SOLARIUM_CATALYST), 1),
+                FluidRecipeIngredient.of(ConcoctiFluids.MOLTEN_CONDUCTIVIUM.get(), 8 * ConcoctiConstants.MOLTEN_INGOT),
+                ItemOutput.of(ConcoctiItems.CONDUCTIVE_SOLARIUM_CATALYST),
+                null,
+                1500
+        );
+
+        concoctiMixerRecipe(
+                output,
+                "adding_electrons_to_conductive_solarium_catalyst",
+                10000,
+                List.of(
+                        ItemRecipeIngredient.of(Ingredient.of(ConcoctiItems.CONDUCTIVE_SOLARIUM_CATALYST), 1),
+                        ItemRecipeIngredient.of(Ingredient.of(ConcoctiItems.CONDUCTIVIUM_LIGHTNING_ROD), 1),
+                        ItemRecipeIngredient.of(Ingredient.of(ConcoctiItems.ELECTROSTATIC_CONDUCTIVIUM_INGOT), 64),
+                        ItemRecipeIngredient.of(Ingredient.of(Items.REDSTONE_BLOCK), 16)
+                ),
+                List.of(
+                        FluidRecipeIngredient.of(ConcoctiFluids.MOLTEN_SOLARIUM.get(), 20_000) // 20 MSU of solar!
+                ),
+                new ItemStack(ConcoctiItems.ELECTROPHILIC_CATALYST.get(), 1),
+                null
         );
 
         concoctiMultiblockRecipe(
@@ -868,6 +1019,28 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                         ItemOutput.of(Items.GRAVEL, 1, 0.125f)
                 ),
                 List.of()
+        );
+
+        concoctiEnergyGeneratorRecipe(
+                output,
+                Ingredient.of(ConcoctiItems.SOLARIUM_NUGGET.get()),
+                ConcoctiConstants.MOLTEN_NUGGET * 10,
+                100,
+                "solarium_nugget"
+        );
+        concoctiEnergyGeneratorRecipe(
+                output,
+                Ingredient.of(ConcoctiItems.SOLARIUM_INGOT.get()),
+                ConcoctiConstants.MOLTEN_INGOT * 10,
+                100,
+                "solarium_ingot"
+        );
+        concoctiEnergyGeneratorRecipe(
+                output,
+                Ingredient.of(ConcoctiItems.SOLARIUM_BLOCK.get()),
+                ConcoctiConstants.MOLTEN_BLOCK * 10,
+                100,
+                "solarium_block"
         );
 
         // Hatch Recipes
@@ -1016,6 +1189,14 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 FluidStack.EMPTY,
                 ticks
         ).save(output, ResourceLocation.fromNamespaceAndPath(MODID, "melter/" + name));
+    }
+
+    private static void concoctiEnergyGeneratorRecipe(RecipeOutput output, Ingredient ingredient, int ticks, int fePerTick, String name) {
+        new ConcoctiEnergyGenerator.Recipe.Builder(
+                ingredient,
+                ticks,
+                fePerTick
+        ).save(output, ResourceLocation.fromNamespaceAndPath(MODID, "energy_generator/" + name));
     }
 
     /**
@@ -1278,14 +1459,14 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
             FluidRecipeIngredient inputFluid,
             ItemOutput outputItem,
             FluidOutput outputFluid,
-            long solar
+            long solarPerTick
     ) {
         new ConcoctiSolarCollector.Recipe.Builder(
                 inputItem,
                 inputFluid,
                 outputItem,
                 outputFluid,
-                solar,
+                solarPerTick,
                 ticks
         ).save(output, ResourceLocation.fromNamespaceAndPath(MODID, "solar_collecting/" + name));
     }

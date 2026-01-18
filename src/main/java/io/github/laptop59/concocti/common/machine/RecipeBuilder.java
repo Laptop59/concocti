@@ -75,6 +75,12 @@ public interface RecipeBuilder {
         addInputSlot(x, y, new RecipeSlotFlags(ingredient), false);
     }
 
+    default void addSolarInput(long amount) {
+    }
+
+    default void addSolarOutput(long amount) {
+    }
+
     void addInputSlot(int x, int y, RecipeSlotFlags flags, boolean isFluidSlot);
     void addCatalystSlot(int x, int y, RecipeSlotFlags flags, boolean isFluidSlot);
     void addOutputSlot(int x, int y, RecipeSlotFlags flags, float chance, boolean isFluidSlot);

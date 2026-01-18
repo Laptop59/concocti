@@ -36,6 +36,10 @@ public final class ConcoctiConstants {
      */
     public static int MOLTEN_DUST = MOLTEN_INGOT;
 
+    /**
+     * Number of mB of metal required to breathe life into a seed base.
+     */
+    public static int MOLTEN_SEED_LIFE = MOLTEN_NUGGET;
 
     private ConcoctiConstants() {
     }

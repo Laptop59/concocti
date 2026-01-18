@@ -6,4 +6,5 @@ public final class SlotFlag {
     public final static int ITEM = 0x04;
     public final static int FLUID = 0x08;
     public final static int ENERGY = 0x10;
+    public final static int SOLAR_FROM_MOLTEN_SOLARIUM = 0x20;
 }

@@ -85,6 +85,15 @@ public class ConcoctiBlocks {
             BlockBehaviour.Properties.of().mapColor(DyeColor.CYAN).requiresCorrectToolForDrops().explosionResistance(2).strength(2f),
             new BlockData(BlockToolRank.IRON, BlockToolType.PICKAXE));
 
+    public static final DeferredBlock<Block> SOLARIUM_BLOCK = registerBlock("solarium_block", Block::new,
+            BlockBehaviour.Properties.of()
+                    .mapColor(DyeColor.YELLOW)
+                    .explosionResistance(10000)
+                    .strength(5f)
+                    .noOcclusion()
+                    .isViewBlocking((blockState, blockGetter, blockPos) -> false),
+            new BlockData(BlockToolRank.WOODEN, BlockToolType.PICKAXE));
+
     // FRAME BLOCKS
 
     public static final DeferredBlock<Block> BASIC_CONCOCTI_FRAME = registerBlock("basic_concocti_frame", FrameBlock::new,
@@ -205,6 +214,7 @@ public class ConcoctiBlocks {
     }
 
     public enum BlockToolRank {
+        WOODEN("wooden"),
         STONE("stone"),
         IRON("iron"),
         DIAMOND("diamond"),

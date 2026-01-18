@@ -68,7 +68,17 @@ public final class EmiRecipeBuilder implements RecipeBuilder {
     @Override
     public void addOutputSlot(int x, int y, RecipeSlotFlags flags, float chance, boolean isFluidSlot) {
         createSlot(x, y, flags, chance, isFluidSlot);
-        EmiStack output = addEmiStack(outputs, flags.getInternalObject());
+        addEmiStack(outputs, flags.getInternalObject());
+    }
+
+    @Override
+    public void addSolarInput(long amount) {
+        addEmiIngredient(inputs, new SolarEmiStack(amount), null, ingredientIndex++);
+    }
+
+    @Override
+    public void addSolarOutput(long amount) {
+        addEmiStack(outputs, new SolarEmiStack(amount));
     }
 
     private void createSlot(int x, int y, RecipeSlotFlags flags, float chance, boolean isFluidSlot) {
@@ -82,7 +92,7 @@ public final class EmiRecipeBuilder implements RecipeBuilder {
 
             SlotWidget slot;
 
-            if (ingredient == null) {
+            if (ingredient == null || internalObject == null) {
                 slot = widgetHolder.addSlot(x, y);
             } else {
                 ingredient.setChance(chance);
@@ -107,6 +117,7 @@ public final class EmiRecipeBuilder implements RecipeBuilder {
 
     private EmiIngredient addEmiIngredient(List<EmiIngredient> list, Object element, @Nullable ItemStack remainder, int i) {
         EmiIngredient ingredient = intoIngredient(element, remainder, emiRecipe, i);
+        if (element == null) return ingredient;
 
         if (isCatalyticInput(ingredient)) list = catalysts;
         if (list != null) list.add(ingredient);
@@ -123,11 +134,11 @@ public final class EmiRecipeBuilder implements RecipeBuilder {
             case null, default -> EmiStack.of(Items.BARRIER);
         };
 
-        if (stack == null) {
+        if (stack == null || element == null) {
             stack = EmiStack.EMPTY;
         }
 
-        list.add(stack);
+        if (!stack.equals(EmiStack.EMPTY)) list.add(stack);
         return stack;
     }
 
@@ -148,6 +159,7 @@ public final class EmiRecipeBuilder implements RecipeBuilder {
                 yield ingredients.get(recipe.getRecipeIndex(i));
             }
             case Ingredient ingredient1 -> EmiIngredient.of(ingredient1);
+            case SolarEmiStack solar -> solar;
             case null -> EmiIngredient.of(Ingredient.EMPTY);
             default -> {
                 Concocti.LOGGER.error("Could not convert {} into an EmiIngredient", element);
