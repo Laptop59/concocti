@@ -3,22 +3,21 @@ package io.github.laptop59.concocti.client.gui.components;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.inventory.AbstractContainerMenu;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.List;
 
 import static io.github.laptop59.concocti.common.Concocti.MODID;
 
 /**
  * A class to show the solar bar in a GUI.
  */
-public class SolarBar<T extends AbstractContainerMenu> extends Renderable {
+public class SolarBar extends Renderable {
 
     public static final ResourceLocation SOLAR_BAR_SPRITE = ResourceLocation.fromNamespaceAndPath(MODID, "container/solar/bar");
     public static final ResourceLocation SOLAR_BAR_OVERLAY_SPRITE = ResourceLocation.fromNamespaceAndPath(MODID, "container/solar/overlay");
@@ -26,33 +25,72 @@ public class SolarBar<T extends AbstractContainerMenu> extends Renderable {
 
     Long productionRate = null;
 
-    T menu;
-    AbstractContainerScreen<T> screen;
-    long left, max;
+    @Nullable AbstractContainerScreen<?> screen;
+    int barLeft = 0, barTop = 0, ticks = 0;
+    long left, max, requiredPerTick = 0;
+    boolean renderTooltipByItselfUponMouseOver = true;
 
-    public SolarBar(int guiLeft, int guiTop, AbstractContainerScreen<T> screen, T menu) {
+    public SolarBar(int guiLeft, int guiTop, @Nullable AbstractContainerScreen<?> screen) {
         super(guiLeft, guiTop);
         this.screen = screen;
-        this.menu = menu;
+    }
+
+    public SolarBar(int guiLeft, int guiTop, int barLeft, int barTop) {
+        super(guiLeft, guiTop);
+        this.barLeft = barLeft;
+        this.barTop = barTop;
     }
 
     public void update(long left, long max, @Nullable Long productionRate) {
         this.left = left;
         this.max = max;
         this.productionRate = productionRate;
+        this.requiredPerTick = 0;
+        this.ticks = 0;
+        this.renderTooltipByItselfUponMouseOver = true;
+    }
+
+    public void updateAsRecipeIngredient(long requiredPerTick, int ticks) {
+        this.requiredPerTick = requiredPerTick;
+        this.max = Math.max(requiredPerTick, 1_000);
+        this.left = requiredPerTick;
+        this.ticks = ticks;
+        this.renderTooltipByItselfUponMouseOver = false;
+    }
+
+    protected int left() {
+        return (screen != null ? screen.getGuiLeft() + guiLeft : 0) + barLeft;
+    }
+
+    protected int top() {
+        return (screen != null ? screen.getGuiTop() + guiTop : 0) + barTop;
     }
 
     protected void render(GuiGraphics guiGraphics, RenderInfo renderInfo) {
         int height = Mth.ceil(((float) left / max) * 50.0F);
         // Draw the base first.
-        guiGraphics.blitSprite(SOLAR_BAR_BASE_SPRITE, 17, 52, 0, 0, screen.getGuiLeft() + guiLeft - 1, screen.getGuiTop() + guiTop - 1, 17, 52);
-        guiGraphics.blitSprite(SOLAR_BAR_SPRITE, 15, 50, 0, 0, screen.getGuiLeft() + guiLeft, screen.getGuiTop() + guiTop + (50 - height), 15, height);
+        guiGraphics.blitSprite(SOLAR_BAR_BASE_SPRITE, 17, 52, 0, 0, left() - 1, top() - 1, 17, 52);
+        guiGraphics.blitSprite(SOLAR_BAR_SPRITE, 15, 50, 0, 0, left(), top() + (50 - height), 15, height);
         // Draw the overlay afterward.
-        guiGraphics.blitSprite(SOLAR_BAR_OVERLAY_SPRITE, 15, 50, 0, 0, screen.getGuiLeft() + guiLeft, screen.getGuiTop() + guiTop, 15, 50);
+        guiGraphics.blitSprite(SOLAR_BAR_OVERLAY_SPRITE, 15, 50, 0, 0, left(), top(), 15, 50);
         // Show a tooltip if required.
-        if (renderInfo.isHovering(15, 50)) {
-            ArrayList<Component> components = new ArrayList<>();
+        if (renderTooltipByItselfUponMouseOver) renderTooltip(guiGraphics, renderInfo);
+    }
 
+    public boolean isHovered(RenderInfo renderInfo) {
+        return renderInfo.isHovering(15, 50);
+    }
+
+    public void renderTooltip(GuiGraphics guiGraphics, RenderInfo renderInfo) {
+        if (isHovered(renderInfo)) {
+            renderInfo.renderTooltip(guiGraphics, getTooltipComponents());
+        }
+    }
+
+    public List<Component> getTooltipComponents() {
+        ArrayList<Component> components = new ArrayList<>();
+
+        if (requiredPerTick == 0) {
             components.add(
                     Component.translatable(
                             "screen.concocti.solar_bar",
@@ -65,12 +103,25 @@ public class SolarBar<T extends AbstractContainerMenu> extends Renderable {
                 components.add(
                         Component.translatable(
                                 "screen.concocti.solar_collection_rate",
-                                    Component.literal(formatSolar(productionRate)).withColor(0xFFFFEC)
+                                Component.literal(formatSolar(productionRate)).withColor(0xFFFFEC)
                         ).withColor(0xFFFF9F)
                 );
-
-            renderInfo.renderTooltip(guiGraphics, components);
+        } else {
+            components.add(
+                    Component.translatable(
+                            "screen.concocti.solar_required_per_tick",
+                            Component.literal(formatSolar(requiredPerTick)).withColor(0xFFFFEC)
+                    ).withColor(0xFFFF9F)
+            );
+            components.add(
+                    Component.translatable(
+                            "screen.concocti.solar_required_total",
+                            Component.literal(formatSolar(requiredPerTick * ticks)).withColor(0xFFFFD3)
+                    ).withColor(0xE6E6A3)
+            );
         }
+
+        return components;
     }
 
      public static String formatSolar(long energy) {

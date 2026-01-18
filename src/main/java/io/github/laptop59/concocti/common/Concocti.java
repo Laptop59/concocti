@@ -9,6 +9,7 @@ import io.github.laptop59.concocti.common.block.entity.*;
 import io.github.laptop59.concocti.common.effect.ConcoctizedMobEffect;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
+import io.github.laptop59.concocti.common.item.ConcoctiItemsInfo;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachines;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
@@ -131,7 +132,8 @@ public class Concocti {
                 ConcoctiFluids.class,
                 ConcoctiSounds.class,
                 ConcoctiPoiTypes.class,
-                ConcoctiMenus.class
+                ConcoctiMenus.class,
+                ConcoctiItemsInfo.class
         );
 
         // Register ourselves for server and other game events we are interested in.

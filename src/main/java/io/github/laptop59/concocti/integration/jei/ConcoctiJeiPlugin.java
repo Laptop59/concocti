@@ -1,6 +1,9 @@
 package io.github.laptop59.concocti.integration.jei;
 
 import io.github.laptop59.concocti.common.Concocti;
+import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
+import io.github.laptop59.concocti.common.item.ConcoctiItems;
+import io.github.laptop59.concocti.common.item.ConcoctiItemsInfo;
 import io.github.laptop59.concocti.common.machine.AbstractConcoctiRecipeCategory;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachines;
@@ -21,6 +24,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
+import net.neoforged.neoforge.registries.DeferredItem;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -128,19 +132,11 @@ public class ConcoctiJeiPlugin implements IModPlugin {
     }
 
     private void registerInfos(@NotNull IRecipeRegistration registration) {
-        List<String> items = Arrays.asList(
-                "concocti_seeds",
-                "infinity_concocti_seeds",
-                "dirty_concocti_nugget",
-                "dirty_concocti_ingot",
-                "conductivium_lightning_rod",
-                "concocti_electron_collector"
-        );
-
-        for (String name : items) {
-            Item item = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(Concocti.MODID, name));
-            Objects.requireNonNull(item);
-            registration.addIngredientInfo(new ItemStack(item), VanillaTypes.ITEM_STACK, Component.translatable("info.concocti." + name));
+        for (DeferredItem<? extends Item> deferredItem : ConcoctiItemsInfo.ITEMS_WITH_INGREDIENT_INFO) {
+            Item item = deferredItem.get();
+            ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
+            Objects.requireNonNull(itemId);
+            registration.addIngredientInfo(new ItemStack(item), VanillaTypes.ITEM_STACK, Component.translatable("info.concocti." + itemId));
         }
     }
 }

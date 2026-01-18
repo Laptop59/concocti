@@ -70,6 +70,16 @@ public class ConcoctiItems {
     public static final DeferredItem<Item> ELECTROSTATIC_CONDUCTIVIUM_INGOT = registerItem("electrostatic_conductivium_ingot", new Item.Properties());
 
     public static final DeferredItem<Item> SOLARIUM_CATALYST = registerItem("solarium_catalyst", new Item.Properties());
+    public static final DeferredItem<Item> CONDUCTIVE_SOLARIUM_CATALYST = registerItem("conductive_solarium_catalyst", new Item.Properties());
+    public static final DeferredItem<Item> ELECTROPHILIC_CATALYST = registerItem("electrophilic_catalyst", new Item.Properties());
+    public static final DeferredItem<Item> SOLARIUM_NUGGET = registerItem("solarium_nugget", new Item.Properties());
+    public static final DeferredItem<Item> SOLARIUM_INGOT = registerItem("solarium_ingot", new Item.Properties());
+    public static final DeferredItem<BlockItem> SOLARIUM_BLOCK = registerBlockItem(ConcoctiBlocks.SOLARIUM_BLOCK);
+
+    public static final DeferredItem<Item> SMALL_SEED_CATALYST = registerItem("small_seed_catalyst", new Item.Properties());
+    public static final DeferredItem<Item> MEDIUM_SEED_CATALYST = registerItem("medium_seed_catalyst", new Item.Properties());
+    public static final DeferredItem<Item> LARGE_SEED_CATALYST = registerItem("large_seed_catalyst", new Item.Properties());
+    public static final DeferredItem<Item> SEED_BASE = registerItem("seed_base", new Item.Properties());
 
     // Buckets of fluids are now automatically defined by the ConcoctiFluid class.
 
@@ -273,6 +283,17 @@ public class ConcoctiItems {
         acceptStack(output, ELECTROSTATIC_CONDUCTIVIUM_INGOT);
 
         acceptStack(output, SOLARIUM_CATALYST);
+        acceptStack(output, SOLARIUM_NUGGET);
+        acceptStack(output, SOLARIUM_INGOT);
+        acceptStack(output, SOLARIUM_BLOCK);
+
+        acceptStack(output, CONDUCTIVE_SOLARIUM_CATALYST);
+        acceptStack(output, ELECTROPHILIC_CATALYST);
+
+        acceptStack(output, SMALL_SEED_CATALYST);
+        acceptStack(output, MEDIUM_SEED_CATALYST);
+        acceptStack(output, LARGE_SEED_CATALYST);
+        acceptStack(output, SEED_BASE);
 
         ConcoctiMachines.forEach(concoctiMachine ->
             acceptStack(output, concoctiMachine.ITEM)

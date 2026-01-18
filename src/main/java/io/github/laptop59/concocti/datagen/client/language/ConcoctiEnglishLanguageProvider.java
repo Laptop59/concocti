@@ -68,6 +68,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiBlocks.CRYSTALIUM_BLOCK, "Block of Crystalium");
         add(ConcoctiBlocks.CRYSTALIUM_ORE, "Crystalium Ore");
         add(ConcoctiBlocks.LATTICIUM_BLOCK, "Latticium Block");
+        add(ConcoctiBlocks.SOLARIUM_BLOCK, "Solarium Block");
 
         // Items go here.
         add(ConcoctiItems.DIAMETHYST_CRYSTAL, "Diamethyst Crystal");
@@ -108,6 +109,14 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiItems.LATTICIUM_INGOT, "Latticium Ingot");
         add(ConcoctiItems.DENSE_CONCOCTI_PELLET, "Dense Concocti Pellet");
         add(ConcoctiItems.SOLARIUM_CATALYST, "Solarium Catalyst");
+        add(ConcoctiItems.SOLARIUM_NUGGET, "Solarium Nugget");
+        add(ConcoctiItems.SOLARIUM_INGOT, "Solarium Ingot");
+        add(ConcoctiItems.SMALL_SEED_CATALYST, "Small Seed Catalyst");
+        add(ConcoctiItems.MEDIUM_SEED_CATALYST, "Medium Seed Catalyst");
+        add(ConcoctiItems.LARGE_SEED_CATALYST, "Large Seed Catalyst");
+        add(ConcoctiItems.SEED_BASE, "Seed Base");
+        add(ConcoctiItems.CONDUCTIVE_SOLARIUM_CATALYST, "Conductive Solarium Catalyst");
+        add(ConcoctiItems.ELECTROPHILIC_CATALYST, "Electrophilic Catalyst");
 
         add(ConcoctiItems.Tags.CONCOCTI_UPGRADES, "Concocti Upgrades");
         add(ConcoctiItems.Tags.CONCOCTI_HATCHES, "Concocti Hatches");
@@ -150,6 +159,8 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add("screen.concocti.energy_bar", "Energy: %s/%s");
         add("screen.concocti.solar_bar", "Solar: %s/%s");
         add("screen.concocti.solar_collection_rate", "Collection Rate: %s/t");
+        add("screen.concocti.solar_required_per_tick", "Solar Required: %s/t");
+        add("screen.concocti.solar_required_total", "Total: %s");
         add("screen.concocti.fluid_bar", "%s: %s/%s mB");
         add("screen.concocti.fluid_amount", "%s mB");
         add("screen.concocti.no_upgrade", "Put a Concocti Upgrade here to speed up this block.");
@@ -193,6 +204,9 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add("screen.concocti.build_preview_off", "Build Preview: OFF");
         add("screen.concocti.build_preview_on", "Build Preview: ON");
 
+        // Miscellaneous
+        add("resource.concocti.solar", "Solar");
+
         // Information of items go here.
         add("info.concocti.concocti_seeds", "Hitting a mob with this item usually provides it a status effect of Concoctized, which allows Dirty Concocti Nuggets and Ingots to start dropping upon taking damage while losing less health.");
         add("info.concocti.infinity_concocti_seeds", "A superior version to the generic Concocti Seeds which provide an infinite effect and are not consumed upon use.");
@@ -200,6 +214,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add("info.concocti.dirty_concocti_ingot", "Lucky drop from hitting a mob with the Concoctized status effect, induced by hitting it with Concoctized Seeds.");
         add("info.concocti.conductivium_lightning_rod", "Being more conductive than the copper variant of this block, even without thunderstorms or rain, lightning strikes can still hit this rod.");
         add("info.concocti.concocti_electron_collector", "Collects electrons from lightning strikes struck on the Conductivium Lightning Rod above it and converts them into a fluid called Molten Lightning.");
+        add("info.concocti.concocti_solar_collector", "Collects solar from the sun and keeps them for solar recipes.");
 
         // Translation key for molds.
         for (Map.Entry<MoldItem.Material, Map<MoldItem.Type, DeferredItem<? extends Item>>> entry : ConcoctiItems.MOLDS.entrySet()) {

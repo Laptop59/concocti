@@ -38,6 +38,7 @@ public class SolarState implements SolarStorage {
 
     public void setMaxSolarAmount(long maxSolarAmount) {
         this.maxSolarAmount = maxSolarAmount;
+        solarAmount = Math.min(solarAmount, maxSolarAmount);
     }
 
     public long getSolarAmount() {

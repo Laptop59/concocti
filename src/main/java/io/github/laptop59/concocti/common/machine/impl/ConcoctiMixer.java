@@ -666,7 +666,7 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
             return INSTANCE;
         }
 
-        private final int WIDTH = 216;
+        private final int WIDTH = 176 - 8;
 
         @Override
         public @NotNull Object getJeiRecipeType() {
@@ -685,19 +685,22 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
 
         @Override
         public void set(@NotNull io.github.laptop59.concocti.common.machine.RecipeBuilder builder, @NotNull Recipe recipe) {
-            int left = WIDTH / 2 - 5 * 18 + 28;
+            int left = WIDTH / 2 - 5 * 18 + 18;
             int top = 16 + 18;
 
+            int x;
             for (int i = 0; i < 4; i++) {
-                int x = left + i * 18;
+                x = left + i * 18;
                 List<ItemRecipeIngredient> ingredients = recipe.getInputItems();
                 if (i < ingredients.size())
                     builder.addInputSlot(x, top, ingredients.get(i));
                 else
                     builder.addInputSlot(x, top, false);
+            }
 
+            {
                 ItemStack output = recipe.getOutputItem();
-                x = WIDTH / 2 + 24 + 34;
+                x = WIDTH / 2 + 21 + 34;
                 if (output != null)
                     builder.addOutputSlot(x, top, output);
                 else
@@ -706,15 +709,17 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
 
             top -= 18;
             for (int i = 0; i < 4; i++) {
-                int x = left + i * 18;
+                x = left + i * 18;
                 List<FluidRecipeIngredient> ingredients = recipe.getInputFluids();
                 if (i < ingredients.size())
                     builder.addInputSlot(x, top, ingredients.get(i));
                 else
                     builder.addInputSlot(x, top, true);
+            }
 
+            {
                 FluidStack output = recipe.getOutputFluid();
-                x = WIDTH / 2 + 24 + 34;
+                x = WIDTH / 2 + 21 + 34;
                 if (output != null)
                     builder.addOutputSlot(x, top, output);
                 else
@@ -724,7 +729,7 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
 
         @Override
         protected int getHorizontalArrowOffset(@NotNull Recipe recipe) {
-            return 34;
+            return 28;
         }
 
         @Override

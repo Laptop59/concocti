@@ -4,6 +4,7 @@
     "concocti:diamethyst_block",
     "concocti:conductivium_block",
     "concocti:crystalium_block",
-    "concocti:latticium_block"
+    "concocti:latticium_block",
+    "concocti:solarium_block"
   ]
 }
