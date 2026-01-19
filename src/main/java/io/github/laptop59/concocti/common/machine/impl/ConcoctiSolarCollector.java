@@ -91,10 +91,10 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
     public Supplier<ConcoctiMachineDetails<BlockEntity, Menu, ItemsFluidsSolarInputValue, ItemsFluidsSolarRecipeInput, Recipe>> getDetails() {
         return () -> new ConcoctiMachineDetails<>(
                 BlockEntity.class,
-                10_000,
-                10_000,
+                0,
+                0,
                 4,
-                5.0f,
+                0.0f,
                 DynamicEnergyStorage.Mode.INPUT_ONLY.toSupplier(),
                 INSTANCE.RECIPE_TYPE,
                 Component.translatable("block.concocti.concocti_solar_collector"),
@@ -110,7 +110,7 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
                 ),
                 new EnumMap<>(
                         Map.of(
-                                SlotType.FLUID_INPUT, List.of(blockEntity -> blockEntity.fluidOutput.get()),
+                                SlotType.FLUID_INPUT, List.of(blockEntity -> blockEntity.fluidInput.get()),
                                 SlotType.FLUID_OUTPUT, List.of(blockEntity -> blockEntity.fluidOutput.get())
                         )
                 ),
@@ -671,8 +671,7 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
         private final FluidBars.Square<Menu> inputFluid = new FluidBars.Square<>(54 + 11, 29, this, menu, 0);
         private final FluidBars.Square<Menu> outputFluid = new FluidBars.Square<>(106 + 11, 29, this, menu, 1);
 
-        private final EnergyBar<Menu> energyBar = new EnergyBar<>(10, 18, this, menu);
-        private final SolarBar solarBar = new SolarBar(30, 18, this);
+        private final SolarBar solarBar = new SolarBar(10, 18, this);
         private final ArrowProgress arrowProgress = new ArrowProgress(94 - 6, 37);
 
         public Screen(
@@ -686,7 +685,6 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
         public List<Renderable> getUniqueChildren() {
             return List.of(
                     arrowProgress,
-                    energyBar,
                     solarBar,
                     inputFluid,
                     outputFluid
@@ -707,7 +705,6 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
 
             arrowProgress.update(menu.getProgress());
 
-            energyBar.update(menu.getNumberEnergyLeft(false), menu.getNumberEnergyLeft(true));
             solarBar.update(menu.getNumberSolarLeft(false), menu.getNumberSolarLeft(true), menu.getProductionRate());
 
             // Render the fluids.

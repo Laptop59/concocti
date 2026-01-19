@@ -61,6 +61,7 @@ public class ConcoctiItems {
     public static final DeferredItem<BlockItem> CRYSTALIUM_BLOCK = registerBlockItem(ConcoctiBlocks.CRYSTALIUM_BLOCK);
     public static final DeferredItem<Item> RAW_CRYSTALIUM = registerItem("raw_crystalium", new Item.Properties());
     public static final DeferredItem<BlockItem> CRYSTALIUM_ORE = registerBlockItem(ConcoctiBlocks.CRYSTALIUM_ORE);
+    public static final DeferredItem<Item> CRYSTALIUM_SEEDS = registerItem("crystalium_seeds", new Item.Properties());
 
     public static final DeferredItem<Item> LATTICIUM_NUGGET = registerItem("latticium_nugget", new Item.Properties());
     public static final DeferredItem<Item> LATTICIUM_INGOT = registerItem("latticium_ingot", new Item.Properties());
@@ -274,6 +275,7 @@ public class ConcoctiItems {
         acceptStack(output, CRYSTALIUM_NUGGET);
         acceptStack(output, CRYSTALIUM_INGOT);
         acceptStack(output, CRYSTALIUM_BLOCK);
+        acceptStack(output, CRYSTALIUM_SEEDS);
 
         acceptStack(output, LATTICIUM_NUGGET);
         acceptStack(output, LATTICIUM_INGOT);

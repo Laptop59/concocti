@@ -70,14 +70,20 @@ public abstract class AbstractConcoctiMachineBlock<B extends AbstractConcoctiMac
                 // Direct replacement.
                 if (singleItem) {
                     entity.setItem(slot, playerStack.copyWithCount(1));
-                    playerStack.shrink(1);
-                } else
+                    if (!player.isCreative()) playerStack.shrink(1);
+                } else if (player.isCreative())
+                    entity.setItem(slot, playerStack.copy());
+                else
                     entity.setItem(slot, playerStack.copyAndClear());
             } else {
                 // Swap items.
                 if (!singleItem) {
-                    entity.setItem(slot, playerStack.copyAndClear());
-                    player.setItemSlot(EquipmentSlot.MAINHAND, upgradeStack.copyAndClear());
+                    if (player.isCreative()) {
+                        entity.setItem(slot, playerStack.copy());
+                    } else {
+                        entity.setItem(slot, playerStack.copyAndClear());
+                        player.setItemSlot(EquipmentSlot.MAINHAND, upgradeStack.copyAndClear());
+                    }
                 } else {
                     return false;
                 }
@@ -106,8 +112,6 @@ public abstract class AbstractConcoctiMachineBlock<B extends AbstractConcoctiMac
     protected @Nullable SoundEvent getCracklingSoundEvent() {
         return getMachineInstance().getDetails().get().cracklingSoundEvent();
     }
-
-    ;
 
     public final MapCodec<B> CODEC = simpleCodec(getBlockConstructor());
 

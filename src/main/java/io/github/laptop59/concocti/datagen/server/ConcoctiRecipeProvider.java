@@ -226,7 +226,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     20 * 4,
                     List.of(
                             ItemRecipeIngredient.of(ConcoctiItems.RAW_CRYSTALIUM, 18),
-                            ItemRecipeIngredient.of(Items.POPPED_CHORUS_FRUIT, 1)
+                            ItemRecipeIngredient.of(Ingredient.of(Items.POPPED_CHORUS_FRUIT), 1, true)
                     ),
                     List.of(FluidRecipeIngredient.of(Fluids.WATER, 1000)),
                     null,
@@ -328,6 +328,17 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     List.of(),
                     null,
                     new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_NUGGET * 6)
+            );
+
+            concoctiMixerRecipe(output,
+                    "generating_crystalium_with_concocti_seeds",
+                    3 * 20,
+                    List.of(
+                            ItemRecipeIngredient.of(ConcoctiItems.CRYSTALIUM_SEEDS, 1)
+                    ),
+                    List.of(),
+                    new ItemStack(ConcoctiItems.RAW_CRYSTALIUM.get(), 6),
+                    null
             );
 
             concoctiMixerRecipe(output,
@@ -872,6 +883,17 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
 
         concoctiSolarCollectorRecipe(
                 output,
+                "adding_supersaturated_crystalium_to_seed_base",
+                60,
+                ItemRecipeIngredient.of(Ingredient.of(ConcoctiItems.SEED_BASE), 1, false),
+                FluidRecipeIngredient.of(ConcoctiFluids.SUPERSATURATED_CRYSTALIUM_SOLUTION.get(), ConcoctiConstants.MOLTEN_SEED_LIFE),
+                ItemOutput.of(ConcoctiItems.CRYSTALIUM_SEEDS, 1),
+                null,
+                15
+        );
+
+        concoctiSolarCollectorRecipe(
+                output,
                 "making_solarium_catalyst_conductive",
                 1000,
                 ItemRecipeIngredient.of(Ingredient.of(ConcoctiItems.SOLARIUM_CATALYST), 1),
@@ -1395,6 +1417,28 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
         new ConcoctiMixer.Recipe.Builder(
                 ResourceLocation.fromNamespaceAndPath(MODID, "mixing/" + name),
                 inputItems,
+                outputItem == null ? null : ItemOutput.of(outputItem),
+                inputFluids,
+                outputFluid == null ? null : FluidOutput.of(outputFluid),
+                ticks
+        ).save(output);
+    }
+
+    /**
+     * Generates a Concocti Mixer Recipe.
+     */
+    private static void concoctiMixerRecipe(
+            RecipeOutput output,
+            String name,
+            int ticks,
+            List<ItemRecipeIngredient> inputItems,
+            List<FluidRecipeIngredient> inputFluids,
+            ItemOutput outputItem,
+            FluidOutput outputFluid
+    ) {
+        new ConcoctiMixer.Recipe.Builder(
+                ResourceLocation.fromNamespaceAndPath(MODID, "mixing/" + name),
+                inputItems,
                 outputItem,
                 inputFluids,
                 outputFluid,
@@ -1413,6 +1457,28 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
             List<FluidRecipeIngredient> inputFluids,
             ItemStack outputItem,
             FluidStack outputFluid
+    ) {
+        new ConcoctiCompressor.Recipe.Builder(
+                ResourceLocation.fromNamespaceAndPath(MODID, "compressing/" + name),
+                inputItems,
+                outputItem == null ? null : ItemOutput.of(outputItem),
+                inputFluids,
+                outputFluid == null ? null : FluidOutput.of(outputFluid),
+                ticks
+        ).save(output);
+    }
+
+    /**
+     * Generates a Concocti Compressor Recipe.
+     */
+    private static void concoctiCompressorRecipe(
+            RecipeOutput output,
+            String name,
+            int ticks,
+            List<ItemRecipeIngredient> inputItems,
+            List<FluidRecipeIngredient> inputFluids,
+            ItemOutput outputItem,
+            FluidOutput outputFluid
     ) {
         new ConcoctiCompressor.Recipe.Builder(
                 ResourceLocation.fromNamespaceAndPath(MODID, "compressing/" + name),
