@@ -105,6 +105,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiItems.CRYSTALIUM_NUGGET, "Crystalium Nugget");
         add(ConcoctiItems.CRYSTALIUM_INGOT, "Crystalium Ingot");
         add(ConcoctiItems.RAW_CRYSTALIUM, "Raw Crystalium");
+        add(ConcoctiItems.CRYSTALIUM_SEEDS, "Crystalium Seeds");
         add(ConcoctiItems.LATTICIUM_NUGGET, "Latticium Nugget");
         add(ConcoctiItems.LATTICIUM_INGOT, "Latticium Ingot");
         add(ConcoctiItems.DENSE_CONCOCTI_PELLET, "Dense Concocti Pellet");

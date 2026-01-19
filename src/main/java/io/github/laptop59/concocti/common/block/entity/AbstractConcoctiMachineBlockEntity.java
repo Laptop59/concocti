@@ -525,7 +525,8 @@ public abstract class AbstractConcoctiMachineBlockEntity
                 // The recipe type.
                 getRecipeType().get(),
                 recipeInput,
-                level
+                level,
+                lastRecipe == null ? null : lastRecipe.getId()
         );
         return optional.map(RecipeHolder::value).orElse(null);
     }
@@ -573,10 +574,9 @@ public abstract class AbstractConcoctiMachineBlockEntity
         while (consumableTicks > 0) {
             if (this.canProcess()) {
                 V input = this.getInput();
-                R toBeProcessed = this.getRecipe(input);
                 R recipe = this.getRecipe(input);
-                if (recipe != null && (this.lastRecipe == null || !this.lastRecipe.equals(toBeProcessed))) {
-                    this.lastRecipe = toBeProcessed;
+                if (recipe != null && (this.lastRecipe == null || !this.lastRecipe.equals(recipe))) {
+                    this.lastRecipe = recipe;
                     this.totalTicks = recipe.getTicks();
                     this.ticksLeft = this.totalTicks;
                 }

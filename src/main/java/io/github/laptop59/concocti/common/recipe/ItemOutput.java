@@ -10,6 +10,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 
+import java.util.Objects;
 import java.util.Random;
 
 public record ItemOutput(ItemStack stack, float chance) {
@@ -45,11 +46,11 @@ public record ItemOutput(ItemStack stack, float chance) {
     );
 
     public static ItemOutput of(ItemStack stack, float chance) {
-        return new ItemOutput(stack, chance);
+        return new ItemOutput(Objects.requireNonNull(stack), chance);
     }
 
     public static ItemOutput of(ItemStack stack) {
-        return new ItemOutput(stack, 1.0f);
+        return new ItemOutput(Objects.requireNonNull(stack), 1.0f);
     }
 
     public static ItemOutput of(ItemLike item) {

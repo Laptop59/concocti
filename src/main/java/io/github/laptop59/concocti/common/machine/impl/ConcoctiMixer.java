@@ -60,6 +60,7 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Function;
@@ -263,19 +264,21 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
         public boolean canProcess() {
             if (!super.canProcess()) return false;
             Recipe recipe = getRecipe(getInput());
+            if (recipe == null) return false;
             if (!recipe.matches(new ItemsFluidsRecipeInput(inputItemHandler.get(), inputFluidHandler.get())))
                 return false;
             // Check whether the fluids obtained from this item will not exceed our fluid limit.
             ItemStack outputSlotItems = getItem(OUTPUT_SLOT);
-            ItemStack resultItems = recipe.getOutputItem();
+            ItemOutput resultItems = recipe.getOutputItem();
             if (!outputSlotItems.isEmpty() &&
                     resultItems != null &&
-                    outputSlotItems.getCount() + resultItems.getCount() > outputSlotItems.getMaxStackSize())
+                    outputSlotItems.getCount() + resultItems.stack().getCount() > outputSlotItems.getMaxStackSize())
                 return false;
-            FluidStack resultFluid = recipe.getOutputFluid();
-            if (resultFluid != null && !resultFluid.isEmpty()) {
-                int actuallyFilled = fluidOutput.get().fill(resultFluid, IFluidHandler.FluidAction.SIMULATE);
-                int requiredFilled = resultFluid.getAmount();
+
+            FluidOutput resultFluid = recipe.getOutputFluid();
+            if (resultFluid != null && !resultFluid.stack().isEmpty() ) {
+                int actuallyFilled = fluidOutput.get().fill(resultFluid.stack(), IFluidHandler.FluidAction.SIMULATE);
+                int requiredFilled = resultFluid.stack().getAmount();
                 if (actuallyFilled != requiredFilled)
                     return false;
             }
@@ -285,10 +288,10 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
         @Override
         protected void onRecipeCompleted(Recipe recipe) {
             recipeInputFrom(getInput()).consume(recipe.getInputItems(), recipe.getInputFluids());
-            if (recipe.getOutputItem() != null)
-                itemHandler.insertItem(OUTPUT_SLOT, recipe.getOutputItem().copy(), false);
-            if (recipe.getOutputFluid() != null)
-                fluidOutput.get().fill(recipe.getOutputFluid().copy(), IFluidHandler.FluidAction.EXECUTE);
+            if (recipe.getOutputItem() != null && recipe.getOutputItem().roll())
+                itemHandler.insertItem(OUTPUT_SLOT, recipe.getOutputItem().stack().copy(), false);
+            if (recipe.getOutputFluid() != null && recipe.getOutputFluid().roll())
+                fluidOutput.get().fill(recipe.getOutputFluid().stack().copy(), IFluidHandler.FluidAction.EXECUTE);
         }
 
         @Override
@@ -324,16 +327,16 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
         // Common things to have here is a processing time integer of some kind, or an experience reward.
         // Note that we now use an ingredient instead of an item stack for the input.
         private final List<ItemRecipeIngredient> inputItems;
-        private final ItemStack outputItem;
+        private final ItemOutput outputItem;
         private final List<FluidRecipeIngredient> inputFluids;
-        private final FluidStack outputFluid;
+        private final FluidOutput outputFluid;
 
         private final ResourceLocation id;
 
         private final int ticks;
 
         // Add a constructor that sets all properties.
-        public Recipe(ResourceLocation id, List<ItemRecipeIngredient> inputItems, ItemStack outputItem, List<FluidRecipeIngredient> inputFluids, FluidStack outputFluid, int ticks) {
+        public Recipe(ResourceLocation id, List<ItemRecipeIngredient> inputItems, ItemOutput outputItem, List<FluidRecipeIngredient> inputFluids, FluidOutput outputFluid, int ticks) {
             this.inputItems = inputItems;
             this.outputItem = outputItem;
             this.inputFluids = inputFluids;
@@ -342,7 +345,7 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
             this.id = id;
         }
 
-        public Recipe(List<ItemRecipeIngredient> inputItems, ItemStack outputItem, List<FluidRecipeIngredient> inputFluids, FluidStack outputFluid, int ticks) {
+        public Recipe(List<ItemRecipeIngredient> inputItems, ItemOutput outputItem, List<FluidRecipeIngredient> inputFluids, FluidOutput outputFluid, int ticks) {
             this.inputItems = inputItems;
             this.outputItem = outputItem;
             this.inputFluids = inputFluids;
@@ -366,28 +369,18 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
             return inputItems;
         }
 
-        @org.jetbrains.annotations.Nullable
-        public ItemStack getOutputItem() {
+        @Nullable
+        public ItemOutput getOutputItem() {
             return outputItem;
-        }
-
-        @NotNull
-        public ItemStack getOutputItemOrEmpty() {
-            return outputItem == null ? ItemStack.EMPTY : outputItem;
         }
 
         public List<FluidRecipeIngredient> getInputFluids() {
             return inputFluids;
         }
 
-        @org.jetbrains.annotations.Nullable
-        public FluidStack getOutputFluid() {
+        @Nullable
+        public FluidOutput getOutputFluid() {
             return outputFluid;
-        }
-
-        @NotNull
-        public FluidStack getOutputFluidOrEmpty() {
-            return outputFluid == null ? FluidStack.EMPTY : outputFluid;
         }
 
         // A list of our ingredients. Does not need to be overridden if you have no ingredients
@@ -419,7 +412,7 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
         // for the recipe book, and commonly used by JEI and other recipe viewers as well.
         @Override
         public @NotNull ItemStack getResultItem(HolderLookup.@NotNull Provider registries) {
-            return outputItem == null ? ItemStack.EMPTY : outputItem;
+            return outputItem == null ? ItemStack.EMPTY : outputItem.stack();
         }
 
         // Return the result of the recipe here, based on the given input. The first parameter matches the generic.
@@ -453,13 +446,13 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
 
         public static class Builder implements RecipeBuilder {
             protected final List<ItemRecipeIngredient> inputItems;
-            protected final ItemStack outputItem;
+            protected final ItemOutput outputItem;
             protected final List<FluidRecipeIngredient> inputFluids;
-            protected final FluidStack outputFluid;
+            protected final FluidOutput outputFluid;
             protected final ResourceLocation resourceLocation;
             protected final int ticks;
 
-            public Builder(ResourceLocation resourceLocation, List<ItemRecipeIngredient> inputItems, ItemStack outputItem, List<FluidRecipeIngredient> inputFluids, FluidStack outputFluid, int ticks) {
+            public Builder(ResourceLocation resourceLocation, List<ItemRecipeIngredient> inputItems, ItemOutput outputItem, List<FluidRecipeIngredient> inputFluids, FluidOutput outputFluid, int ticks) {
                 this.resourceLocation = resourceLocation;
                 this.inputItems = inputItems;
                 this.outputItem = outputItem;
@@ -482,7 +475,7 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
             // for serializing the recipes.
             @Override
             public @NotNull Item getResult() {
-                return outputItem == null ? Items.AIR : outputItem.getItem();
+                return outputItem == null ? Items.AIR : outputItem.stack().getItem();
             }
 
             @Override
@@ -503,20 +496,20 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
         public static class Serializer implements RecipeSerializer<Recipe> {
             public static final MapCodec<Recipe> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
                     ItemRecipeIngredient.CODEC.listOf().fieldOf("input_items").forGetter(Recipe::getInputItems),
-                    ItemStack.OPTIONAL_CODEC.fieldOf("output_item").forGetter(Recipe::getOutputItemOrEmpty),
+                    ItemOutput.CODEC.optionalFieldOf("output_item").forGetter(recipe -> Optional.ofNullable(recipe.getOutputItem())),
                     FluidRecipeIngredient.CODEC.listOf().fieldOf("input_fluids").forGetter(Recipe::getInputFluids),
-                    FluidStack.OPTIONAL_CODEC.fieldOf("output_fluid").forGetter(Recipe::getOutputFluidOrEmpty),
+                    FluidOutput.CODEC.optionalFieldOf("output_fluid").forGetter(recipe -> Optional.ofNullable(recipe.getOutputFluid())),
                     Codec.INT.fieldOf("ticks").forGetter(Recipe::getTicks)
-            ).apply(inst, Recipe::new));
+            ).apply(inst, Recipe::fromOptionals));
 
             public static final StreamCodec<RegistryFriendlyByteBuf, Recipe> STREAM_CODEC =
                     StreamCodec.composite(
                             ItemRecipeIngredient.STREAM_CODEC.apply(ByteBufCodecs.list()), Recipe::getInputItems,
-                            ItemStack.OPTIONAL_STREAM_CODEC, Recipe::getOutputItemOrEmpty,
+                            ItemOutput.STREAM_CODEC.apply(ByteBufCodecs::optional), recipe -> Optional.ofNullable(recipe.getOutputItem()),
                             FluidRecipeIngredient.STREAM_CODEC.apply(ByteBufCodecs.list()), Recipe::getInputFluids,
-                            FluidStack.OPTIONAL_STREAM_CODEC, Recipe::getOutputFluidOrEmpty,
+                            FluidOutput.STREAM_CODEC.apply(ByteBufCodecs::optional), recipe -> Optional.ofNullable(recipe.getOutputFluid()),
                             ByteBufCodecs.INT, Recipe::getTicks,
-                            Recipe::new
+                            Recipe::fromOptionals
                     );
 
             // Return our map codec.
@@ -530,6 +523,16 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
             public @NotNull StreamCodec<RegistryFriendlyByteBuf, Recipe> streamCodec() {
                 return STREAM_CODEC;
             }
+        }
+
+        private static Recipe fromOptionals(List<ItemRecipeIngredient> itemRecipeIngredients, Optional<ItemOutput> itemOutput, List<FluidRecipeIngredient> fluidRecipeIngredients, Optional<FluidOutput> fluidOutput, int ticks) {
+            return new Recipe(
+                    itemRecipeIngredients,
+                    itemOutput.orElse(null),
+                    fluidRecipeIngredients,
+                    fluidOutput.orElse(null),
+                    ticks
+            );
         }
     }
 
@@ -699,7 +702,7 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
             }
 
             {
-                ItemStack output = recipe.getOutputItem();
+                ItemOutput output = recipe.getOutputItem();
                 x = WIDTH / 2 + 21 + 34;
                 if (output != null)
                     builder.addOutputSlot(x, top, output);
@@ -718,7 +721,7 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
             }
 
             {
-                FluidStack output = recipe.getOutputFluid();
+                FluidOutput output = recipe.getOutputFluid();
                 x = WIDTH / 2 + 21 + 34;
                 if (output != null)
                     builder.addOutputSlot(x, top, output);

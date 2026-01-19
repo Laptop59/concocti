@@ -3,6 +3,6 @@
   "textures": {
     "top": "concocti:block/concocti_melter_top",
     "front": "concocti:block/concocti_solidifier_front_on",
-    "side": "concocti:block/concocti_melter_side"
+    "side": "concocti:block/concocti_solidifier_side"
   }
 }
