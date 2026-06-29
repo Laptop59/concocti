@@ -12,12 +12,14 @@ import static io.github.laptop59.concocti.common.Concocti.MODID;
  */
 public class ProgressBar<T extends AbstractContainerMenu> extends Renderable {
     public static final ResourceLocation PROGRESS_BAR_SPRITE = ResourceLocation.fromNamespaceAndPath(MODID, "container/progress_bar/bar");
+    public static final ResourceLocation PROGRESS_BAR_SPEEDY_SPRITE = ResourceLocation.fromNamespaceAndPath(MODID, "container/progress_bar/speedy");
     public static final ResourceLocation PROGRESS_BAR_BASE_SPRITE = ResourceLocation.fromNamespaceAndPath(MODID, "container/progress_bar/base");
 
     T menu;
     AbstractContainerScreen<T> screen;
 
     float progress;
+    boolean speedy;
 
     public ProgressBar(int guiLeft, int guiTop, AbstractContainerScreen<T> screen, T menu) {
         super(guiLeft, guiTop);
@@ -25,8 +27,9 @@ public class ProgressBar<T extends AbstractContainerMenu> extends Renderable {
         this.menu = menu;
     }
 
-    public void update(float progress) {
+    public void update(float progress, boolean speedy) {
         this.progress = progress;
+        this.speedy = speedy;
     }
 
 
@@ -45,7 +48,7 @@ public class ProgressBar<T extends AbstractContainerMenu> extends Renderable {
                 144, 6
         );
         guiGraphics.blitSprite(
-                PROGRESS_BAR_SPRITE,
+                speedy ? PROGRESS_BAR_SPEEDY_SPRITE : PROGRESS_BAR_SPRITE,
                 144, 6,
                 0, 0,
                 x, y,

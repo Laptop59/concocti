@@ -316,6 +316,9 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
         public static final ResourceLocation BUILD_PREVIEW_OFF = ResourceLocation.fromNamespaceAndPath(MODID, "textures/gui/container/build_preview_off.png");
         public static final ResourceLocation BUILD_PREVIEW_ON = ResourceLocation.fromNamespaceAndPath(MODID, "textures/gui/container/build_preview_on.png");
 
+        private long latestSpeedyBarStart = 0;
+        private boolean wasSpeedy = false;
+
         public Screen(
                 ConcoctiMultiblockMenu menu,
                 Inventory playerInventory,
@@ -346,9 +349,12 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
             // Don't forget to first render the abstract screen!
             super.render(guiGraphics, renderInfo, partialTick);
 
-            float progress = menu.getInterpolatedProgress(partialTick);
+            float progress = menu.isValid() ? menu.getInterpolatedProgress(partialTick) : 0;
 
             {
+                double perTick = menu.isValid() ? menu.getProgressCompletedPerTick() : 0;
+                boolean speedy = perTick >= 0.25;
+
                 guiGraphics.drawString(
                         font,
                         Component.translatable("screen.concocti.progress"),
@@ -358,7 +364,7 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
                         false
                 );
 
-                String progressText = (int) (progress * 100) + "%";
+                String progressText = String.format("%.2f/t", perTick);
                 guiGraphics.drawString(
                         font,
                         Component.literal(progressText),
@@ -367,9 +373,25 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
                         0xFF3C2F47,
                         false
                 );
+
+                if (speedy) {
+                    if (!wasSpeedy) {
+                        latestSpeedyBarStart = System.currentTimeMillis();
+                    }
+
+                    float max = (float) (Math.log10(perTick + 1) / 3);
+
+                    // Don't want to flash the user - we add some animation
+                    progressBar.update(
+                        Math.clamp((float) (System.currentTimeMillis() - latestSpeedyBarStart) / 2000, 0, Math.max(0, max)),
+                        true
+                    );
+                } else {
+                    progressBar.update(progress, false);
+                }
+                wasSpeedy = speedy;
             }
 
-            progressBar.update(progress);
             renderChildren(guiGraphics, renderInfo, this.getUniqueChildren());
 
             boolean pullOn = menu.showBuildPreview();
