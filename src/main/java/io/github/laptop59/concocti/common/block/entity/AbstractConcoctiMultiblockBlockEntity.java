@@ -81,6 +81,7 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
     public static final int AUTO_COOLDOWN = 20;
     public boolean valid = false;
     public boolean buildPreview = false;
+    public int ticksProcessed = 0;
 
     public DetailHolders detailHolders = new DetailHolders();
     public MultiblockStructure structure;
@@ -100,7 +101,7 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
     public final Property<Integer> TOTAL_TICKS =
             Properties.TOTAL_TICKS.newWithLinker(() -> totalTicks);
     public final Property<Integer> TICK_MULTIPLIER =
-            Properties.TICK_MULTIPLIER.newWithLinker(this::getTickMultiplier);
+            Properties.TICK_MULTIPLIER.newWithLinker(() -> ticksProcessed);
     public final Property<Boolean> BUILD_PREVIEW =
             Properties.BUILD_PREVIEW.newWithLinker(() -> buildPreview);
 
@@ -443,6 +444,8 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
      * A basic implementation of a Concocti Machine's server tick.
      */
     public void tick(Level level, BlockPos pos, BlockState state) {
+        ticksProcessed = 0;
+
         AbstractConcoctiMultiblockBlockEntity<T, R> entity = this;
         int currentUpgradeUnits = ConcoctiUpgradeSlot.getUpgradeUnits(entity.getItem(UPGRADE_SLOT));
         if (currentUpgradeUnits != entity.lastUpgradeUnits) {
@@ -469,6 +472,7 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
                 int ticksConsumed = Math.min(consumableTicks, entity.ticksLeft);
                 entity.ticksLeft -= ticksConsumed;
                 consumableTicks -= ticksConsumed;
+                ticksProcessed += ticksConsumed;
                 entity.energyInputStorage.extractEnergy((int) (rateConsumption * ticksConsumed), false);
                 if (recipe != null && entity.ticksLeft <= 0) {
                     // Produce the result.

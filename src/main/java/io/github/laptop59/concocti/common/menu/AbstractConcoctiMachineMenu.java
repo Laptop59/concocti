@@ -273,6 +273,13 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
         return left != 0 && total != 0 ? Mth.clamp(progressInTicks / total, 0.0F, 1.0F) : 0.0F;
     }
 
+    public double getProgressCompletedPerTick() {
+        int total = viewer.get(Properties.TOTAL_TICKS);
+        int by = viewer.get(Properties.TICK_MULTIPLIER);
+
+        return (double) by / total;
+    }
+
     /**
      * Returns the amount of energy/maximum energy left in this block.
      */
