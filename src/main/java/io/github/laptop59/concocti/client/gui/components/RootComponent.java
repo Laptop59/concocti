@@ -9,12 +9,12 @@ public interface RootComponent {
     /**
      * Renders the element's first layer onto the screen.
      */
-    void render(GuiGraphics guiGraphics, RenderInfo renderInfo);
+    void render(GuiGraphics guiGraphics, RenderInfo renderInfo, float partialTick);
 
     /**
      * Renders the element's second layer (above first layer) onto the screen.
      */
-    default void render2(GuiGraphics guiGraphics, RenderInfo renderInfo) {
+    default void render2(GuiGraphics guiGraphics, RenderInfo renderInfo, float partialTick) {
     }
 
     /**

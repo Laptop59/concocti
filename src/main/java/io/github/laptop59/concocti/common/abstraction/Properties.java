@@ -12,6 +12,7 @@ import net.neoforged.neoforge.fluids.FluidStack;
 public final class Properties {
     public static final Property<Integer> TICKS_LEFT = ComplexionCodec.INTEGER.unique();
     public static final Property<Integer> TOTAL_TICKS = ComplexionCodec.INTEGER.unique();
+    public static final Property<Integer> TICK_MULTIPLIER = ComplexionCodec.INTEGER.unique();
     public static final Property<Integer> ENERGY_STORED = ComplexionCodec.INTEGER.unique();
     public static final Property<Integer> MAX_ENERGY_STORED = ComplexionCodec.INTEGER.unique();
     public static final Property<Direction> FACING_DIRECTION = ComplexionCodec.DIRECTION.unique();

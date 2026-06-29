@@ -699,9 +699,9 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
         }
 
         @Override
-        public void render(@NotNull GuiGraphics guiGraphics, RenderInfo renderInfo) {
+        public void render(@NotNull GuiGraphics guiGraphics, RenderInfo renderInfo, float partialTick) {
             // Don't forget to first render the abstract screen!
-            super.render(guiGraphics, renderInfo);
+            super.render(guiGraphics, renderInfo, partialTick);
 
             arrowProgress.update(menu.getProgress());
 

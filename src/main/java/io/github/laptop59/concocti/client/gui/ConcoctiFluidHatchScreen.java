@@ -40,10 +40,10 @@ public class ConcoctiFluidHatchScreen extends AbstractConcoctiMachineScreen<Conc
     }
 
     @Override
-    public void render(@NotNull GuiGraphics guiGraphics, RenderInfo renderInfo) {
+    public void render(@NotNull GuiGraphics guiGraphics, RenderInfo renderInfo, float partialTick) {
         fluidTank.update(menu.getFluidStack(), menu.getFluidStackSize());
         // Don't forget to first render the abstract screen!
-        super.render(guiGraphics, renderInfo);
+        super.render(guiGraphics, renderInfo, partialTick);
         renderChildren(guiGraphics, renderInfo, this.getUniqueChildren());
     }
 }

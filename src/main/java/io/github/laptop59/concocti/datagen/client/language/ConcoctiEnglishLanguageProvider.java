@@ -205,6 +205,8 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add("screen.concocti.build_preview_off", "Build Preview: OFF");
         add("screen.concocti.build_preview_on", "Build Preview: ON");
 
+        add("screen.concocti.progress", "Progress");
+
         // Miscellaneous
         add("resource.concocti.solar", "Solar");
 

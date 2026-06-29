@@ -29,7 +29,8 @@ public class ConcoctiMultiblockMenu extends AbstractConcoctiMachineMenu<Concocti
             Properties.VALID,
             Properties.BUILD_PREVIEW,
             Properties.TICKS_LEFT,
-            Properties.TOTAL_TICKS
+            Properties.TOTAL_TICKS,
+            Properties.TICK_MULTIPLIER
     );
 
     protected String machineId;

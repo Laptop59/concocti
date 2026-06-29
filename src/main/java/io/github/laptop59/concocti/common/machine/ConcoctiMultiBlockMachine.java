@@ -7,6 +7,7 @@ import io.github.laptop59.concocti.common.abstraction.Complexion;
 import io.github.laptop59.concocti.common.block.*;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMultiblockBlockEntity;
 import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
+import io.github.laptop59.concocti.common.menu.ConcoctiEnergyHatchMenu;
 import io.github.laptop59.concocti.common.menu.ConcoctiMultiblockMenu;
 import io.github.laptop59.concocti.common.multiblock.MultiblockStructure;
 import io.github.laptop59.concocti.common.recipe.*;
@@ -310,7 +311,7 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
 
     @OnlyIn(Dist.CLIENT)
     public static class Screen extends AbstractConcoctiMachineScreen<ConcoctiMultiblockMenu> {
-        private final ArrowProgress arrowProgress = new ArrowProgress(106, 34);
+        private final ProgressBar<ConcoctiMultiblockMenu> progressBar = new ProgressBar<>(8, 65, this, menu);
 
         public static final ResourceLocation BUILD_PREVIEW_OFF = ResourceLocation.fromNamespaceAndPath(MODID, "textures/gui/container/build_preview_off.png");
         public static final ResourceLocation BUILD_PREVIEW_ON = ResourceLocation.fromNamespaceAndPath(MODID, "textures/gui/container/build_preview_on.png");
@@ -325,7 +326,7 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
 
         public List<Renderable> getUniqueChildren() {
             return List.of(
-                    arrowProgress
+                    progressBar
             );
         }
 
@@ -341,14 +342,46 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
         }
 
         @Override
-        public void render(@NotNull GuiGraphics guiGraphics, RenderInfo renderInfo) {
+        public void render(@NotNull GuiGraphics guiGraphics, RenderInfo renderInfo, float partialTick) {
             // Don't forget to first render the abstract screen!
-            super.render(guiGraphics, renderInfo);
-            arrowProgress.update(menu.getProgress());
+            super.render(guiGraphics, renderInfo, partialTick);
+
+            float progress = menu.getInterpolatedProgress(partialTick);
+
+            {
+                guiGraphics.drawString(
+                        font,
+                        Component.translatable("screen.concocti.progress"),
+                        leftPos + 7,
+                        topPos + 55,
+                        0xFF3C2F47,
+                        false
+                );
+
+                String progressText = (int) (progress * 100) + "%";
+                guiGraphics.drawString(
+                        font,
+                        Component.literal(progressText),
+                        leftPos + 152 - font.width(progressText),
+                        topPos + 55,
+                        0xFF3C2F47,
+                        false
+                );
+            }
+
+            progressBar.update(progress);
             renderChildren(guiGraphics, renderInfo, this.getUniqueChildren());
+
             boolean pullOn = menu.showBuildPreview();
-            int color = menu.isValid() ? 0xFF00FF00 : 0xFFFF0000;
-            guiGraphics.drawString(font, Component.translatable("screen.concocti." + (menu.isValid() ? "valid" : "invalid")), leftPos + 8, topPos + 16, color);
+            int color = menu.isValid() ? 0xFF004F00 : 0xFF4F0000;
+            guiGraphics.drawString(
+                    font,
+                    Component.translatable("screen.concocti." + (menu.isValid() ? "valid" : "invalid")),
+                    leftPos + 8,
+                    topPos + 16,
+                    color,
+                    false
+            );
 
             {
                 RenderInfo pullRenderInfo = renderInfo.offset(imageWidth - 24, 64);

@@ -496,9 +496,9 @@ public class ConcoctiCrystallizer extends ConcoctiMachineOnlyItemsFluids<
         }
 
         @Override
-        public void render(@NotNull GuiGraphics guiGraphics, RenderInfo renderInfo) {
+        public void render(@NotNull GuiGraphics guiGraphics, RenderInfo renderInfo, float partialTick) {
             // Don't forget to first render the abstract screen!
-            super.render(guiGraphics, renderInfo);
+            super.render(guiGraphics, renderInfo, partialTick);
 
             energyBar.update(menu.getNumberEnergyLeft(false), menu.getNumberEnergyLeft(true));
             arrowProgress.update(menu.getProgress());
