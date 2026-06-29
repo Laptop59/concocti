@@ -35,9 +35,9 @@ public class ConcoctiItemHatchScreen extends AbstractConcoctiMachineScreen<Conco
     }
 
     @Override
-    public void render(@NotNull GuiGraphics guiGraphics, RenderInfo renderInfo) {
+    public void render(@NotNull GuiGraphics guiGraphics, RenderInfo renderInfo, float partialTick) {
         // Don't forget to first render the abstract screen!
-        super.render(guiGraphics, renderInfo);
+        super.render(guiGraphics, renderInfo, partialTick);
         renderChildren(guiGraphics, renderInfo, this.getUniqueChildren());
     }
 }

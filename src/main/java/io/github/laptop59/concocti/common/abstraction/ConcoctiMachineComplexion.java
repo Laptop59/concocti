@@ -15,6 +15,7 @@ public class ConcoctiMachineComplexion extends Complexion {
         return List.of(
                 blockEntity.TICKS_LEFT.of(0),
                 blockEntity.TOTAL_TICKS.of(0),
+                blockEntity.TICK_MULTIPLIER.of(1),
                 blockEntity.ENERGY_STORED.of(0),
                 blockEntity.MAX_ENERGY_STORED.of(0),
                 blockEntity.FACING_DIRECTION.of(Direction.DOWN),

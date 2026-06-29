@@ -40,11 +40,10 @@ public class ConcoctiEnergyHatchScreen extends AbstractConcoctiMachineScreen<Con
         return List.copyOf(children);
     }
 
-    @Override
-    public void render(@NotNull GuiGraphics guiGraphics, RenderInfo renderInfo) {
+    public void render(@NotNull GuiGraphics guiGraphics, RenderInfo renderInfo, float partialTick) {
         energyBar.update(menu.getNumberEnergyLeft(false), menu.getNumberEnergyLeft(true));
         // Don't forget to first render the abstract screen!
-        super.render(guiGraphics, renderInfo);
+        super.render(guiGraphics, renderInfo, partialTick);
         renderChildren(guiGraphics, renderInfo, this.getUniqueChildren());
     }
 }

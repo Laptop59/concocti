@@ -105,6 +105,8 @@ public abstract class AbstractConcoctiMachineBlockEntity
             Properties.TICKS_LEFT.newWithLinker(() -> ticksLeft);
     public final Property<Integer> TOTAL_TICKS =
             Properties.TOTAL_TICKS.newWithLinker(() -> totalTicks);
+    public final Property<Integer> TICK_MULTIPLIER =
+            Properties.TICK_MULTIPLIER.newWithLinker(this::getTickMultiplier);
     public final Property<Integer> ENERGY_STORED =
             Properties.ENERGY_STORED.newWithLinker(() -> energy.getEnergyStored());
     public final Property<Integer> MAX_ENERGY_STORED =
@@ -593,7 +595,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
                         this.attemptToPull();
                     }
                     this.totalTicks = recipe.getTicks();
-                    this.ticksLeft = this.totalTicks;
+                    this.ticksLeft += this.totalTicks;
                 }
             } else {
                 if (this.ticksLeft < this.totalTicks) this.ticksLeft += this.getTickMultiplier();

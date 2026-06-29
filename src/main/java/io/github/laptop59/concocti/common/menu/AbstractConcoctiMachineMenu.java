@@ -37,6 +37,7 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
     protected final List<Property<?>> BASE_PROPERTIES = List.of(
             Properties.TICKS_LEFT,
             Properties.TOTAL_TICKS,
+            Properties.TICK_MULTIPLIER,
             Properties.ENERGY_STORED,
             Properties.MAX_ENERGY_STORED,
             Properties.FACING_DIRECTION,
@@ -260,6 +261,16 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
         int left = viewer.get(Properties.TICKS_LEFT);
         int total = viewer.get(Properties.TOTAL_TICKS);
         return left != 0 && total != 0 ? Mth.clamp((float) (total - left) / total, 0.0F, 1.0F) : 0.0F;
+    }
+
+    public float getInterpolatedProgress(float partialTick) {
+        int left = viewer.get(Properties.TICKS_LEFT);
+        int total = viewer.get(Properties.TOTAL_TICKS);
+        int by = viewer.get(Properties.TICK_MULTIPLIER);
+
+        float progressInTicks = (total - left + partialTick * by) % total;
+
+        return left != 0 && total != 0 ? Mth.clamp(progressInTicks / total, 0.0F, 1.0F) : 0.0F;
     }
 
     /**

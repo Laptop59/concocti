@@ -54,7 +54,7 @@ public abstract class AbstractConcoctiMachineScreen<M extends AbstractConcoctiMa
         RenderInfo renderInfo = new RenderInfo(mouseX, mouseY, leftPos, topPos, font);
         renderTooltip(guiGraphics, mouseX, mouseY);
         machineSettingsComponent.update();
-        render2(guiGraphics, renderInfo);
+        render2(guiGraphics, renderInfo, partialTick);
     }
 
     @Override
@@ -110,7 +110,7 @@ public abstract class AbstractConcoctiMachineScreen<M extends AbstractConcoctiMa
      * If this method is overridden, make sure to call this class' {@code render} method first, using {@code super.render(guiGraphics, renderInfo)}.
      */
     @Override
-    public void render(@NotNull GuiGraphics guiGraphics, RenderInfo renderInfo) {
+    public void render(@NotNull GuiGraphics guiGraphics, RenderInfo renderInfo, float partialTick) {
         // First, render the background.
         guiGraphics.blit(getBgTexture(), leftPos, topPos, 0, 0, this.imageWidth, this.imageHeight);
 
@@ -142,7 +142,7 @@ public abstract class AbstractConcoctiMachineScreen<M extends AbstractConcoctiMa
      * Renders elements above the first layer.
      */
     @Override
-    public void render2(@NotNull GuiGraphics guiGraphics, RenderInfo renderInfo) {
+    public void render2(@NotNull GuiGraphics guiGraphics, RenderInfo renderInfo, float partialTick) {
         if (machineSettingsVisibility) {
             guiGraphics.pose().pushPose();
             guiGraphics.pose().translate(0.0F, 0.0F, 350.0F);
@@ -184,7 +184,7 @@ public abstract class AbstractConcoctiMachineScreen<M extends AbstractConcoctiMa
                 machineSettingsComponent.getWidth(),
                 machineSettingsComponent.getHeight()
         ));
-        render(guiGraphics, renderInfo);
+        render(guiGraphics, renderInfo, partialTick);
         if (addedMachineSettingsBlock) renderInfo.pop();
     }
 

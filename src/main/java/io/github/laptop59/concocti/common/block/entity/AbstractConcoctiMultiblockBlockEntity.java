@@ -99,6 +99,8 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
             Properties.TICKS_LEFT.newWithLinker(() -> ticksLeft);
     public final Property<Integer> TOTAL_TICKS =
             Properties.TOTAL_TICKS.newWithLinker(() -> totalTicks);
+    public final Property<Integer> TICK_MULTIPLIER =
+            Properties.TICK_MULTIPLIER.newWithLinker(this::getTickMultiplier);
     public final Property<Boolean> BUILD_PREVIEW =
             Properties.BUILD_PREVIEW.newWithLinker(() -> buildPreview);
 
@@ -113,7 +115,8 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
             VALID.of(false),
             BUILD_PREVIEW.of(false),
             TICKS_LEFT.of(0),
-            TOTAL_TICKS.of(0)
+            TOTAL_TICKS.of(0),
+            TICK_MULTIPLIER.of(1)
     );
 
     /**
@@ -318,7 +321,7 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
         for (ItemOutput result : recipe.getOutputItems())
             if (!ItemHandlerHelper.insertItem(itemStackOutputHandler, result.stack().copy(), true).isEmpty()) return false;
         for (FluidOutput result : recipe.getOutputFluids())
-            if (fluidStackInputHandler.fill(result.stack(), IFluidHandler.FluidAction.SIMULATE) < result.stack().getAmount()) return false;
+            if (fluidStackOutputHandler.fill(result.stack(), IFluidHandler.FluidAction.SIMULATE) < result.stack().getAmount()) return false;
         return true;
     }
 
@@ -338,7 +341,7 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
         for (ItemOutput result : recipe.getOutputItems())
             if (result.roll()) ItemHandlerHelper.insertItem(itemStackOutputHandler, result.stack().copy(), false);
         for (FluidOutput result : recipe.getOutputFluids())
-            if (result.roll()) fluidStackInputHandler.fill(result.stack(), IFluidHandler.FluidAction.EXECUTE);
+            if (result.roll()) fluidStackOutputHandler.fill(result.stack(), IFluidHandler.FluidAction.EXECUTE);
     }
 
     /**
@@ -472,7 +475,7 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
                     entity.onRecipeCompleted(recipe);
                     // subticks++;
                     entity.totalTicks = recipe.getTicks();
-                    entity.ticksLeft = entity.totalTicks;
+                    entity.ticksLeft += entity.totalTicks;
                 }
             } else {
                 if (entity.ticksLeft < entity.totalTicks) entity.ticksLeft += entity.getTickMultiplier();
