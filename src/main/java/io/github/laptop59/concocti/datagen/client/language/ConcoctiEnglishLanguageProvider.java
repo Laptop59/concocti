@@ -52,6 +52,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiMachines.MAGNETIC_SEPARATOR, "Concocti Magnetic Separator");
         add(ConcoctiMachines.CENTRIFUGE, "Concocti Centrifuge");
         add(ConcoctiMachines.SOLAR_COLLECTOR, "Concocti Solar Collector");
+        add(ConcoctiMachines.AUTOCLAVE, "Autoclave");
 
         // Blocks go here.
         add(ConcoctiBlocks.DIAMETHYST_BLOCK, "Block of Diamethyst");
@@ -60,6 +61,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiBlocks.TOUGH_CONCOCTI_BLOCK, "Block of Tough Concocti");
         add(ConcoctiBlocks.COMPRESSED_CONCOCTI_BLOCK, "Block of Compressed Concocti");
         add(ConcoctiBlocks.CONDUCTIVIUM_BLOCK, "Block of Conductivium");
+        add(ConcoctiBlocks.LATTICIUM_FRAME, "Latticium Frame");
         add(ConcoctiBlocks.BASIC_CONCOCTI_FRAME, "Basic Concocti Frame");
         add(ConcoctiBlocks.ADVANCED_CONCOCTI_FRAME, "Advanced Concocti Frame");
         add(ConcoctiBlocks.CONCOCTI_BRICKS, "Concocti Bricks");
@@ -69,6 +71,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiBlocks.CRYSTALIUM_ORE, "Crystalium Ore");
         add(ConcoctiBlocks.LATTICIUM_BLOCK, "Latticium Block");
         add(ConcoctiBlocks.SOLARIUM_BLOCK, "Solarium Block");
+        add(ConcoctiBlocks.AUTOCLAVE_FRAME, "Autoclave Frame");
 
         // Items go here.
         add(ConcoctiItems.DIAMETHYST_CRYSTAL, "Diamethyst Crystal");
@@ -140,6 +143,7 @@ public class ConcoctiEnglishLanguageProvider extends LanguageProvider {
         add(ConcoctiFluids.MOLTEN_IRON, "Molten Iron");
         add(ConcoctiFluids.MOLTEN_REDSTONE, "Molten Redstone");
         add(ConcoctiFluids.MOLTEN_SOLARIUM, "Molten Solarium");
+        add(ConcoctiFluids.AUTOCLAVE_PAINT, "Autoclave Paint");
 
         // Miscellaneous things go here.
         add("effect.concocti.concoctized", "Concoctized");

@@ -149,7 +149,7 @@ public abstract class AbstractConcoctiRecipeCategory<R extends ProcessingRecipe<
         arrowProgress.update((float) (progress * 23) / 22);
         Renderable.renderChildAbsolute(guiGraphics, RenderInfo.withNullifiedOffset(null), arrowProgress);
 
-        String toDraw = String.format("%.1fs", recipe.getTicks() / 20d);
+        String toDraw = String.format("%.2f s", recipe.getTicks() / 20d);
         guiGraphics.drawString(
                 Minecraft.getInstance().font,
                 toDraw,

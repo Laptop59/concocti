@@ -531,9 +531,9 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
         public List<Renderable> getUniqueChildren() {
             return List.of(
                     arrowProgress,
-                    energyBar,
                     pureFluid,
-                    byproductFluid
+                    byproductFluid,
+                    energyBar
             );
         }
 

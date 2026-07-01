@@ -7,6 +7,7 @@ import io.github.laptop59.concocti.common.block.entity.ConcoctiHatchBlockEntity;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -20,6 +21,7 @@ import java.util.function.Supplier;
 
 public final class MultiblockHatchAllowedPredicate implements MultiblockBlockPredicate {
     private final Supplier<? extends ConcoctiHatchBlock>[] blocks;
+    private Holder<? extends Block> nonHatchBlock = ConcoctiBlocks.TOUGH_CONCOCTI_BRICKS;
 
     @SafeVarargs
     public MultiblockHatchAllowedPredicate(Supplier<? extends ConcoctiHatchBlock>... blocks) {
@@ -31,11 +33,11 @@ public final class MultiblockHatchAllowedPredicate implements MultiblockBlockPre
         BlockState blockState = level.getBlockState(absolutePos);
         Block currentBlock = blockState.getBlock();
         boolean insteadWasAir = currentBlock == Blocks.AIR;
-        if (currentBlock == ConcoctiBlocks.TOUGH_CONCOCTI_BRICKS.get() ||
+        if (currentBlock == nonHatchBlock.value() ||
                Arrays.stream(blocks).anyMatch(block -> block.get() == currentBlock))
             return null;
         return new MultiblockResult(
-                ConcoctiBlocks.TOUGH_CONCOCTI_BRICKS.get().defaultBlockState(),
+                nonHatchBlock.value().defaultBlockState(),
                 insteadWasAir
         );
     }
@@ -45,6 +47,11 @@ public final class MultiblockHatchAllowedPredicate implements MultiblockBlockPre
         BlockEntity blockEntity = level.getBlockEntity(absolutePos);
         if (blockEntity instanceof ConcoctiHatchBlockEntity entity) return new Data(entity, blocks);
         return null;
+    }
+
+    public MultiblockHatchAllowedPredicate withNonHatchBlock(Holder<? extends Block> block) {
+        nonHatchBlock = block;
+        return this;
     }
 
     public boolean allows(Hatch hatch) {
@@ -62,7 +69,7 @@ public final class MultiblockHatchAllowedPredicate implements MultiblockBlockPre
 
     @Override
     public Item getIcon() {
-        return ConcoctiItems.TOUGH_CONCOCTI_BRICKS.get();
+        return nonHatchBlock.value().asItem();
     }
 
     @SuppressWarnings("unchecked")

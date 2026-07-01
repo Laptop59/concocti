@@ -263,10 +263,12 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
                 hatchPositionsMap.put(new Hatch(type, purpose), new ArrayList<>());
 
         BlockPos blockPos = getBlockPos();
+        Direction direction = getBlockState().getValue(HorizontalDirectionalBlock.FACING);
         for (int dz = structure.zStart(); dz < structure.zEnd(); dz++)
             for (int dy = structure.yStart(); dy < structure.yEnd(); dy++)
                 for (int dx = structure.xStart(); dx < structure.xEnd(); dx++) {
-                    BlockPos hatchBlockPos = blockPos.offset(dx, dy, dz);
+                    BlockPos rotatedRelativePos = MultiblockStructure.rotateAccordingToNorth(new BlockPos(dx, dy, dz), direction);
+                    BlockPos hatchBlockPos = blockPos.offset(rotatedRelativePos);
                     MultiblockBlockPredicate predicate = structure.at(dx, dy, dz);
                     if (predicate instanceof MultiblockHatchAllowedPredicate predicate1) {
                         for (Hatch hatch : predicate1.getAllowed())

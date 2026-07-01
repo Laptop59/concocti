@@ -104,7 +104,8 @@ public record MultiblockStructure(
         for (int x = xStart; x < xEnd; x++)
             for (int y = yStart; y < yEnd; y++)
                 for (int z = zStart; z < zEnd; z++) {
-                    BlockPos absolutePos = origin.offset(x, y, z);
+                    BlockPos rotatedRelativePos = rotateAccordingToNorth(new BlockPos(x, y, z), direction);
+                    BlockPos absolutePos = origin.offset(rotatedRelativePos);
                     MultiblockResult result = result(level, absolutePos, x, y, z, direction);
                     if (result != null) return false;
                 }
@@ -132,7 +133,7 @@ public record MultiblockStructure(
         return resultHashMap;
     }
 
-    private static BlockPos rotateAccordingToNorth(BlockPos relativePos, Direction direction) {
+    public static BlockPos rotateAccordingToNorth(BlockPos relativePos, Direction direction) {
         // Direction |  x |  z |  AAAA       z -2
         //           |    |    |  A          | -1   N
         // NORTH     | +x | -z |  A          v  0   |
@@ -161,7 +162,8 @@ public record MultiblockStructure(
         for (int x = xStart; x < xEnd; x++)
             for (int y = yStart; y < yEnd; y++)
                 for (int z = zStart; z < zEnd; z++) {
-                    BlockPos absolutePos = origin.offset(x, y, z);
+                    BlockPos rotatedRelativePos = rotateAccordingToNorth(new BlockPos(x, y, z), direction);
+                    BlockPos absolutePos = origin.offset(rotatedRelativePos);
                     MultiblockBlockPredicate predicate = at(x, y, z);
                     if (predicate == null) continue;
                     Object data = predicate.getExtraData(level, absolutePos, direction);

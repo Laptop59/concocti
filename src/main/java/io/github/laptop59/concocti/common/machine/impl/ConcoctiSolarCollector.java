@@ -215,7 +215,7 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
             if (!getLevel().canSeeSky(checkedPos) || !getLevel().isDay() || getLevel().dimensionType().hasFixedTime()) return 0L; // No sun!
 
             float rainLevel = Mth.clamp(getLevel().getRainLevel(1.0f), 0, 1);
-            float thunderLevel = Mth.clamp(getLevel().getRainLevel(1.0f), 0, 1);
+            float thunderLevel = Mth.clamp(getLevel().getThunderLevel(1.0f), 0, 1);
             Biome biome = getLevel().getBiome(checkedPos).getDelegate().value();
             float humidity = 0f;
             switch (biome.getPrecipitationAt(checkedPos)) {
@@ -224,7 +224,7 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
             }
             humidity = Mth.clamp(humidity, 0, 1);
 
-            double relativeTime = getLevel().getDayTime() / 6000.0 - 1.0;
+            double relativeTime = Mth.clamp(getLevel().getDayTime() % 24000L / 6000.0 - 1.0, -1, 1);
             double timeScale = 1.0 - relativeTime * relativeTime;
             double tempScale = getTemperatureScale(biome);
 

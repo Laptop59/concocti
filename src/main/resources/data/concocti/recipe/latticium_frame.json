@@ -8,14 +8,14 @@
   ],
   "key": {
     ".": {
-      "item": "concocti:purified_concocti_nugget"
+      "item": "concocti:latticium_nugget"
     },
     "I": {
-      "item": "concocti:purified_concocti_ingot"
+      "item": "concocti:latticium_ingot"
     }
   },
   "result": {
-    "id": "concocti:basic_concocti_frame",
+    "id": "concocti:latticium_frame",
     "count": 1
   }
 }

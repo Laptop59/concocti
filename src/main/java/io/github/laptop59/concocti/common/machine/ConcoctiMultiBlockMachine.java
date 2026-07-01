@@ -353,7 +353,7 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
 
             {
                 double perTick = menu.isValid() ? menu.getProgressCompletedPerTick() : 0;
-                boolean speedy = perTick >= 0.25;
+                boolean speedy = perTick >= 0.2;
 
                 guiGraphics.drawString(
                         font,
@@ -364,15 +364,11 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
                         false
                 );
 
-                String progressText = String.format("%.2f/t", perTick);
-                guiGraphics.drawString(
-                        font,
-                        Component.literal(progressText),
-                        leftPos + 152 - font.width(progressText),
-                        topPos + 55,
-                        0xFF3C2F47,
-                        false
-                );
+                String progressText = "";
+
+                if (perTick > 0) {
+                    progressText = String.format("%.2f s", menu.getSecondsLeft());
+                }
 
                 if (speedy) {
                     if (!wasSpeedy) {
@@ -386,9 +382,21 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
                         Math.clamp((float) (System.currentTimeMillis() - latestSpeedyBarStart) / 2000, 0, Math.max(0, max)),
                         true
                     );
+
+                    progressText = String.format("%.2f/t", perTick);
                 } else {
                     progressBar.update(progress, false);
                 }
+
+                guiGraphics.drawString(
+                        font,
+                        Component.literal(progressText),
+                        leftPos + 152 - font.width(progressText),
+                        topPos + 55,
+                        0xFF3C2F47,
+                        false
+                );
+
                 wasSpeedy = speedy;
             }
 

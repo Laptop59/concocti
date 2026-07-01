@@ -483,8 +483,8 @@ public class ConcoctiCrystallizer extends ConcoctiMachineOnlyItemsFluids<
         public List<Renderable> getUniqueChildren() {
             return List.of(
                     arrowProgress,
-                    energyBar,
-                    fluid
+                    fluid,
+                    energyBar
             );
         }
 

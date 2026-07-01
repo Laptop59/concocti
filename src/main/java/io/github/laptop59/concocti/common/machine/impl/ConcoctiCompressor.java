@@ -606,12 +606,12 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
         public List<Renderable> getUniqueChildren() {
             return List.of(
                     arrowProgress,
-                    energyBar,
                     inputFluid1,
                     inputFluid2,
                     inputFluid3,
                     inputFluid4,
-                    outputFluid
+                    outputFluid,
+                    energyBar
             );
         }
 
