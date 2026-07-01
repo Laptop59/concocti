@@ -38,7 +38,6 @@ public class EnergyBar<T extends AbstractContainerMenu> extends Renderable {
 
     protected void render(GuiGraphics guiGraphics, RenderInfo renderInfo) {
         int height = Mth.ceil(((float) left / max) * 50.0F);
-        int percent = (int) ((double) left / max * 100);
         // Draw the base first.
         guiGraphics.blitSprite(ENERGY_BAR_BASE_SPRITE, 17, 52, 0, 0, screen.getGuiLeft() + guiLeft - 1, screen.getGuiTop() + guiTop - 1, 17, 52);
         guiGraphics.blitSprite(ENERGY_BAR_SPRITE, 15, 50, 0, 0, screen.getGuiLeft() + guiLeft, screen.getGuiTop() + guiTop + (50 - height), 15, height);

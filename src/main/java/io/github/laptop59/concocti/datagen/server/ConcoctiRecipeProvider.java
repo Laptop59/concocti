@@ -18,6 +18,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.*;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -82,7 +83,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
             concoctiMelterRecipe(output, ConcoctiItems.DIRTY_CONCOCTI_BLOCK, 10 * 64,
                     new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_BLOCK_PURIFIED),
                     new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTIZED_DIRT, 3 * 81),
-                    "dirty_concoti_block"
+                    "dirty_concocti_block"
             );
 
             concoctiMelterSolidifierRecipes(output,
@@ -190,6 +191,13 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 ItemRecipeIngredient.of(Ingredient.of(Items.LAVA_BUCKET), 1, true),
                 new FluidStack(Fluids.WATER, 1000),
                 60, new ItemStack(Items.COBBLESTONE)
+            );
+            concoctiSolidifierRecipe(
+                output,
+                ItemRecipeIngredient.of(ConcoctiItems.LATTICIUM_FRAME, 1),
+                ItemRecipeIngredient.of(Ingredient.of(Items.CAULDRON), 1, true),
+                new FluidStack(ConcoctiFluids.AUTOCLAVE_PAINT, 60),
+                60, new ItemStack(ConcoctiItems.AUTOCLAVE_FRAME.get())
             );
         }
 
@@ -429,7 +437,32 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     FluidRecipeIngredient.of(new FluidStack(Fluids.LAVA, 250))
             ), new ItemStack(Items.MAGMA_BLOCK), null);
 
-
+            concoctiMixerRecipe(
+                    output,
+                    "autoclave_paint_from_quartz",
+                    80,
+                    List.of(
+                            ItemRecipeIngredient.of(Items.QUARTZ, 1)
+                    ),
+                    List.of(
+                            FluidRecipeIngredient.of(ConcoctiFluids.CRYSTALIUM_SOLUTION.get(), 40)
+                    ),
+                    null,
+                    new FluidStack(ConcoctiFluids.AUTOCLAVE_PAINT, 40)
+            );
+            concoctiMixerRecipe(
+                    output,
+                    "autoclave_paint_from_sand",
+                    160,
+                    List.of(
+                            ItemRecipeIngredient.of(ItemTags.SAND, 4)
+                    ),
+                    List.of(
+                            FluidRecipeIngredient.of(ConcoctiFluids.CRYSTALIUM_SOLUTION.get(), 40)
+                    ),
+                    null,
+                    new FluidStack(ConcoctiFluids.AUTOCLAVE_PAINT, 40)
+            );
         }
 
         // Concocti Electron Collector Recipe
@@ -484,38 +517,6 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     75,
                     new ItemStack(Items.BLUE_ICE, 1),
                     "blue_ice"
-            );
-            concoctiCrystallizerRecipe(
-                    output,
-                    Ingredient.of(Items.AMETHYST_SHARD),
-                    new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_INGOT),
-                    15,
-                    new ItemStack(Items.AMETHYST_SHARD, 1),
-                    "amethyst_shard"
-            );
-            concoctiCrystallizerRecipe(
-                    output,
-                    Ingredient.of(Items.AMETHYST_BLOCK),
-                    new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_INGOT * 4),
-                    60,
-                    new ItemStack(Items.AMETHYST_BLOCK, 1),
-                    "amethyst_block"
-            );
-            concoctiCrystallizerRecipe(
-                    output,
-                    Ingredient.of(ConcoctiItems.DIAMETHYST_CRYSTAL),
-                    new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_INGOT * 4),
-                    75,
-                    new ItemStack(ConcoctiItems.DIAMETHYST_CRYSTAL.get(), 1),
-                    "diamethyst_crystal"
-            );
-            concoctiCrystallizerRecipe(
-                    output,
-                    Ingredient.of(ConcoctiItems.DIAMETHYST_BLOCK),
-                    new FluidStack(ConcoctiFluids.MOLTEN_CONCOCTI, ConcoctiConstants.MOLTEN_BLOCK * 4),
-                    75,
-                    new ItemStack(ConcoctiItems.DIAMETHYST_BLOCK.get(), 1),
-                    "diamethyst_block"
             );
             concoctiCrystallizerRecipe(
                     output,
@@ -1042,6 +1043,138 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                 ),
                 List.of()
         );
+
+        // Autoclave recipes
+        {
+            concoctiMultiblockRecipe(
+                    output,
+                    ConcoctiMachines.AUTOCLAVE,
+                    "diamond_crystallization",
+                    6 * 60 * 20,
+                    List.of(
+                            ItemRecipeIngredient.of(Ingredient.of(Items.DIAMOND), 1, true)
+                    ),
+                    List.of(
+                            FluidRecipeIngredient.of(ConcoctiFluids.MOLTEN_CONCOCTI.get(), ConcoctiConstants.MOLTEN_NUGGET * 4)
+                    ),
+                    List.of(
+                            ItemOutput.of(Items.DIAMOND, 1)
+                    ),
+                    List.of()
+            );
+            concoctiMultiblockRecipe(
+                    output,
+                    ConcoctiMachines.AUTOCLAVE,
+                    "diamond_block_crystallization",
+                    8 * 6 * 60 * 20,
+                    List.of(
+                            ItemRecipeIngredient.of(Ingredient.of(Items.DIAMOND_BLOCK), 1, true)
+                    ),
+                    List.of(
+                            FluidRecipeIngredient.of(ConcoctiFluids.MOLTEN_CONCOCTI.get(), ConcoctiConstants.MOLTEN_INGOT * 4)
+                    ),
+                    List.of(
+                            ItemOutput.of(Items.DIAMOND_BLOCK, 1)
+                    ),
+                    List.of()
+            );
+            concoctiMultiblockRecipe(
+                    output,
+                    ConcoctiMachines.AUTOCLAVE,
+                    "emerald_crystallization",
+                    2 * 60 * 20,
+                    List.of(
+                            ItemRecipeIngredient.of(Ingredient.of(Items.EMERALD), 1, true)
+                    ),
+                    List.of(
+                            FluidRecipeIngredient.of(ConcoctiFluids.MOLTEN_CONCOCTI.get(), ConcoctiConstants.MOLTEN_NUGGET * 4)
+                    ),
+                    List.of(
+                            ItemOutput.of(Items.EMERALD, 1)
+                    ),
+                    List.of()
+            );
+            concoctiMultiblockRecipe(
+                    output,
+                    ConcoctiMachines.AUTOCLAVE,
+                    "emerald_block_crystallization",
+                    8 * 2 * 60 * 20,
+                    List.of(
+                            ItemRecipeIngredient.of(Ingredient.of(Items.EMERALD_BLOCK), 1, true)
+                    ),
+                    List.of(
+                            FluidRecipeIngredient.of(ConcoctiFluids.MOLTEN_CONCOCTI.get(), ConcoctiConstants.MOLTEN_INGOT * 4)
+                    ),
+                    List.of(
+                            ItemOutput.of(Items.EMERALD_BLOCK, 1)
+                    ),
+                    List.of()
+            );
+            concoctiMultiblockRecipe(
+                    output,
+                    ConcoctiMachines.AUTOCLAVE,
+                    "amethyst_crystallization",
+                    60 * 20,
+                    List.of(
+                            ItemRecipeIngredient.of(Ingredient.of(Items.AMETHYST_SHARD), 1, true)
+                    ),
+                    List.of(
+                            FluidRecipeIngredient.of(ConcoctiFluids.MOLTEN_CONCOCTI.get(), ConcoctiConstants.MOLTEN_NUGGET * 4)
+                    ),
+                    List.of(
+                            ItemOutput.of(Items.AMETHYST_SHARD, 1)
+                    ),
+                    List.of()
+            );
+            concoctiMultiblockRecipe(
+                    output,
+                    ConcoctiMachines.AUTOCLAVE,
+                    "amethyst_block_crystallization",
+                    4 * 60 * 20,
+                    List.of(
+                            ItemRecipeIngredient.of(Ingredient.of(Items.AMETHYST_BLOCK), 1, true)
+                    ),
+                    List.of(
+                            FluidRecipeIngredient.of(ConcoctiFluids.MOLTEN_CONCOCTI.get(), ConcoctiConstants.MOLTEN_NUGGET * 16)
+                    ),
+                    List.of(
+                            ItemOutput.of(Items.AMETHYST_BLOCK, 1)
+                    ),
+                    List.of()
+            );
+            concoctiMultiblockRecipe(
+                    output,
+                    ConcoctiMachines.AUTOCLAVE,
+                    "diamethyst_crystallization",
+                    18 * 60 * 20,
+                    List.of(
+                            ItemRecipeIngredient.of(Ingredient.of(ConcoctiItems.DIAMETHYST_CRYSTAL), 1, true)
+                    ),
+                    List.of(
+                            FluidRecipeIngredient.of(ConcoctiFluids.MOLTEN_CONCOCTI.get(), ConcoctiConstants.MOLTEN_NUGGET * 16)
+                    ),
+                    List.of(
+                            ItemOutput.of(ConcoctiItems.DIAMETHYST_CRYSTAL, 1)
+                    ),
+                    List.of()
+            );
+            concoctiMultiblockRecipe(
+                    output,
+                    ConcoctiMachines.AUTOCLAVE,
+                    "diamethyst_block_crystallization",
+                    8 * 18 * 60 * 20,
+                    List.of(
+                            ItemRecipeIngredient.of(Ingredient.of(ConcoctiItems.DIAMETHYST_BLOCK), 1, true)
+                    ),
+                    List.of(
+                            FluidRecipeIngredient.of(ConcoctiFluids.MOLTEN_CONCOCTI.get(), ConcoctiConstants.MOLTEN_INGOT * 16)
+                    ),
+                    List.of(
+                            ItemOutput.of(ConcoctiItems.DIAMETHYST_BLOCK, 1)
+                    ),
+                    List.of()
+            );
+        }
 
         concoctiEnergyGeneratorRecipe(
                 output,

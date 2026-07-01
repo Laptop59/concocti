@@ -20,7 +20,18 @@ public record MultiblockBlockTagPredicate(TagKey<Block> tagKey) implements Multi
     public MultiblockResult getResult(Level level, BlockPos absolutePos, Direction controllerDirection) {
         Block currentBlock = level.getBlockState(absolutePos).getBlock();
         Optional<HolderSet.Named<Block>> blocksInTagOpt = BuiltInRegistries.BLOCK.getTag(tagKey);
-        boolean insteadWasAir = currentBlock == Blocks.AIR;
+        boolean insteadWasAir = false;
+        {
+            Optional<HolderSet.Named<Block>> airBlocks = BuiltInRegistries.BLOCK.getTag(BlockTags.AIR);
+            if (airBlocks.isPresent()) {
+                for (Holder<Block> airBlock : airBlocks.get()) {
+                    if (airBlock.value() == currentBlock) {
+                        insteadWasAir = true;
+                        break;
+                    }
+                }
+            }
+        }
         if (blocksInTagOpt.isPresent()) {
             HolderSet.Named<Block> blocksInTag = blocksInTagOpt.get();
             for (Holder<Block> holder : blocksInTag) {

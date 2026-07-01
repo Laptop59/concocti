@@ -96,6 +96,15 @@ public class ConcoctiBlocks {
 
     // FRAME BLOCKS
 
+    public static final DeferredBlock<Block> LATTICIUM_FRAME = registerBlock("latticium_frame", Block::new,
+            BlockBehaviour.Properties
+                    .of()
+                    .mapColor(DyeColor.BLACK)
+                    .requiresCorrectToolForDrops()
+                    .explosionResistance(800000)
+                    .strength(1600000f),
+            new BlockData(BlockToolRank.NETHERITE, BlockToolType.PICKAXE));
+
     public static final DeferredBlock<Block> BASIC_CONCOCTI_FRAME = registerBlock("basic_concocti_frame", FrameBlock::new,
             BlockBehaviour.Properties
                     .of()
@@ -121,6 +130,15 @@ public class ConcoctiBlocks {
     public static final DeferredBlock<Block> TOUGH_CONCOCTI_BRICKS = registerBlock("tough_concocti_bricks", Block::new,
             BlockBehaviour.Properties.of().mapColor(DyeColor.MAGENTA).requiresCorrectToolForDrops().explosionResistance(400).strength(4f),
             new BlockData(BlockToolRank.DIAMOND, BlockToolType.PICKAXE));
+
+    public static final DeferredBlock<Block> AUTOCLAVE_FRAME = registerBlock("autoclave_frame", Block::new,
+            BlockBehaviour.Properties
+                    .of()
+                    .mapColor(DyeColor.WHITE)
+                    .requiresCorrectToolForDrops()
+                    .explosionResistance(1200000)
+                    .strength(2400000f),
+            new BlockData(BlockToolRank.NETHERITE, BlockToolType.PICKAXE));
 
     public static final Map<HatchType, Map<HatchPurpose, DeferredBlock<? extends ConcoctiHatchBlock>>> HATCHES = registerHatches(
             BlockBehaviour.Properties.of().mapColor(DyeColor.MAGENTA).requiresCorrectToolForDrops().explosionResistance(500).strength(5f),

@@ -27,6 +27,7 @@ public final class ConcoctiMachines {
 
     public static ConcoctiMultiBlockMachine MAGNETIC_SEPARATOR;
     public static ConcoctiMultiBlockMachine CENTRIFUGE;
+    public static ConcoctiMultiBlockMachine AUTOCLAVE;
 
     public static int MAX_RADIUS_SEARCHABLE = 0;
     public static int MAX_SQ_RADIUS_SEARCHABLE = 0;
@@ -78,11 +79,12 @@ public final class ConcoctiMachines {
 
         MAGNETIC_SEPARATOR = registerMultiblock(new ConcoctiMultiBlockMachine(
                 "concocti_magnetic_separator",
-                100.0f,
+                50.0f,
                 MultiblockStructure.from(MultiblockStructure.Builder.create(-1, -1, -2, 2, 4, 1), builder -> builder.load(
                             Map.of(
                                     'B', new MultiblockHatchAllowedPredicate(
                                             ConcoctiBlocks.getDeferredHatch(HatchPurpose.INPUT, HatchType.FLUID),
+                                            ConcoctiBlocks.getDeferredHatch(HatchPurpose.OUTPUT, HatchType.FLUID),
                                             ConcoctiBlocks.getDeferredHatch(HatchPurpose.OUTPUT, HatchType.ITEM),
                                             ConcoctiBlocks.getDeferredHatch(HatchPurpose.INPUT, HatchType.ENERGY)
                                     ),
@@ -99,7 +101,7 @@ public final class ConcoctiMachines {
 
         CENTRIFUGE = registerMultiblock(new ConcoctiMultiBlockMachine(
             "concocti_centrifuge",
-            400.0f,
+            200.0f,
             MultiblockStructure.from(MultiblockStructure.Builder.create(-2, -1, -4, 3, 2, 1), builder -> builder.load(
                     Map.of(
                         'B', new MultiblockSimpleBlockPredicate(ConcoctiBlocks.TOUGH_CONCOCTI_BRICKS),
@@ -123,6 +125,29 @@ public final class ConcoctiMachines {
                     "BBBBB BH HB BBBBB"
                 )
             )
+        ));
+
+        AUTOCLAVE = registerMultiblock(new ConcoctiMultiBlockMachine(
+                "autoclave",
+                500.0f,
+                MultiblockStructure.from(MultiblockStructure.Builder.create(-1, -1, -2, 2, 2, 1), builder -> builder.load(
+                                Map.of(
+                                        'F', new MultiblockSimpleBlockPredicate(ConcoctiBlocks.AUTOCLAVE_FRAME),
+                                        'H', new MultiblockHatchAllowedPredicate(
+                                                ConcoctiBlocks.getDeferredHatch(HatchPurpose.INPUT, HatchType.ITEM),
+                                                ConcoctiBlocks.getDeferredHatch(HatchPurpose.INPUT, HatchType.FLUID),
+                                                ConcoctiBlocks.getDeferredHatch(HatchPurpose.OUTPUT, HatchType.ITEM),
+                                                ConcoctiBlocks.getDeferredHatch(HatchPurpose.OUTPUT, HatchType.FLUID),
+                                                ConcoctiBlocks.getDeferredHatch(HatchPurpose.INPUT, HatchType.ENERGY)
+                                        ).withNonHatchBlock(ConcoctiBlocks.AUTOCLAVE_FRAME),
+                                        'A', new MultiblockBlockTagPredicate(BlockTags.AIR)
+                                ),
+                                null,
+                                "FFF FHF FFF",
+                                "FHF HAH FHF",
+                                "FFF F F FFF"
+                        )
+                )
         ));
 
         Concocti.LOGGER.debug("Max radii searchable are: X = {}, Y = {}, Z = {} | Max searchable squared radius = {} | Max searchable radius = {}",

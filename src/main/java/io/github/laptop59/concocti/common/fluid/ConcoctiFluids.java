@@ -206,6 +206,22 @@ public class ConcoctiFluids {
             true
     );
 
+    public static final ConcoctiFluidParent AUTOCLAVE_PAINT = register(
+            "autoclave_paint",
+            FluidType.Properties.create()
+                    .temperature(50)
+                    .lightLevel(1)
+                    .viscosity(1)
+                    .density(50)
+                    .canConvertToSource(false)
+                    .canDrown(false)
+                    .canSwim(false),
+            null,
+            50,
+            false,
+            false
+    );
+
     private static ConcoctiFluidParent register(String id, FluidType.Properties fluidProps, BlockBehaviour.Properties blockProps, int tickRate, boolean isMolten, boolean hasBucket) {
         ConcoctiFluidParent parent = new ConcoctiFluidParent(id, tickRate, isMolten, fluidProps, blockProps, hasBucket);
         FLUIDS.add(parent);

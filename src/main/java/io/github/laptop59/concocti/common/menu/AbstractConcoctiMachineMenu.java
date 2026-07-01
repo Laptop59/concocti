@@ -277,7 +277,15 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
         int total = viewer.get(Properties.TOTAL_TICKS);
         int by = viewer.get(Properties.TICK_MULTIPLIER);
 
-        return (double) by / total;
+        return total <= 0 ? 0.0 : (double) by / total;
+    }
+
+    public double getSecondsLeft() {
+        int left = viewer.get(Properties.TICKS_LEFT);
+        int total = viewer.get(Properties.TOTAL_TICKS);
+        int by = viewer.get(Properties.TICK_MULTIPLIER);
+
+        return total <= 0 ? 0.0 : (double) left / by / 20;
     }
 
     /**

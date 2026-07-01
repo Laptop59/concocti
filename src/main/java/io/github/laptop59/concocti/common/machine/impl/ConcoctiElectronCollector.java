@@ -441,8 +441,8 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
         public List<Renderable> getUniqueChildren() {
             return List.of(
                     arrowProgress,
-                    energyBar,
-                    outputFluid
+                    outputFluid,
+                    energyBar
             );
         }
 

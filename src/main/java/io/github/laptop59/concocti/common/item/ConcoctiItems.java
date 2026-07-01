@@ -88,11 +88,15 @@ public class ConcoctiItems {
     public static final DeferredItem<? extends Item> COMPACTER_CONCOCTI_UPGRADE = registerItem("compacter_concocti_upgrade", ConcoctiUpgradeItem::new, new Item.Properties().stacksTo(8));
     public static final DeferredItem<? extends Item> COMPACTEST_CONCOCTI_UPGRADE = registerItem("compactest_concocti_upgrade", ConcoctiUpgradeItem::new, new Item.Properties().stacksTo(8));
 
+    public static final DeferredItem<BlockItem> LATTICIUM_FRAME = registerBlockItem(ConcoctiBlocks.LATTICIUM_FRAME);
+
     public static final DeferredItem<BlockItem> BASIC_CONCOCTI_FRAME = registerBlockItem(ConcoctiBlocks.BASIC_CONCOCTI_FRAME);
     public static final DeferredItem<BlockItem> ADVANCED_CONCOCTI_FRAME = registerBlockItem(ConcoctiBlocks.ADVANCED_CONCOCTI_FRAME);
 
     public static final DeferredItem<BlockItem> CONCOCTI_BRICKS = registerBlockItem(ConcoctiBlocks.CONCOCTI_BRICKS);
     public static final DeferredItem<BlockItem> TOUGH_CONCOCTI_BRICKS = registerBlockItem(ConcoctiBlocks.TOUGH_CONCOCTI_BRICKS);
+
+    public static final DeferredItem<BlockItem> AUTOCLAVE_FRAME = registerBlockItem(ConcoctiBlocks.AUTOCLAVE_FRAME);
 
     public static final DeferredItem<Item> DENSE_CONCOCTI_PELLET = registerItem("dense_concocti_pellet", new Item.Properties());
 
@@ -246,6 +250,7 @@ public class ConcoctiItems {
 
         acceptStack(output, CONCOCTI_SEEDS);
         acceptStack(output, INFINITY_CONCOCTI_SEEDS);
+
         acceptStack(output, CONCOCTI_BRICKS);
         acceptStack(output, TOUGH_CONCOCTI_BRICKS);
 
@@ -307,6 +312,11 @@ public class ConcoctiItems {
 
         acceptStack(output, BASIC_CONCOCTI_FRAME);
         acceptStack(output, ADVANCED_CONCOCTI_FRAME);
+
+        acceptStack(output, LATTICIUM_FRAME);
+        acceptStack(output, AUTOCLAVE_FRAME);
+
+        acceptStack(output, DENSE_CONCOCTI_PELLET);
 
         ConcoctiFluids.forEach(concoctiFluid -> {
             if (concoctiFluid.BUCKET != null) acceptStack(output, concoctiFluid.BUCKET);

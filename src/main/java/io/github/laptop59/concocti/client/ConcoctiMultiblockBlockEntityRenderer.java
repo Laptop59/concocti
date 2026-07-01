@@ -25,6 +25,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -117,7 +118,7 @@ public class ConcoctiMultiblockBlockEntityRenderer implements BlockEntityRendere
     }
 
     @Override
-    public AABB getRenderBoundingBox(ConcoctiMultiBlockMachine.BlockEntity blockEntity) {
+    public @NotNull AABB getRenderBoundingBox(ConcoctiMultiBlockMachine.@NotNull BlockEntity blockEntity) {
         return AABB.INFINITE;
     }
 }
