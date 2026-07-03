@@ -47,6 +47,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
@@ -177,10 +178,10 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
         @Override
         public boolean canProcess() {
             if (!super.canProcess()) return false;
-            Recipe recipe = getRecipe(lightningState.get());
+            RecipeHolder<Recipe> recipe = getRecipe(lightningState.get());
             if (recipe == null) return false;
             // Check whether the fluids obtained from this item will not exceed our fluid limit.
-            FluidStack result = recipe.getOutput().stack().copy();
+            FluidStack result = recipe.value().getOutput().stack().copy();
             return fluidOutput.get().fill(result, IFluidHandler.FluidAction.SIMULATE) == result.getAmount();
         }
 
@@ -232,24 +233,12 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
         // Common things to have here is a processing time integer of some kind, or an experience reward.
         // Note that we now use an ingredient instead of an item stack for the input.
         private final FluidOutput output;
-        private final ResourceLocation id;
         private final int ticks;
 
         // Add a constructor that sets all properties.
-        public Recipe(ResourceLocation id, FluidOutput output, int ticks) {
-            this.output = output;
-            this.ticks = ticks;
-            this.id = id;
-        }
-
         public Recipe(FluidOutput output, int ticks) {
             this.output = output;
             this.ticks = ticks;
-            this.id = getWouldBeResourceLocation(output);
-        }
-
-        public static ResourceLocation getWouldBeResourceLocation(FluidOutput outputFluid) {
-            return ResourceLocation.fromNamespaceAndPath(MODID, "electron_collecting/" + BuiltInRegistries.FLUID.getKey(outputFluid.stack().getFluid()).getPath());
         }
 
         @NotNull
@@ -305,11 +294,6 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
             return ticks;
         }
 
-        @Override
-        public ResourceLocation getId() {
-            return id;
-        }
-
         public static class Builder implements RecipeBuilder {
             private final FluidOutput output;
             private final int ticks;
@@ -339,11 +323,10 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
             @Override
             public void save(RecipeOutput recipeOutput, @NotNull ResourceLocation id) {
                 Recipe recipe = new Recipe(
-                        id,
                         this.output,
                         this.ticks
                 );
-                recipeOutput.accept(getWouldBeResourceLocation(recipe.output), recipe, null);
+                recipeOutput.accept(id, recipe, null);
             }
         }
 

@@ -7,6 +7,7 @@ import dev.emi.emi.api.recipe.EmiInfoRecipe;
 import dev.emi.emi.api.recipe.EmiRecipeCategory;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
+import io.github.laptop59.concocti.common.Concocti;
 import io.github.laptop59.concocti.common.item.ConcoctiItemsInfo;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachines;
@@ -51,7 +52,7 @@ public class ConcoctiEmiPlugin implements EmiPlugin {
         RecipeManager recipeManager = Minecraft.getInstance().level.getRecipeManager();
         registerRecipesFor(registry, recipeManager, machine, category);
 
-        for (R recipe : machine.getRecipeProxies()) {
+        for (RecipeHolder<R> recipe : machine.getRecipeProxies()) {
             // No indices: indices only exist when there can be multiple different inputs
             // (as given in the ConcoctiEmiRecipe construction documentation) in one recipe.
             // Here, an ingredient does not count as such.
@@ -60,18 +61,16 @@ public class ConcoctiEmiPlugin implements EmiPlugin {
     }
 
     private <R extends ProcessingRecipe<R, I>, I extends RecipeInput> void registerRecipesFor(EmiRegistry registry, RecipeManager recipeManager, ConcoctiMachine<?,?,?,I,R,?,?,?,?> machine, EmiRecipeCategory category) {
-        List<R> recipes = recipeManager
+        List<RecipeHolder<R>> recipes = recipeManager
             .getAllRecipesFor(machine.RECIPE_TYPE.get())
             .stream()
-            .map(RecipeHolder::value)
-            .sorted()
             .toList();
 
         recipes.forEach(recipe -> {
             AbstractConcoctiRecipeCategory<R> recipeCategory = machine.newRecipeCategory();
             ConcoctiEmiRecipe<R> templateRecipe = new ConcoctiEmiRecipe<>(category, recipe, recipeCategory, new int[0]);
             EmiRecipeBuilder builder = new EmiRecipeBuilder(null, null, null, null, templateRecipe);
-            recipeCategory.set(builder, recipe);
+            recipeCategory.set(builder, recipe.value());
             // This will give us the dimension of indices and the number of possibilities to consider:
             // Number of recipes to make = n1 * n2 * ... * nN
             Integer[] numberOfWays = builder.numberOfIndices.toArray(new Integer[0]);

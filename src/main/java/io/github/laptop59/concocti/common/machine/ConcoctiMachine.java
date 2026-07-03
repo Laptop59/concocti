@@ -19,10 +19,7 @@ import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeInput;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -200,7 +197,7 @@ public abstract class ConcoctiMachine<
     /**
      * Get all 'fake' recipes of this machine. Only shown via a recipe manager.
      */
-    public List<R> getRecipeProxies() {
+    public List<RecipeHolder<R>> getRecipeProxies() {
         return List.of();
     }
 }

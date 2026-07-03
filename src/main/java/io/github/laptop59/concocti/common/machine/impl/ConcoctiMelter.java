@@ -45,6 +45,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
@@ -231,7 +232,9 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
         @Override
         public boolean canProcess() {
             if (!super.canProcess()) return false;
-            Recipe recipe = getRecipe(getInput());
+            RecipeHolder<Recipe> recipeHolder = getRecipe(getInput());
+            if (recipeHolder == null) return false;
+            Recipe recipe = recipeHolder.value();
             // Check whether the fluids obtained from this item will not exceed our fluid limit.
             FluidStack resultPureFluid = recipe.getOutputPureFluid().copy();
             FluidStack resultByproductFluid = recipe.getOutputByproductFluid().copy();
@@ -281,23 +284,11 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
         private final FluidStack outputByproductFluid;
         private final int ticks;
 
-        private static final HashMap<ItemRecipeIngredient, ResourceLocation> idMap = new HashMap<>();
-
-        // Add a constructor that sets all properties.
-        public Recipe(ResourceLocation id, ItemRecipeIngredient inputItem, FluidStack outputPureFluid, FluidStack outputByproductFluid, int ticks) {
-            this.inputItem = inputItem;
-            this.outputPureFluid = outputPureFluid;
-            this.outputByproductFluid = outputByproductFluid;
-            this.ticks = ticks;
-            idMap.put(inputItem, id);
-        }
-
         public Recipe(ItemRecipeIngredient inputItem, FluidStack outputPureFluid, FluidStack outputByproductFluid, int ticks) {
             this.inputItem = inputItem;
             this.outputPureFluid = outputPureFluid;
             this.outputByproductFluid = outputByproductFluid;
             this.ticks = ticks;
-            idMap.put(inputItem, makeResourceLocation(this));
         }
 
         static ResourceLocation makeResourceLocation(Recipe recipe) {
@@ -366,11 +357,6 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
             return ticks;
         }
 
-        @Override
-        public ResourceLocation getId() {
-            return idMap.getOrDefault(inputItem, null);
-        }
-
 
         public static class Builder implements RecipeBuilder {
             protected final ItemRecipeIngredient inputItem;
@@ -402,31 +388,9 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
                 return Items.AIR;
             }
 
-            static ResourceLocation getDefaultRecipeId(Ingredient ingredient) {
-                ItemStack firstStack = Arrays.stream(ingredient.getItems()).findFirst().orElseThrow();
-                return ResourceLocation.fromNamespaceAndPath(MODID,
-                        "melting/" + BuiltInRegistries.ITEM.getKey(firstStack.getItem()).getPath());
-            }
-
-            @Override
-            public void save(@NotNull RecipeOutput recipeOutput) {
-                this.save(recipeOutput, makeResourceLocation(inputItem));
-            }
-
-            @Override
-            public void save(@NotNull RecipeOutput recipeOutput, @NotNull String id) {
-                ResourceLocation resourceLocation = makeResourceLocation(inputItem);
-                ResourceLocation idLocation = ResourceLocation.parse(id);
-                if (ResourceLocation.parse(id).equals(resourceLocation)) {
-                    throw new IllegalStateException("Recipe " + id + " should remove its 'save' argument as it is equal to default one");
-                } else {
-                    this.save(recipeOutput, idLocation);
-                }
-            }
-
             @Override
             public void save(RecipeOutput recipeOutput, @NotNull ResourceLocation id) {
-                Recipe recipe = new Recipe(id, this.inputItem, this.pureResult, this.byproductResult, this.ticks);
+                Recipe recipe = new Recipe(this.inputItem, this.pureResult, this.byproductResult, this.ticks);
                 recipeOutput.accept(id, recipe, null);
             }
         }

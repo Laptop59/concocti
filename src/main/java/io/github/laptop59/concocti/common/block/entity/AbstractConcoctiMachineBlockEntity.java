@@ -84,7 +84,9 @@ public abstract class AbstractConcoctiMachineBlockEntity
     public float rateConsumption;
     public boolean ejectOn;
     public boolean pullOn;
-    public R lastRecipe = null;
+
+    public RecipeHolder<R> lastRecipe = null;
+
     public ConcoctiFluidTankHandler fluidHandler;
 
     public int autoCooldown = 0;
@@ -499,9 +501,9 @@ public abstract class AbstractConcoctiMachineBlockEntity
         if (energy.getEnergyStored() < getTickEnergyIntake()) return false;
         // Query the recipe.
         V input = getInput();
-        R recipe = getRecipe(input);
+        RecipeHolder<R> recipe = getRecipe(input);
         if (recipe == null) return false;
-        return lastRecipe == null || lastRecipe == recipe;
+        return lastRecipe == null || lastRecipe.equals(recipe);
     }
 
     @Override
@@ -519,7 +521,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
      *
      * @param input The input to get a recipe from.
      */
-    protected final R getRecipe(V input) {
+    protected final RecipeHolder<R> getRecipe(V input) {
         I recipeInput = recipeInputFrom(input);
         Level level = getLevel();
         if (level == null) return null;
@@ -528,9 +530,9 @@ public abstract class AbstractConcoctiMachineBlockEntity
                 getRecipeType().get(),
                 recipeInput,
                 level,
-                lastRecipe == null ? null : lastRecipe.getId()
+                lastRecipe == null ? null : lastRecipe
         );
-        return optional.map(RecipeHolder::value).orElse(null);
+        return optional.orElse(null);
     }
 
     /**
@@ -576,10 +578,10 @@ public abstract class AbstractConcoctiMachineBlockEntity
         while (consumableTicks > 0) {
             if (this.canProcess()) {
                 V input = this.getInput();
-                R recipe = this.getRecipe(input);
+                RecipeHolder<R> recipe = this.getRecipe(input);
                 if (recipe != null && (this.lastRecipe == null || !this.lastRecipe.equals(recipe))) {
                     this.lastRecipe = recipe;
-                    this.totalTicks = recipe.getTicks();
+                    this.totalTicks = recipe.value().getTicks();
                     this.ticksLeft = this.totalTicks;
                 }
                 int ticksConsumed = Math.min(consumableTicks, this.ticksLeft);
@@ -588,13 +590,13 @@ public abstract class AbstractConcoctiMachineBlockEntity
                 this.processConsumableTicks(ticksConsumed);
                 if (recipe != null && this.ticksLeft <= 0) {
                     // Produce the result.
-                    this.onRecipeCompleted(recipe);
+                    this.onRecipeCompleted(recipe.value());
                     subticks++;
                     if (subticks % 16 == 0 || consumableTicks <= 0) {
                         this.attemptToEject();
                         this.attemptToPull();
                     }
-                    this.totalTicks = recipe.getTicks();
+                    this.totalTicks = recipe.value().getTicks();
                     this.ticksLeft += this.totalTicks;
                 }
             } else {
@@ -636,7 +638,10 @@ public abstract class AbstractConcoctiMachineBlockEntity
                         .orElse(null);
                 Class<R> recipeClass = getMachineInstance().getRecipeClass();
                 if (recipeClass.isInstance(ungenericRecipe)) {
-                    this.lastRecipe = recipeClass.cast(ungenericRecipe);
+                    this.lastRecipe = new RecipeHolder<>(
+                            id,
+                            recipeClass.cast(ungenericRecipe)
+                    );
                 }
             }
         } else this.lastRecipe = null;

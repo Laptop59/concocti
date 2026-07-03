@@ -249,9 +249,9 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
         if (fakeExtracted < required) return false;
         // Query the recipe.
         ItemsFluidsInputValue input = getInput();
-        R recipe = getRecipe(input);
+        RecipeHolder<R> recipe = getRecipe(input);
         if (recipe == null) return false;
-        if (!canInsertOutputsSeparately(recipe)) return false;
+        if (!canInsertOutputsSeparately(recipe.value())) return false;
         return lastRecipe == null || lastRecipe == recipe;
     }
 
@@ -465,10 +465,10 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
         while (consumableTicks > 0) {
             if (entity.canProcess()) {
                 ItemsFluidsInputValue input = entity.getInput();
-                R recipe = entity.getRecipe(input);
+                RecipeHolder<R> recipe = entity.getRecipe(input);
                 if (recipe != null && (entity.lastRecipe == null || !entity.lastRecipe.equals(recipe))) {
                     entity.lastRecipe = recipe;
-                    entity.totalTicks = recipe.getTicks();
+                    entity.totalTicks = recipe.value().getTicks();
                     entity.ticksLeft = entity.totalTicks;
                 }
                 int ticksConsumed = Math.min(consumableTicks, entity.ticksLeft);
@@ -478,9 +478,9 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
                 entity.energyInputStorage.extractEnergy((int) (rateConsumption * ticksConsumed), false);
                 if (recipe != null && entity.ticksLeft <= 0) {
                     // Produce the result.
-                    entity.onRecipeCompleted(recipe);
+                    entity.onRecipeCompleted(recipe.value());
                     // subticks++;
-                    entity.totalTicks = recipe.getTicks();
+                    entity.totalTicks = recipe.value().getTicks();
                     entity.ticksLeft += entity.totalTicks;
                 }
             } else {
@@ -513,7 +513,10 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
                         .orElse(null);
                 Class<R> recipeClass = getRecipeClass();
                 if (recipeClass.isInstance(ungenericRecipe)) {
-                    this.lastRecipe = recipeClass.cast(ungenericRecipe);
+                    this.lastRecipe = new RecipeHolder<>(
+                            id,
+                            recipeClass.cast(ungenericRecipe)
+                    );
                 }
             }
         } else this.lastRecipe = null;
