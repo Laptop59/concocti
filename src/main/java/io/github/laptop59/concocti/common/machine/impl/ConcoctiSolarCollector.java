@@ -15,8 +15,6 @@ import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineOn
 import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
 import io.github.laptop59.concocti.common.detail.DetailCodec;
 import io.github.laptop59.concocti.common.detail.DetailHolder;
-import io.github.laptop59.concocti.common.fluid.ConcoctiFluid;
-import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTankSlotTypedHandler;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.machine.*;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
@@ -45,6 +43,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
@@ -58,7 +57,6 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
-import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -306,8 +304,9 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
         @Override
         public boolean canProcess() {
             if (!super.canProcess()) return false;
-            Recipe recipe = getRecipe(new ItemsFluidsSolarInputValue(inputItemHandler.get(), inputFluidHandler.get(), solar.get()));
-            if (recipe == null) return false;
+            RecipeHolder<Recipe> recipeHolder = getRecipe(getInput());
+            if (recipeHolder == null) return false;
+            Recipe recipe = recipeHolder.value();
             // Check whether the fluids obtained from this item will not exceed our fluid limit.
             ItemStack currentItemOutput = getItem(OUTPUT_SLOT);
             if (
@@ -335,7 +334,7 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
         @Override
         protected void processConsumableTicks(int ticksConsumed) {
             super.processConsumableTicks(ticksConsumed);
-            solar.get().extractSolar(lastRecipe.solarInputPerTick, false);
+            solar.get().extractSolar(lastRecipe.value().solarInputPerTick, false);
         }
 
         @Override
@@ -384,20 +383,9 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
         private final @Nullable ItemOutput itemOutput;
         private final @Nullable FluidOutput fluidOutput;
         private final long solarInputPerTick;
-        private final ResourceLocation id;
         private final int ticks;
 
         // Add a constructor that sets all properties.
-        public Recipe(ResourceLocation id, @Nullable ItemRecipeIngredient itemInput, @Nullable FluidRecipeIngredient fluidInput, @Nullable ItemOutput itemOutput, @Nullable FluidOutput fluidOutput, long solarInputPerTick, int ticks) {
-            this.itemInput = itemInput;
-            this.fluidInput = fluidInput;
-            this.itemOutput = itemOutput;
-            this.fluidOutput = fluidOutput;
-            this.ticks = ticks;
-            this.solarInputPerTick = solarInputPerTick;
-            this.id = id;
-        }
-
         public Recipe(@Nullable ItemRecipeIngredient itemInput, @Nullable FluidRecipeIngredient fluidInput, @Nullable ItemOutput itemOutput, @Nullable FluidOutput fluidOutput, long solarInputPerTick, int ticks) {
             this.itemInput = itemInput;
             this.fluidInput = fluidInput;
@@ -405,19 +393,6 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
             this.fluidOutput = fluidOutput;
             this.ticks = ticks;
             this.solarInputPerTick = solarInputPerTick;
-            this.id = getWouldBeResourceLocation(itemInput, fluidInput, itemOutput, fluidOutput);
-        }
-
-        public static ResourceLocation getWouldBeResourceLocation(@Nullable ItemRecipeIngredient itemInput, @Nullable FluidRecipeIngredient fluidInput, @Nullable ItemOutput itemOutput, @Nullable FluidOutput fluidOutput) {
-            return ResourceLocation.fromNamespaceAndPath(
-                    MODID,
-                    "solar_collecting/" + String.format("%08x%08x%08x%08x",
-                            Objects.hashCode(itemInput),
-                            Objects.hashCode(itemOutput),
-                            Objects.hashCode(fluidInput),
-                            Objects.hashCode(fluidOutput)
-                    )
-            );
         }
 
         @Nullable
@@ -496,11 +471,6 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
             return ticks;
         }
 
-        @Override
-        public ResourceLocation getId() {
-            return id;
-        }
-
         public static class Builder implements RecipeBuilder {
             private final @Nullable ItemRecipeIngredient itemInput;
             private final @Nullable FluidRecipeIngredient fluidInput;
@@ -538,7 +508,6 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
             @Override
             public void save(RecipeOutput recipeOutput, @NotNull ResourceLocation id) {
                 Recipe recipe = new Recipe(
-                        id,
                         this.itemInput,
                         this.fluidInput,
                         this.itemOutput,

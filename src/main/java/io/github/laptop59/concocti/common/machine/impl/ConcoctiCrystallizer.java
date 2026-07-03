@@ -48,6 +48,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
@@ -180,11 +181,12 @@ public class ConcoctiCrystallizer extends ConcoctiMachineOnlyItemsFluids<
         @Override
         public boolean canProcess() {
             if (!super.canProcess()) return false;
-            Recipe recipe = getRecipe(getInput());
+            RecipeHolder<Recipe> recipeHolder = getRecipe(getInput());
+            if (recipeHolder == null) return false;
             // Check whether the resulting item can be placed in the tank.
             ItemStack output = getItem(OUTPUT_SLOT);
             if (!output.isEmpty()) {
-                return output.getCount() + recipe.getOutputItem().getCount() <= output.getMaxStackSize();
+                return output.getCount() + recipeHolder.value().getOutputItem().getCount() <= output.getMaxStackSize();
             }
             return true;
         }
@@ -237,47 +239,11 @@ public class ConcoctiCrystallizer extends ConcoctiMachineOnlyItemsFluids<
         private final ItemStack outputItem;
         private final int ticks;
 
-        private static final HashMap<Recipe, ResourceLocation> idMap = new HashMap<>();
-
-        static ResourceLocation makeResourceLocation(Recipe recipe) {
-            return makeResourceLocation(recipe.seedCrystal, recipe.inputFluid);
-        }
-
-        static ResourceLocation makeResourceLocation(ItemRecipeIngredient seedCrystal, FluidRecipeIngredient inputFluid) {
-            long hash = (long) seedCrystal.hashCode() << 32 | inputFluid.hashCode();
-            ResourceLocation fluidLoc = ResourceLocation.fromNamespaceAndPath(MODID, String.format("%016x", hash));
-            fluidLoc = fluidLoc.withPrefix("crystallization/").withSuffix("_with_" + String.format("%016x", seedCrystal.hashCode()));
-            return fluidLoc;
-        }
-
-        public Recipe(ResourceLocation id, ItemRecipeIngredient seedCrystal, FluidRecipeIngredient inputFluid, ItemStack outputItem, int ticks) {
-            this.seedCrystal = seedCrystal;
-            this.inputFluid = inputFluid;
-            this.outputItem = outputItem;
-            this.ticks = ticks;
-            idMap.put(this, id);
-        }
-
         public Recipe(ItemRecipeIngredient seedCrystal, FluidRecipeIngredient inputFluid, ItemStack outputItem, int ticks) {
             this.seedCrystal = seedCrystal;
             this.inputFluid = inputFluid;
             this.outputItem = outputItem;
             this.ticks = ticks;
-            idMap.put(this, makeResourceLocation(this));
-        }
-
-        static String getId(Ingredient ingredient) {
-            Ingredient.Value[] values = ingredient.getValues();
-            if (values[0] instanceof Ingredient.TagValue(TagKey<Item> tag)) {
-                return tag.location().getPath().replace('/', '_');
-            } else {
-                ItemStack firstStack = Arrays.stream(ingredient.getItems()).findFirst().orElseThrow();
-                return BuiltInRegistries.ITEM.getKey(firstStack.getItem()).getPath();
-            }
-        }
-
-        static String getId(ItemStack stack) {
-            return BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
         }
 
         public ItemRecipeIngredient getSeedCrystal() {
@@ -333,11 +299,6 @@ public class ConcoctiCrystallizer extends ConcoctiMachineOnlyItemsFluids<
             return ticks;
         }
 
-        @Override
-        public ResourceLocation getId() {
-            return idMap.get(this);
-        }
-
         public static class Builder implements RecipeBuilder {
             protected ItemRecipeIngredient seedCrystal;
             protected FluidRecipeIngredient inputFluid;
@@ -369,24 +330,8 @@ public class ConcoctiCrystallizer extends ConcoctiMachineOnlyItemsFluids<
             }
 
             @Override
-            public void save(@NotNull RecipeOutput recipeOutput) {
-                this.save(recipeOutput, makeResourceLocation(seedCrystal, inputFluid));
-            }
-
-            @Override
-            public void save(@NotNull RecipeOutput recipeOutput, @NotNull String id) {
-                ResourceLocation resourceLocation = makeResourceLocation(seedCrystal, inputFluid);
-                ResourceLocation idLocation = ResourceLocation.parse(id);
-                if (ResourceLocation.parse(id).equals(resourceLocation)) {
-                    throw new IllegalStateException("Recipe " + id + " should remove its 'save' argument as it is equal to default one");
-                } else {
-                    this.save(recipeOutput, idLocation);
-                }
-            }
-
-            @Override
             public void save(RecipeOutput recipeOutput, @NotNull ResourceLocation id) {
-                Recipe recipe = new Recipe(id, this.seedCrystal, this.inputFluid, this.outputItem, this.ticks);
+                Recipe recipe = new Recipe(this.seedCrystal, this.inputFluid, this.outputItem, this.ticks);
                 recipeOutput.accept(id, recipe, null);
             }
         }

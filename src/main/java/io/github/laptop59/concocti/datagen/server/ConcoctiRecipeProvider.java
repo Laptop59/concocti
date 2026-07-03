@@ -1174,6 +1174,38 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     ),
                     List.of()
             );
+            concoctiMultiblockRecipe(
+                    output,
+                    ConcoctiMachines.AUTOCLAVE,
+                    "lapis_lazuli_crystallization",
+                    15 * 20,
+                    List.of(
+                            ItemRecipeIngredient.of(Ingredient.of(Items.LAPIS_LAZULI), 1, true)
+                    ),
+                    List.of(
+                            FluidRecipeIngredient.of(ConcoctiFluids.MOLTEN_CONCOCTI.get(), ConcoctiConstants.MOLTEN_NUGGET * 4)
+                    ),
+                    List.of(
+                            ItemOutput.of(Items.LAPIS_LAZULI, 1)
+                    ),
+                    List.of()
+            );
+            concoctiMultiblockRecipe(
+                    output,
+                    ConcoctiMachines.AUTOCLAVE,
+                    "lapis_block_crystallization",
+                    8 * 15 * 20,
+                    List.of(
+                            ItemRecipeIngredient.of(Ingredient.of(Items.LAPIS_BLOCK), 1, true)
+                    ),
+                    List.of(
+                            FluidRecipeIngredient.of(ConcoctiFluids.MOLTEN_CONCOCTI.get(), ConcoctiConstants.MOLTEN_INGOT * 4)
+                    ),
+                    List.of(
+                            ItemOutput.of(Items.LAPIS_BLOCK, 1)
+                    ),
+                    List.of()
+            );
         }
 
         concoctiEnergyGeneratorRecipe(

@@ -25,7 +25,6 @@ import io.github.laptop59.concocti.common.menu.ResultSlot;
 import io.github.laptop59.concocti.common.recipe.*;
 import io.github.laptop59.concocti.common.machine.AbstractConcoctiRecipeCategory;
 import net.minecraft.advancements.Criterion;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -46,6 +45,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
@@ -263,8 +263,9 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
         @Override
         public boolean canProcess() {
             if (!super.canProcess()) return false;
-            Recipe recipe = getRecipe(getInput());
-            if (recipe == null) return false;
+            RecipeHolder<Recipe> recipeHolder = getRecipe(getInput());
+            if (recipeHolder == null) return false;
+            Recipe recipe = recipeHolder.value();
             if (!recipe.matches(new ItemsFluidsRecipeInput(inputItemHandler.get(), inputFluidHandler.get())))
                 return false;
             // Check whether the fluids obtained from this item will not exceed our fluid limit.
@@ -279,8 +280,7 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
             if (resultFluid != null && !resultFluid.stack().isEmpty() ) {
                 int actuallyFilled = fluidOutput.get().fill(resultFluid.stack(), IFluidHandler.FluidAction.SIMULATE);
                 int requiredFilled = resultFluid.stack().getAmount();
-                if (actuallyFilled != requiredFilled)
-                    return false;
+                return actuallyFilled == requiredFilled;
             }
             return true;
         }
@@ -331,19 +331,7 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
         private final List<FluidRecipeIngredient> inputFluids;
         private final FluidOutput outputFluid;
 
-        private final ResourceLocation id;
-
         private final int ticks;
-
-        // Add a constructor that sets all properties.
-        public Recipe(ResourceLocation id, List<ItemRecipeIngredient> inputItems, ItemOutput outputItem, List<FluidRecipeIngredient> inputFluids, FluidOutput outputFluid, int ticks) {
-            this.inputItems = inputItems;
-            this.outputItem = outputItem;
-            this.inputFluids = inputFluids;
-            this.outputFluid = outputFluid;
-            this.ticks = ticks;
-            this.id = id;
-        }
 
         public Recipe(List<ItemRecipeIngredient> inputItems, ItemOutput outputItem, List<FluidRecipeIngredient> inputFluids, FluidOutput outputFluid, int ticks) {
             this.inputItems = inputItems;
@@ -351,18 +339,6 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
             this.inputFluids = inputFluids;
             this.outputFluid = outputFluid;
             this.ticks = ticks;
-            this.id = getWouldBeResourceLocation(inputItems, inputFluids);
-        }
-
-        public static ResourceLocation getWouldBeResourceLocation(List<ItemRecipeIngredient> inputItems, List<FluidRecipeIngredient> inputFluids) {
-            int[] hashes = new int[2];
-            ArrayList<Object> objects = new ArrayList<>(inputItems);
-            hashes[0] = Objects.hash(objects.toArray());
-            objects.clear();
-            objects.addAll(inputFluids);
-            hashes[1] = Objects.hash(objects.toArray());
-            long longHash = ((long) hashes[0] << 32) | hashes[1];
-            return ResourceLocation.fromNamespaceAndPath(MODID, String.format("mixing/%016x", longHash));
         }
 
         public List<ItemRecipeIngredient> getInputItems() {
@@ -439,11 +415,6 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
             return ticks;
         }
 
-        @Override
-        public ResourceLocation getId() {
-            return id;
-        }
-
         public static class Builder implements RecipeBuilder {
             protected final List<ItemRecipeIngredient> inputItems;
             protected final ItemOutput outputItem;
@@ -481,7 +452,6 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
             @Override
             public void save(RecipeOutput recipeOutput, @NotNull ResourceLocation id) {
                 Recipe recipe = new Recipe(
-                        id,
                         this.inputItems,
                         this.outputItem,
                         this.inputFluids,

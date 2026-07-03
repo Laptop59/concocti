@@ -75,7 +75,10 @@ public class ConcoctiJeiPlugin implements IModPlugin {
             ConcoctiMachine<?, ?, ?, I, R, ?, ?, ?, ?> machine
     ) {
         registerRecipesFor(registration, manager, machine.RECIPE_TYPE.get(), getJeiRecipeType(machine));
-        registration.addRecipes(getJeiRecipeType(machine), machine.getRecipeProxies());
+        registration.addRecipes(
+                getJeiRecipeType(machine),
+                machine.getRecipeProxies().stream().map(RecipeHolder::value).toList()
+        );
     }
 
     public static <R extends ProcessingRecipe<R, I>, I extends RecipeInput> List<R> getJeiRecipes(
@@ -87,9 +90,10 @@ public class ConcoctiJeiPlugin implements IModPlugin {
                 .getAllRecipesFor(recipeType)
                 .stream()
                 .map(RecipeHolder::value)
-                .sorted()
                 .collect(Collectors.toCollection(ArrayList::new));
-        recipes.addAll(machine.getRecipeProxies());
+        for (RecipeHolder<R> recipeHolder : machine.getRecipeProxies()) {
+            recipes.add(recipeHolder.value());
+        }
         return recipes;
     }
 
@@ -120,7 +124,6 @@ public class ConcoctiJeiPlugin implements IModPlugin {
                 .getAllRecipesFor(type)
                 .stream()
                 .map(RecipeHolder::value)
-                .sorted()
                 .toList();
         registration.addRecipes(jeiType, recipes);
     }

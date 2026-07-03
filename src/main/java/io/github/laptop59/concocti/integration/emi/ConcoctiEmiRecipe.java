@@ -22,7 +22,7 @@ import java.util.List;
 
 public class ConcoctiEmiRecipe<R extends ProcessingRecipe<R, ? extends RecipeInput>> implements EmiRecipe {
     protected EmiRecipeCategory category;
-    protected R recipe;
+    protected RecipeHolder<R> recipeHolder;
     protected AbstractConcoctiRecipeCategory<R> internalCategory;
     protected int[] indices;
 
@@ -30,9 +30,9 @@ public class ConcoctiEmiRecipe<R extends ProcessingRecipe<R, ? extends RecipeInp
      * - a {@link net.neoforged.neoforge.fluids.crafting.FluidIngredient} is used <br>
      * - a {@link io.github.laptop59.concocti.common.recipe.ItemRecipeIngredient} or {@link io.github.laptop59.concocti.common.recipe.FluidRecipeIngredient} is used.
      */
-    ConcoctiEmiRecipe(EmiRecipeCategory category, R recipe, AbstractConcoctiRecipeCategory<R> internalCategory, int[] indices) {
+    ConcoctiEmiRecipe(EmiRecipeCategory category, RecipeHolder<R> recipeHolder, AbstractConcoctiRecipeCategory<R> internalCategory, int[] indices) {
         this.category = category;
-        this.recipe = recipe;
+        this.recipeHolder = recipeHolder;
         this.internalCategory = internalCategory;
         this.indices = indices;
     }
@@ -43,12 +43,20 @@ public class ConcoctiEmiRecipe<R extends ProcessingRecipe<R, ? extends RecipeInp
     }
 
     public R getRecipe() {
-        return recipe;
+        return recipeHolder.value();
     }
 
     @Override
     public @Nullable ResourceLocation getId() {
-        return recipe.getId();
+        if (indices.length != 0) {
+            StringBuilder path = new StringBuilder("/" + recipeHolder.id().getPath());
+            for (int index : indices) {
+                path.append('/');
+                path.append(index);
+            }
+            return recipeHolder.id().withPath(path.toString());
+        }
+        return recipeHolder.id();
     }
 
     @Override
@@ -56,7 +64,7 @@ public class ConcoctiEmiRecipe<R extends ProcessingRecipe<R, ? extends RecipeInp
         ArrayList<EmiIngredient> list = new ArrayList<>();
         EmiRecipeBuilder emiRecipeBuilder = new EmiRecipeBuilder(list, null, null, null, this);
         emiRecipeBuilder.reset(); // VERY IMPORTANT!
-        internalCategory.set(emiRecipeBuilder, recipe); // Adds inputs in this function
+        internalCategory.set(emiRecipeBuilder, recipeHolder.value()); // Adds inputs in this function
         return list;
     }
 
@@ -65,7 +73,7 @@ public class ConcoctiEmiRecipe<R extends ProcessingRecipe<R, ? extends RecipeInp
         ArrayList<EmiIngredient> list = new ArrayList<>();
         EmiRecipeBuilder emiRecipeBuilder = new EmiRecipeBuilder(null, null, list, null, this);
         emiRecipeBuilder.reset(); // VERY IMPORTANT!
-        internalCategory.set(emiRecipeBuilder, recipe); // Adds catalysts in this function
+        internalCategory.set(emiRecipeBuilder, recipeHolder.value()); // Adds catalysts in this function
         return list;
     }
 
@@ -74,18 +82,18 @@ public class ConcoctiEmiRecipe<R extends ProcessingRecipe<R, ? extends RecipeInp
         ArrayList<EmiStack> list = new ArrayList<>();
         EmiRecipeBuilder emiRecipeBuilder = new EmiRecipeBuilder(null, list, null, null, this);
         emiRecipeBuilder.reset(); // VERY IMPORTANT!
-        internalCategory.set(emiRecipeBuilder, recipe); // Adds outputs in this function
+        internalCategory.set(emiRecipeBuilder, recipeHolder.value()); // Adds outputs in this function
         return list;
     }
 
     @Override
     public int getDisplayWidth() {
-        return internalCategory.getWidth(recipe);
+        return internalCategory.getWidth(recipeHolder.value());
     }
 
     @Override
     public int getDisplayHeight() {
-        return internalCategory.getHeight(recipe);
+        return internalCategory.getHeight(recipeHolder.value());
     }
 
     @Override
@@ -93,17 +101,17 @@ public class ConcoctiEmiRecipe<R extends ProcessingRecipe<R, ? extends RecipeInp
         widgets.add(new Widget() {
             @Override
             public Bounds getBounds() {
-                return new Bounds(0, 0, internalCategory.getWidth(recipe), internalCategory.getHeight(recipe));
+                return new Bounds(0, 0, internalCategory.getWidth(recipeHolder.value()), internalCategory.getHeight(recipeHolder.value()));
             }
 
             @Override
             public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
-                internalCategory.render(recipe, guiGraphics, mouseX, mouseY);
+                internalCategory.render(recipeHolder.value(), guiGraphics, mouseX, mouseY);
             }
         });
         EmiRecipeBuilder emiRecipeBuilder = new EmiRecipeBuilder(null, null, null, widgets, this);
         emiRecipeBuilder.reset(); // VERY IMPORTANT!
-        internalCategory.set(emiRecipeBuilder, recipe); // Adds items last
+        internalCategory.set(emiRecipeBuilder, recipeHolder.value()); // Adds items last
 
         // Add tooltips
         widgets.add(new Widget() {
@@ -115,7 +123,7 @@ public class ConcoctiEmiRecipe<R extends ProcessingRecipe<R, ? extends RecipeInp
             @Override
             public void render(GuiGraphics draw, int mouseX, int mouseY, float delta) {
                 ArrayList<Component> tooltips = new ArrayList<>();
-                internalCategory.tooltip(tooltips, recipe, mouseX, mouseY);
+                internalCategory.tooltip(tooltips, recipeHolder.value(), mouseX, mouseY);
                 if (tooltips.isEmpty()) return;
                 draw.renderComponentTooltip(
                     Minecraft.getInstance().font,
@@ -134,6 +142,6 @@ public class ConcoctiEmiRecipe<R extends ProcessingRecipe<R, ? extends RecipeInp
 
     @Nullable
     public RecipeHolder<R> getBackingRecipe() {
-        return new RecipeHolder<>(recipe.getId(), recipe);
+        return new RecipeHolder<>(recipeHolder.id(), recipeHolder.value());
     }
 }

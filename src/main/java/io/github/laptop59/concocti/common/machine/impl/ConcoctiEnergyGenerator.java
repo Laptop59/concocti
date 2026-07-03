@@ -5,6 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.laptop59.concocti.client.gui.AbstractConcoctiMachineScreen;
 import io.github.laptop59.concocti.client.gui.components.*;
+import io.github.laptop59.concocti.common.Concocti;
 import io.github.laptop59.concocti.common.ConcoctiSounds;
 import io.github.laptop59.concocti.common.abstraction.ConcoctiMachineComplexion;
 import io.github.laptop59.concocti.common.abstraction.Property;
@@ -165,7 +166,8 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
          */
         public int getFuelTicksFromOneInputItem() {
             ItemStack input = getInputStack();
-            if (getRecipe(getInput()) instanceof Recipe recipe) {
+            RecipeHolder<Recipe> recipeHolder = getRecipe(getInput());
+            if (recipeHolder != null && recipeHolder.value() instanceof Recipe recipe) {
                 return recipe.ticks;
             }
             Holder<Item> holder = input.getItemHolder();
@@ -226,7 +228,7 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
         }
 
         protected int getEnergyPerTick() {
-            return this.lastRecipe == null ? DEFAULT_ENERGY_PER_TICK : this.lastRecipe.fePerTick;
+            return this.lastRecipe == null ? DEFAULT_ENERGY_PER_TICK : this.lastRecipe.value().fePerTick;
         }
 
         @Override
@@ -350,27 +352,10 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
         private final int ticks;
         private final int fePerTick;
 
-        private static final HashMap<Ingredient, ResourceLocation> idMap = new HashMap<>();
-
-        // Add a constructor that sets all properties.
-        public Recipe(ResourceLocation id, Ingredient inputItem, int ticks, int fePerTick) {
-            this.inputItem = inputItem;
-            this.fePerTick = fePerTick;
-            this.ticks = ticks;
-            idMap.put(inputItem, id);
-        }
-
         public Recipe(Ingredient inputItem, int ticks, int fePerTick) {
             this.inputItem = inputItem;
             this.fePerTick = fePerTick;
             this.ticks = ticks;
-            idMap.put(inputItem, Arrays.stream(inputItem.getItems()).findFirst()
-                    .map(s -> BuiltInRegistries.ITEM.getKey(s.getItem()))
-                    .map(l -> ResourceLocation.fromNamespaceAndPath(
-                            l.getNamespace(), "energy_generating/" + l.getPath()
-                    ))
-                    .orElse(null)
-            );
         }
 
         public Ingredient getInputItem() {
@@ -434,11 +419,6 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
             return fePerTick;
         }
 
-        @Override
-        public ResourceLocation getId() {
-            return idMap.getOrDefault(inputItem, null);
-        }
-
 
         public static class Builder implements RecipeBuilder {
             protected final Ingredient inputItem;
@@ -475,24 +455,8 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
             }
 
             @Override
-            public void save(@NotNull RecipeOutput recipeOutput) {
-                this.save(recipeOutput, getDefaultRecipeId(inputItem));
-            }
-
-            @Override
-            public void save(@NotNull RecipeOutput recipeOutput, @NotNull String id) {
-                ResourceLocation resourceLocation = getDefaultRecipeId(inputItem);
-                ResourceLocation idLocation = ResourceLocation.parse(id);
-                if (ResourceLocation.parse(id).equals(resourceLocation)) {
-                    throw new IllegalStateException("Recipe " + id + " should remove its 'save' argument as it is equal to default one");
-                } else {
-                    this.save(recipeOutput, idLocation);
-                }
-            }
-
-            @Override
             public void save(RecipeOutput recipeOutput, @NotNull ResourceLocation id) {
-                Recipe recipe = new Recipe(id, this.inputItem, this.ticks, this.fePerTick);
+                Recipe recipe = new Recipe(this.inputItem, this.ticks, this.fePerTick);
                 recipeOutput.accept(id, recipe, null);
             }
         }
@@ -638,13 +602,13 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
     }
 
     /** Gets ''fake'' recipes (proxies) of fuels. MUST BE CALLED ONLY WHEN IN-GAME! */
-    public List<Recipe> getRecipeProxies() {
+    public List<RecipeHolder<Recipe>> getRecipeProxies() {
         assert Minecraft.getInstance().level != null;
 
         RecipeManager recipeManager = Minecraft.getInstance().level.getRecipeManager();
         final var itemRegistry = Minecraft.getInstance().level.registryAccess().registryOrThrow(Registries.ITEM);
         var datamap = itemRegistry.getDataMap(NeoForgeDataMaps.FURNACE_FUELS);
-        ArrayList<ConcoctiEnergyGenerator.Recipe> proxies = new ArrayList<>();
+        ArrayList<RecipeHolder<Recipe>> proxies = new ArrayList<>();
         Set<Ingredient> unproxiedIngredients = recipeManager
             .getAllRecipesFor(ConcoctiMachines.ENERGY_GENERATOR.RECIPE_TYPE.get())
             .stream()
@@ -659,12 +623,18 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
             for (Ingredient ingredient : unproxiedIngredients) {
                 if (ingredient.test(new ItemStack(item, 1))) continue outer;
             }
-            ConcoctiEnergyGenerator.Recipe proxy = new ConcoctiEnergyGenerator.Recipe(
+            Recipe proxy = new ConcoctiEnergyGenerator.Recipe(
                 Ingredient.of(item),
                 entry.getValue().burnTime(),
                 ConcoctiEnergyGenerator.BlockEntity.DEFAULT_ENERGY_PER_TICK
             );
-            proxies.add(proxy);
+            ResourceLocation resourceLocation = entry.getKey().location();
+            proxies.add(new RecipeHolder<>(
+                    ResourceLocation.fromNamespaceAndPath(
+                            MODID, "/proxy/" + ID + "/" + resourceLocation.getNamespace() + "/" + resourceLocation.getPath()
+                    ),
+                    proxy
+            ));
         }
         return proxies;
     }

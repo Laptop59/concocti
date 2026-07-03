@@ -1,10 +1,8 @@
 package io.github.laptop59.concocti.common.recipe;
 
-import com.google.common.primitives.UnsignedLong;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.github.laptop59.concocti.common.machine.impl.ConcoctiMixer;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
@@ -21,9 +19,6 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.crafting.SizedIngredient;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.crafting.SizedFluidIngredient;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -146,11 +141,6 @@ public abstract class AbstractConcoctiMultiblockRecipe<T extends AbstractConcoct
     @Override
     public int getTicks() {
         return ticks;
-    }
-
-    @Override
-    public ResourceLocation getId() {
-        return id;
     }
 
     public abstract static class Builder<T extends AbstractConcoctiMultiblockRecipe<T>> implements RecipeBuilder {

@@ -40,6 +40,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
@@ -59,8 +60,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
-
-import static io.github.laptop59.concocti.common.Concocti.MODID;
 
 public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
         ConcoctiCompressor.BlockEntity,
@@ -240,8 +239,9 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
         @Override
         public boolean canProcess() {
             if (!super.canProcess()) return false;
-            Recipe recipe = getRecipe(getInput());
-            if (recipe == null) return false;
+            RecipeHolder<Recipe> recipeHolder = getRecipe(getInput());
+            if (recipeHolder == null) return false;
+            Recipe recipe = recipeHolder.value();
             if (!recipe.matches(new ItemsFluidsRecipeInput(inputItemHandler.get(), inputFluidHandler.get())))
                 return false;
             // Check whether the fluids obtained from this item will not exceed our fluid limit.
@@ -311,38 +311,15 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
         private final List<FluidRecipeIngredient> inputFluids;
         private final FluidOutput outputFluid;
 
-        private final ResourceLocation id;
-
         private final int ticks;
 
         // Add a constructor that sets all properties.
-        public Recipe(ResourceLocation id, List<ItemRecipeIngredient> inputItems, ItemOutput outputItem, List<FluidRecipeIngredient> inputFluids, FluidOutput outputFluid, int ticks) {
-            this.inputItems = inputItems;
-            this.outputItem = outputItem;
-            this.inputFluids = inputFluids;
-            this.outputFluid = outputFluid;
-            this.ticks = ticks;
-            this.id = id;
-        }
-
         public Recipe(List<ItemRecipeIngredient> inputItems, ItemOutput outputItem, List<FluidRecipeIngredient> inputFluids, FluidOutput outputFluid, int ticks) {
             this.inputItems = inputItems;
             this.outputItem = outputItem;
             this.inputFluids = inputFluids;
             this.outputFluid = outputFluid;
             this.ticks = ticks;
-            this.id = getWouldBeResourceLocation(inputItems, inputFluids);
-        }
-
-        public static ResourceLocation getWouldBeResourceLocation(List<ItemRecipeIngredient> inputItems, List<FluidRecipeIngredient> inputFluids) {
-            int[] hashes = new int[2];
-            ArrayList<Object> objects = new ArrayList<>(inputItems);
-            hashes[0] = Objects.hash(objects.toArray());
-            objects.clear();
-            objects.addAll(inputFluids);
-            hashes[1] = Objects.hash(objects.toArray());
-            long longHash = ((long) hashes[0] << 32) | hashes[1];
-            return ResourceLocation.fromNamespaceAndPath(MODID, String.format("compressing/%016x", longHash));
         }
 
         public List<ItemRecipeIngredient> getInputItems() {
@@ -419,11 +396,6 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
             return ticks;
         }
 
-        @Override
-        public ResourceLocation getId() {
-            return id;
-        }
-
         public static class Builder implements net.minecraft.data.recipes.RecipeBuilder {
             protected final List<ItemRecipeIngredient> inputItems;
             protected final ItemOutput outputItem;
@@ -461,7 +433,6 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
             @Override
             public void save(RecipeOutput recipeOutput, @NotNull ResourceLocation id) {
                 Recipe recipe = new Recipe(
-                        id,
                         this.inputItems,
                         this.outputItem,
                         this.inputFluids,
