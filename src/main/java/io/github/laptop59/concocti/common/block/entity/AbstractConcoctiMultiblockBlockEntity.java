@@ -11,11 +11,13 @@ import io.github.laptop59.concocti.common.detail.DetailHolders;
 import io.github.laptop59.concocti.common.detail.Details;
 import io.github.laptop59.concocti.common.energy.MergedEnergyStorage;
 import io.github.laptop59.concocti.common.energy.ViewOnlyEnergyStorage;
+import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTank;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTankHandler;
 import io.github.laptop59.concocti.common.fluid.MergedViewOnlyFluidHandler;
 import io.github.laptop59.concocti.common.fluid.ViewOnlyFluidHandler;
 import io.github.laptop59.concocti.common.item.MergedItemHandler;
 import io.github.laptop59.concocti.common.item.ViewOnlyItemHandler;
+import io.github.laptop59.concocti.common.machine.ConcoctiMultiBlockMachine;
 import io.github.laptop59.concocti.common.machine.FluidTankHolder;
 import io.github.laptop59.concocti.common.machine.ItemsFluidsInputValue;
 import io.github.laptop59.concocti.common.machine.SettingsHolder;
@@ -329,7 +331,7 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
     /**
      * Gets all the separate handlers of fluid stacks of this machine, which are indexed consistently.
      */
-    public List<IFluidHandler> getIndexedFluidHandlers() {
+    public List<ConcoctiFluidTank> getIndexedFluidHandlers() {
         return List.of();
     }
 
@@ -424,15 +426,10 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
     /**
      * A basic implementation of a Concocti Machine's server tick.
      */
-    public void tick(Level level, BlockPos pos, BlockState state) {
+    protected void tickMachineSpecific(Level level, BlockPos pos, BlockState state) {
         ticksProcessed = 0;
 
         AbstractConcoctiMultiblockBlockEntity<T, R> entity = this;
-        int currentUpgradeUnits = ConcoctiUpgradeSlot.getUpgradeUnits(entity.getItem(UPGRADE_SLOT));
-        if (currentUpgradeUnits != entity.lastUpgradeUnits) {
-            entity.lastUpgradeUnits = currentUpgradeUnits;
-            entity.setNewEnergyMultiplier(entity.getInefficientEnergyMultiplier());
-        }
         if (entity.ticksLeft >= entity.totalTicks) entity.lastRecipe = null;
         int consumableTicks = getTickMultiplier();
         // int subticks = 0;
@@ -502,6 +499,7 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
         // Fill in the total ticks.
         this.totalTicks = tag.getInt("total_ticks");
         this.buildPreview = tag.contains("build_preview") && tag.getBoolean("build_preview");
+
         deserialize(new DetailContext(tag, registries, null));
     }
 
@@ -622,5 +620,10 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
     public void changeBuildPreview() {
         buildPreview = !buildPreview;
         updateMultiblockState();
+    }
+
+    @Override
+    public Object getExtraData() {
+        return new ConcoctiMultiBlockMachine.Extra(valid, buildPreview);
     }
 }

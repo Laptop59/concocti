@@ -12,6 +12,7 @@ import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineOn
 import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
 import io.github.laptop59.concocti.common.detail.DetailCodec;
 import io.github.laptop59.concocti.common.detail.DetailHolder;
+import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTank;
 import io.github.laptop59.concocti.common.machine.*;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.menu.ResultSlot;
@@ -47,7 +48,6 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -177,20 +177,20 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
     public static class BlockEntity extends AbstractConcoctiMachineOnlyItemsFluidsBlockEntity
             <BlockEntity, Menu, Recipe> {
 
-        private final DetailHolder<FluidTank> fluidInput1 = new DetailHolder<>(
-                DetailCodec.FLUID_TANK, "fluid_input_1", new FluidTank(TANK_CAPACITY), this
+        private final DetailHolder<ConcoctiFluidTank> fluidInput1 = new DetailHolder<>(
+                DetailCodec.FLUID_TANK, "fluid_input_1", new ConcoctiFluidTank(TANK_CAPACITY), this
         );
-        private final DetailHolder<FluidTank> fluidInput2 = new DetailHolder<>(
-                DetailCodec.FLUID_TANK, "fluid_input_2", new FluidTank(TANK_CAPACITY), this
+        private final DetailHolder<ConcoctiFluidTank> fluidInput2 = new DetailHolder<>(
+                DetailCodec.FLUID_TANK, "fluid_input_2", new ConcoctiFluidTank(TANK_CAPACITY), this
         );
-        private final DetailHolder<FluidTank> fluidInput3 = new DetailHolder<>(
-                DetailCodec.FLUID_TANK, "fluid_input_3", new FluidTank(TANK_CAPACITY), this
+        private final DetailHolder<ConcoctiFluidTank> fluidInput3 = new DetailHolder<>(
+                DetailCodec.FLUID_TANK, "fluid_input_3", new ConcoctiFluidTank(TANK_CAPACITY), this
         );
-        private final DetailHolder<FluidTank> fluidInput4 = new DetailHolder<>(
-                DetailCodec.FLUID_TANK, "fluid_input_4", new FluidTank(TANK_CAPACITY), this
+        private final DetailHolder<ConcoctiFluidTank> fluidInput4 = new DetailHolder<>(
+                DetailCodec.FLUID_TANK, "fluid_input_4", new ConcoctiFluidTank(TANK_CAPACITY), this
         );
-        private final DetailHolder<FluidTank> fluidOutput = new DetailHolder<>(
-                DetailCodec.FLUID_TANK, "fluid_output", new FluidTank(TANK_CAPACITY * 2), this
+        private final DetailHolder<ConcoctiFluidTank> fluidOutput = new DetailHolder<>(
+                DetailCodec.FLUID_TANK, "fluid_output", new ConcoctiFluidTank(TANK_CAPACITY * 2), this
         );
 
         @Override
@@ -199,7 +199,7 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
         }
 
         @Override
-        public List<IFluidHandler> getIndexedFluidHandlers() {
+        public List<ConcoctiFluidTank> getIndexedFluidHandlers() {
             return List.of(
                     fluidInput1.get(),
                     fluidInput2.get(),

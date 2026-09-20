@@ -1,9 +1,9 @@
 package io.github.laptop59.concocti.common.machine;
 
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTank;
 
 import java.util.List;
 
 public interface FluidTankHolder {
-    List<IFluidHandler> getIndexedFluidHandlers();
+    List<ConcoctiFluidTank> getIndexedFluidHandlers();
 }

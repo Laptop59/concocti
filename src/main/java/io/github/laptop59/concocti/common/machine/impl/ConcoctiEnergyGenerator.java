@@ -173,14 +173,10 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
         }
 
         @Override
-        public void tick(Level level, BlockPos pos, BlockState state) {
+        protected void tickMachineSpecific(Level level, BlockPos pos, BlockState state) {
             BlockEntity entity = this;
 
             int currentUpgradeUnits = ConcoctiUpgradeSlot.getUpgradeUnits(entity.getItem(UPGRADE_SLOT));
-            if (currentUpgradeUnits != entity.lastUpgradeUnits) {
-                entity.lastUpgradeUnits = currentUpgradeUnits;
-                entity.setNewEnergyMultiplier(entity.getInefficientEnergyMultiplier());
-            }
             if (--entity.autoCooldown <= 0) {
                 entity.autoCooldown = AUTO_COOLDOWN;
                 entity.attemptToPull();

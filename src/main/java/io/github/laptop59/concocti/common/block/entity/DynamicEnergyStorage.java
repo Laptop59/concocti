@@ -15,6 +15,8 @@ public class DynamicEnergyStorage extends EnergyStorage {
     public static int INPUT_FLAG = 0x01;
     public static int OUTPUT_FLAG = 0x02;
 
+    protected boolean dirty = false;
+
     public enum Mode {
         NONE(NONE_FLAG),
         INPUT_ONLY(INPUT_FLAG),
@@ -38,11 +40,17 @@ public class DynamicEnergyStorage extends EnergyStorage {
     }
 
     public void setMaxEnergy(int capacity) {
+        if (this.capacity != capacity) {
+            dirty = true;
+        }
         this.capacity = capacity;
         if (energy > capacity) energy = capacity;
     }
 
     public void setMaxEnergyTransfer(int transfer) {
+        if (this.maxReceive != transfer || this.maxExtract != transfer) {
+            dirty = true;
+        }
         this.maxReceive = transfer;
         this.maxExtract = transfer;
     }
@@ -61,6 +69,16 @@ public class DynamicEnergyStorage extends EnergyStorage {
         return this.maxReceive > 0;
     }
 
+    @Override
+    public int receiveEnergy(int toReceive, boolean simulate) {
+        return canReceive() ? forceReceiveEnergy(toReceive, simulate) : 0;
+    }
+
+    @Override
+    public int extractEnergy(int toExtract, boolean simulate) {
+        return canExtract() ? forceExtractEnergy(toExtract, simulate) : 0;
+    }
+
     public int forceReceiveEnergy(int toReceive, boolean simulate) {
         if (toReceive <= 0) {
             return 0;
@@ -69,6 +87,9 @@ public class DynamicEnergyStorage extends EnergyStorage {
         int energyReceived = Mth.clamp(this.capacity - this.energy, 0, Math.min(this.maxReceive, toReceive));
         if (!simulate)
             this.energy += energyReceived;
+        if (energyReceived != 0) {
+            dirty = true;
+        }
         return energyReceived;
     }
 
@@ -80,6 +101,19 @@ public class DynamicEnergyStorage extends EnergyStorage {
         int energyExtracted = Math.min(this.energy, Math.min(this.maxExtract, toExtract));
         if (!simulate)
             this.energy -= energyExtracted;
+        if (energyExtracted != 0) {
+            dirty = true;
+        }
         return energyExtracted;
+    }
+
+    public boolean isDirty() {
+        return dirty;
+    }
+
+    public boolean clearDirtyFlag() {
+        boolean flag = dirty;
+        dirty = false;
+        return flag;
     }
 }

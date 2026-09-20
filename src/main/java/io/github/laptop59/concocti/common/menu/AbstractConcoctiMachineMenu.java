@@ -50,12 +50,12 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
         super(menuSupplier.get(), containerId);
         this.container = new SimpleContainer(containerSize);
         // Sync the data.
-        updateSyncedData(SyncedMachineData.STREAM_CODEC.decode(buf));
+        updateWithSyncedData(SyncedMachineData.STREAM_CODEC.decode(buf));
         // Place the machine, player inventory and hotbar slots.
         addSlots(playerInventory);
     }
 
-    protected void updateSyncedData(SyncedMachineData data) {
+    public void updateWithSyncedData(SyncedMachineData data) {
         this.syncedBase = data.base();
         this.syncedSettings = data.settings();
         if (syncedFluids == null) {
