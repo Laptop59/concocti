@@ -380,9 +380,9 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
     @Override
     protected @NotNull AbstractContainerMenu createMenu(int containerId, @NotNull Inventory inventory) {
         return switch (getBlock().getType()) {
-            case ITEM -> new ConcoctiItemHatchMenu(containerId, inventory, this, dataAccess);
-            case FLUID -> new ConcoctiFluidHatchMenu(containerId, inventory, this, dataAccess);
-            case ENERGY -> new ConcoctiEnergyHatchMenu(containerId, inventory, this, dataAccess);
+            case ITEM -> new ConcoctiItemHatchMenu(containerId, inventory, this);
+            case FLUID -> new ConcoctiFluidHatchMenu(containerId, inventory, this);
+            case ENERGY -> new ConcoctiEnergyHatchMenu(containerId, inventory, this);
         };
     }
 

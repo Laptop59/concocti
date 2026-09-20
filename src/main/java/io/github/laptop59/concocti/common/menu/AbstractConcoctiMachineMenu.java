@@ -1,13 +1,12 @@
 package io.github.laptop59.concocti.common.menu;
 
 import io.github.laptop59.concocti.client.gui.components.MachineSettingsSlots;
-import io.github.laptop59.concocti.common.abstraction.Complexion;
-import io.github.laptop59.concocti.common.abstraction.ComplexionViewer;
 import io.github.laptop59.concocti.common.abstraction.Properties;
 import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -25,14 +24,16 @@ import java.util.function.Supplier;
 
 /**
  * A class which serves as a base for a Concocti Machine's menu.
+ * If you want to sync extra data for this machine type, look at {@link AbstractConcoctiMachineMenuSyncedExtra}.
  *
  * @param <T> The type of menu. Should be itself.
  */
 public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMachineMenu<T>> extends AbstractContainerMenu {
-
     protected final Container container;
-    protected final ContainerData data;
-    public ComplexionViewer viewer;
+
+    protected SyncedMachineData.Base syncedBase;
+    protected SyncedMachineData.Settings syncedSettings;
+    protected SyncedFluids syncedFluids;
 
     protected final List<Property<?>> BASE_PROPERTIES = List.of(
             Properties.TICKS_LEFT,
@@ -47,41 +48,36 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
             Properties.PULL_ON
     );
 
-    // client constructor
-    public AbstractConcoctiMachineMenu(
-            int containerId, Inventory playerInventory, int containerSize, Supplier<MenuType<T>> menuSupplier
-    ) {
-        this(containerId, playerInventory, new SimpleContainer(containerSize), menuSupplier, false);
-        initializeViewer((SimpleContainerData) this.data);
-    }
-
     // server constructor
-    public AbstractConcoctiMachineMenu(
-            int containerId, Inventory playerInventory, Container container, ContainerData data,
-            Supplier<MenuType<T>> menuSupplier) {
-        this(containerId, playerInventory, container, data, menuSupplier, false);
-        initializeViewer((Complexion) data);
-    }
-
-
-    private AbstractConcoctiMachineMenu(
+    protected AbstractConcoctiMachineMenu(
             int containerId, Inventory playerInventory, Container container,
-            Supplier<MenuType<T>> menuSupplier, boolean ignoredViewer) {
+            Supplier<MenuType<T>> menuSupplier) {
         super(menuSupplier.get(), containerId);
         this.container = container;
-        this.data = new SimpleContainerData(getPropertiesSize());
         // Place the machine, player inventory and hotbar slots.
         addSlots(playerInventory);
     }
 
-    private AbstractConcoctiMachineMenu(
-            int containerId, Inventory playerInventory, Container container, ContainerData data,
-            Supplier<MenuType<T>> menuSupplier, boolean ignoredViewer) {
+    // client constructor
+    protected AbstractConcoctiMachineMenu(
+            int containerId, Inventory playerInventory, int containerSize, RegistryFriendlyByteBuf buf,
+            Supplier<MenuType<T>> menuSupplier) {
         super(menuSupplier.get(), containerId);
-        this.container = container;
-        this.data = data;
+        this.container = new SimpleContainer(containerSize);
+        // Sync the data.
+        updateSyncedData(SyncedMachineData.STREAM_CODEC.decode(buf));
         // Place the machine, player inventory and hotbar slots.
         addSlots(playerInventory);
+    }
+
+    protected void updateSyncedData(SyncedMachineData data) {
+        this.syncedBase = data.base();
+        this.syncedSettings = data.settings();
+        if (syncedFluids == null) {
+            syncedFluids = new SyncedFluids(data.fluids());
+        } else {
+            syncedFluids.sync(data.fluids());
+        }
     }
 
     protected void addSlots(Inventory playerInventory) {
@@ -98,8 +94,6 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
         for (int k = 0; k < 9; k++) {
             this.addSlot(new Slot(playerInventory, k, 8 + k * 18, 142));
         }
-
-        this.addDataSlots(data);
     }
 
     /**
@@ -114,59 +108,32 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
         return properties;
     }
 
-    protected int getPropertiesSize() {
-        int size = 0;
-        for (Property<?> property : getMachineProperties())
-            size += property.codec().size();
-        return size;
-    }
-
-    protected void initializeViewer(SimpleContainerData containerData) {
-        AbstractConcoctiMachineMenu<T> menu = this;
-        viewer = new ComplexionViewer(containerData) {
-            @Override
-            public List<Property<?>> getProperties() {
-                return menu.getMachineProperties();
-            }
-        };
-    }
-
-    protected void initializeViewer(Complexion containerData) {
-        AbstractConcoctiMachineMenu<T> menu = this;
-        viewer = new ComplexionViewer(containerData) {
-            @Override
-            public List<Property<?>> getProperties() {
-                return menu.getMachineProperties();
-            }
-        };
-    }
-
     /**
      * Gets the machine settings slots associated with this menu.
      */
     public MachineSettingsSlots getMachineSettingsSlots() {
-        return viewer.get(Properties.MACHINE_SETTINGS_SLOTS);
+        return syncedSettings.machineSettingsSlots();
     }
 
     /**
      * Whether this machine is set to eject.
      */
     public boolean shouldEject() {
-        return viewer.get(Properties.EJECT_ON);
+        return syncedSettings.ejectOn();
     }
 
     /**
      * Whether this machine is set to pull.
      */
     public boolean shouldPull() {
-        return viewer.get(Properties.PULL_ON);
+        return syncedSettings.pullOn();
     }
 
     /**
      * Gets the facing direction of this machine.
      */
     public Direction getFacingDirection() {
-        return viewer.get(Properties.FACING_DIRECTION);
+        return syncedSettings.facingDirection();
     }
 
     /**
@@ -257,16 +224,37 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
         return this.slots.subList(0, container.getContainerSize());
     }
 
+    /**
+     * Gets the ticks remaining before the recipe completes.
+     */
+    public int getTicksLeft() {
+        return syncedBase.ticksLeft();
+    }
+
+    /**
+     * Gets the total number of ticks the current recipe requires.
+     */
+    public int getTotalTicks() {
+        return syncedBase.totalTicks();
+    }
+
+    /**
+     * Gets the current ticks advanced per game tick.
+     */
+    public int getTickMultiplier() {
+        return syncedBase.tickMultiplier();
+    }
+
     public float getProgress() {
-        int left = viewer.get(Properties.TICKS_LEFT);
-        int total = viewer.get(Properties.TOTAL_TICKS);
+        int left = getTicksLeft();
+        int total = getTotalTicks();
         return left != 0 && total != 0 ? Mth.clamp((float) (total - left) / total, 0.0F, 1.0F) : 0.0F;
     }
 
     public float getInterpolatedProgress(float partialTick) {
-        int left = viewer.get(Properties.TICKS_LEFT);
-        int total = viewer.get(Properties.TOTAL_TICKS);
-        int by = viewer.get(Properties.TICK_MULTIPLIER);
+        int left = getTicksLeft();
+        int total = getTotalTicks();
+        int by = getTickMultiplier();
 
         float progressInTicks = (total - left + partialTick * by) % total;
 
@@ -274,16 +262,16 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
     }
 
     public double getProgressCompletedPerTick() {
-        int total = viewer.get(Properties.TOTAL_TICKS);
-        int by = viewer.get(Properties.TICK_MULTIPLIER);
+        int total = getTotalTicks();
+        int by = getTickMultiplier();
 
         return total <= 0 ? 0.0 : (double) by / total;
     }
 
     public double getSecondsLeft() {
-        int left = viewer.get(Properties.TICKS_LEFT);
-        int total = viewer.get(Properties.TOTAL_TICKS);
-        int by = viewer.get(Properties.TICK_MULTIPLIER);
+        int left = getTicksLeft();
+        int total = getTotalTicks();
+        int by = getTickMultiplier();
 
         return total <= 0 ? 0.0 : (double) left / by / 20;
     }
@@ -292,9 +280,7 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
      * Returns the amount of energy/maximum energy left in this block.
      */
     public int getNumberEnergyLeft(boolean max) {
-        Property<Integer> property =
-                max ? Properties.MAX_ENERGY_STORED : Properties.ENERGY_STORED;
-        return viewer.get(property);
+        return max ? syncedBase.maxEnergyStored() : syncedBase.energyStored();
     }
 
     public ConcoctiUpgradeSlot getUpgradeSlot() {

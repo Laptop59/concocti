@@ -7,6 +7,7 @@ import io.github.laptop59.concocti.common.abstraction.Properties;
 import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.entity.ConcoctiHatchBlockEntity;
 import net.minecraft.core.Direction;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -38,35 +39,14 @@ public class ConcoctiEnergyHatchMenu extends AbstractConcoctiMachineMenu<Concoct
 
     // client constructor
     public ConcoctiEnergyHatchMenu(
-            int containerId, Inventory playerInventory
+            int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf
     ) {
-        this(containerId, playerInventory, new SimpleContainer(0), ConcoctiMenus.CONCOCTI_ENERGY_HATCH_MENU, false);
-        initializeViewer((SimpleContainerData) this.data);
+        super(containerId, playerInventory, 0, buf, ConcoctiMenus.CONCOCTI_ENERGY_HATCH_MENU);
     }
 
     // server constructor
-    public ConcoctiEnergyHatchMenu(
-            int containerId, Inventory playerInventory, Container container, ContainerData data
-    ) {
-        this(containerId, playerInventory, container, data, ConcoctiMenus.CONCOCTI_ENERGY_HATCH_MENU, false);
-        initializeViewer((Complexion) data);
-    }
-
-
-    private ConcoctiEnergyHatchMenu(
-            int containerId, Inventory playerInventory, Container container,
-            Supplier<MenuType<ConcoctiEnergyHatchMenu>> menuSupplier, boolean ignoredViewer) {
-        super(containerId, playerInventory, 0, menuSupplier);
-        // Place the machine, player inventory and hotbar slots.
-        addSlots(playerInventory);
-    }
-
-    private ConcoctiEnergyHatchMenu(
-            int containerId, Inventory playerInventory, Container container, ContainerData data,
-            Supplier<MenuType<ConcoctiEnergyHatchMenu>> menuSupplier, boolean ignoredViewer) {
-        super(containerId, playerInventory, container, data, menuSupplier);
-        // Place the machine, player inventory and hotbar slots.
-        addSlots(playerInventory);
+    public ConcoctiEnergyHatchMenu(int containerId, Inventory playerInventory, Container container) {
+        super(containerId, playerInventory, container, ConcoctiMenus.CONCOCTI_ENERGY_HATCH_MENU);
     }
 
     protected void addSlots(Inventory playerInventory) {
@@ -79,8 +59,6 @@ public class ConcoctiEnergyHatchMenu extends AbstractConcoctiMachineMenu<Concoct
         for (int k = 0; k < 9; k++) {
             this.addSlot(new Slot(playerInventory, k, 8 + k * 18, 142));
         }
-
-        this.addDataSlots(data);
     }
 
     @Override
@@ -105,47 +83,6 @@ public class ConcoctiEnergyHatchMenu extends AbstractConcoctiMachineMenu<Concoct
     @Override
     public Direction getFacingDirection() {
         return null;
-    }
-
-    protected void initializeViewer(SimpleContainerData containerData) {
-        ConcoctiEnergyHatchMenu menu = this;
-        viewer = new ComplexionViewer(containerData) {
-            @Override
-            public List<Property<?>> getProperties() {
-                return menu.getMachineProperties();
-            }
-        };
-    }
-
-    protected void initializeViewer(Complexion containerData) {
-        ConcoctiEnergyHatchMenu menu = this;
-        viewer = new ComplexionViewer(containerData) {
-            @Override
-            public List<Property<?>> getProperties() {
-                return menu.getMachineProperties();
-            }
-        };
-    }
-
-    /**
-     * Gets the machine settings slots associated with this menu.
-     */
-    public MachineSettingsSlots getMachineSettingsSlots() {
-        return viewer.get(Properties.MACHINE_SETTINGS_SLOTS);
-    }
-
-    /**
-     * Whether this machine is set to eject.
-     */
-    public boolean shouldEject() {
-        return viewer.get(Properties.EJECT_ON);
-    }
-
-    /**
-     * Whether this machine is set to pull.
-     */
-    public boolean shouldPull() {
-        return viewer.get(Properties.PULL_ON);
     }
 
     @Override

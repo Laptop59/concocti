@@ -6,6 +6,7 @@ import io.github.laptop59.concocti.common.abstraction.ComplexionViewer;
 import io.github.laptop59.concocti.common.abstraction.Properties;
 import io.github.laptop59.concocti.common.abstraction.Property;
 import net.minecraft.core.Direction;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -33,35 +34,14 @@ public class ConcoctiItemHatchMenu extends AbstractConcoctiMachineMenu<ConcoctiI
 
     // client constructor
     public ConcoctiItemHatchMenu(
-            int containerId, Inventory playerInventory
+            int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf
     ) {
-        this(containerId, playerInventory, new SimpleContainer(9), ConcoctiMenus.CONCOCTI_ITEM_HATCH_MENU, false);
-        initializeViewer((SimpleContainerData) this.data);
+        super(containerId, playerInventory, 9, buf, ConcoctiMenus.CONCOCTI_ITEM_HATCH_MENU);
     }
 
     // server constructor
-    public ConcoctiItemHatchMenu(
-            int containerId, Inventory playerInventory, Container container, ContainerData data
-    ) {
-        this(containerId, playerInventory, container, data, ConcoctiMenus.CONCOCTI_ITEM_HATCH_MENU, false);
-        initializeViewer((Complexion) data);
-    }
-
-
-    private ConcoctiItemHatchMenu(
-            int containerId, Inventory playerInventory, Container container,
-            Supplier<MenuType<ConcoctiItemHatchMenu>> menuSupplier, boolean ignoredViewer) {
-        super(containerId, playerInventory, 9, menuSupplier);
-        // Place the machine, player inventory and hotbar slots.
-        addSlots(playerInventory);
-    }
-
-    private ConcoctiItemHatchMenu(
-            int containerId, Inventory playerInventory, Container container, ContainerData data,
-            Supplier<MenuType<ConcoctiItemHatchMenu>> menuSupplier, boolean ignoredViewer) {
-        super(containerId, playerInventory, container, data, menuSupplier);
-        // Place the machine, player inventory and hotbar slots.
-        addSlots(playerInventory);
+    public ConcoctiItemHatchMenu(int containerId, Inventory playerInventory, Container container) {
+        super(containerId, playerInventory, container, ConcoctiMenus.CONCOCTI_ITEM_HATCH_MENU);
     }
 
     protected void addSlots(Inventory playerInventory) {
@@ -79,8 +59,6 @@ public class ConcoctiItemHatchMenu extends AbstractConcoctiMachineMenu<ConcoctiI
         for (int k = 0; k < 9; k++) {
             this.addSlot(new Slot(playerInventory, k, 8 + k * 18, 142));
         }
-
-        this.addDataSlots(data);
     }
 
     @Override
@@ -105,47 +83,6 @@ public class ConcoctiItemHatchMenu extends AbstractConcoctiMachineMenu<ConcoctiI
     @Override
     public Direction getFacingDirection() {
         return null;
-    }
-
-    protected void initializeViewer(SimpleContainerData containerData) {
-        ConcoctiItemHatchMenu menu = this;
-        viewer = new ComplexionViewer(containerData) {
-            @Override
-            public List<Property<?>> getProperties() {
-                return menu.getMachineProperties();
-            }
-        };
-    }
-
-    protected void initializeViewer(Complexion containerData) {
-        ConcoctiItemHatchMenu menu = this;
-        viewer = new ComplexionViewer(containerData) {
-            @Override
-            public List<Property<?>> getProperties() {
-                return menu.getMachineProperties();
-            }
-        };
-    }
-
-    /**
-     * Gets the machine settings slots associated with this menu.
-     */
-    public MachineSettingsSlots getMachineSettingsSlots() {
-        return viewer.get(Properties.MACHINE_SETTINGS_SLOTS);
-    }
-
-    /**
-     * Whether this machine is set to eject.
-     */
-    public boolean shouldEject() {
-        return viewer.get(Properties.EJECT_ON);
-    }
-
-    /**
-     * Whether this machine is set to pull.
-     */
-    public boolean shouldPull() {
-        return viewer.get(Properties.PULL_ON);
     }
 
     @Override
@@ -195,14 +132,4 @@ public class ConcoctiItemHatchMenu extends AbstractConcoctiMachineMenu<ConcoctiI
         super.removed(player);
         this.container.stopOpen(player);
     }
-
-    /**
-     * Returns the amount of energy/maximum energy left in this block.
-     */
-    public int getNumberEnergyLeft(boolean max) {
-        Property<Integer> property =
-                max ? Properties.MAX_ENERGY_STORED : Properties.ENERGY_STORED;
-        return viewer.get(property);
-    }
-
 }

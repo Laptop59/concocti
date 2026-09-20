@@ -89,6 +89,13 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
     private static final int INPUT_SLOT_3 = 4;
     private static final int INPUT_SLOT_4 = 5;
 
+    // Fluids
+    public static final int FLUID_INPUT_1 = 0;
+    public static final int FLUID_INPUT_2 = 1;
+    public static final int FLUID_INPUT_3 = 2;
+    public static final int FLUID_INPUT_4 = 3;
+    public static final int FLUID_OUTPUT = 4;
+
     public Supplier<ConcoctiMachineDetails<BlockEntity, Menu, ItemsFluidsInputValue, ItemsFluidsRecipeInput, Recipe>> getDetails() {
         return () -> new ConcoctiMachineDetails<>(
                 BlockEntity.class,
@@ -521,14 +528,14 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
 
         // Client
         public Menu(
-                int containerId, Inventory playerInventory
+                int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf
         ) {
-            super(containerId, playerInventory, 7, INSTANCE.MENU);
+            super(containerId, playerInventory, 7, buf, INSTANCE.MENU);
         }
 
         // Server
-        public Menu(int containerId, Inventory playerInventory, Container container, ContainerData data) {
-            super(containerId, playerInventory, container, data, INSTANCE.MENU);
+        public Menu(int containerId, Inventory playerInventory, Container container) {
+            super(containerId, playerInventory, container, INSTANCE.MENU);
         }
 
         @Override
@@ -553,15 +560,15 @@ public class ConcoctiMixer extends ConcoctiMachineOnlyItemsFluids<
 
         public List<FluidStack> getInputFluidStacks() {
             return List.of(
-                    viewer.get(Properties.FLUID_INPUT_1),
-                    viewer.get(Properties.FLUID_INPUT_2),
-                    viewer.get(Properties.FLUID_INPUT_3),
-                    viewer.get(Properties.FLUID_INPUT_4)
+                    syncedFluids.get(FLUID_INPUT_1),
+                    syncedFluids.get(FLUID_INPUT_2),
+                    syncedFluids.get(FLUID_INPUT_3),
+                    syncedFluids.get(FLUID_INPUT_4)
             );
         }
 
         public FluidStack getOutputFluidStack() {
-            return viewer.get(Properties.FLUID_OUTPUT);
+            return syncedFluids.get(FLUID_OUTPUT);
         }
 
         public int getInputFluidStackSize() {

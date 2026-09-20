@@ -1,7 +1,10 @@
 package io.github.laptop59.concocti.client.gui.components;
 
 import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.core.Direction;
+import net.minecraft.network.codec.StreamCodec;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -41,4 +44,22 @@ public class MachineSettingsSlots extends EnumMap<Direction, SlotType> {
                 return list;
             }
     );
+
+    public static final StreamCodec<ByteBuf, MachineSettingsSlots> STREAM_CODEC = new StreamCodec<>() {
+        @Override
+        public @NotNull MachineSettingsSlots decode(@NotNull ByteBuf buffer) {
+            MachineSettingsSlots slots = new MachineSettingsSlots();
+
+            for (Direction direction : SLOTS_ORDER)
+                slots.put(direction, SlotType.STREAM_CODEC.decode(buffer));
+
+            return slots;
+        }
+
+        @Override
+        public void encode(@NotNull ByteBuf buffer, @NotNull MachineSettingsSlots value) {
+            for (Direction direction : SLOTS_ORDER)
+                SlotType.STREAM_CODEC.encode(buffer, value.get(direction));
+        }
+    };
 }

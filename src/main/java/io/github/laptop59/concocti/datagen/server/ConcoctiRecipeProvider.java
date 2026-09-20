@@ -1050,7 +1050,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     output,
                     ConcoctiMachines.AUTOCLAVE,
                     "diamond_crystallization",
-                    6 * 60 * 20,
+                    2 * 60 * 20,
                     List.of(
                             ItemRecipeIngredient.of(Ingredient.of(Items.DIAMOND), 1, true)
                     ),
@@ -1066,7 +1066,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     output,
                     ConcoctiMachines.AUTOCLAVE,
                     "diamond_block_crystallization",
-                    8 * 6 * 60 * 20,
+                    8 * 2 * 60 * 20,
                     List.of(
                             ItemRecipeIngredient.of(Ingredient.of(Items.DIAMOND_BLOCK), 1, true)
                     ),
@@ -1082,7 +1082,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     output,
                     ConcoctiMachines.AUTOCLAVE,
                     "emerald_crystallization",
-                    2 * 60 * 20,
+                    60 * 20,
                     List.of(
                             ItemRecipeIngredient.of(Ingredient.of(Items.EMERALD), 1, true)
                     ),
@@ -1098,7 +1098,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     output,
                     ConcoctiMachines.AUTOCLAVE,
                     "emerald_block_crystallization",
-                    8 * 2 * 60 * 20,
+                    8 * 60 * 20,
                     List.of(
                             ItemRecipeIngredient.of(Ingredient.of(Items.EMERALD_BLOCK), 1, true)
                     ),
@@ -1114,7 +1114,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     output,
                     ConcoctiMachines.AUTOCLAVE,
                     "amethyst_crystallization",
-                    60 * 20,
+                    30 * 20,
                     List.of(
                             ItemRecipeIngredient.of(Ingredient.of(Items.AMETHYST_SHARD), 1, true)
                     ),
@@ -1130,7 +1130,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     output,
                     ConcoctiMachines.AUTOCLAVE,
                     "amethyst_block_crystallization",
-                    4 * 60 * 20,
+                    4 * 30 * 20,
                     List.of(
                             ItemRecipeIngredient.of(Ingredient.of(Items.AMETHYST_BLOCK), 1, true)
                     ),
@@ -1146,7 +1146,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     output,
                     ConcoctiMachines.AUTOCLAVE,
                     "diamethyst_crystallization",
-                    18 * 60 * 20,
+                    4 * 60 * 20,
                     List.of(
                             ItemRecipeIngredient.of(Ingredient.of(ConcoctiItems.DIAMETHYST_CRYSTAL), 1, true)
                     ),
@@ -1162,7 +1162,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     output,
                     ConcoctiMachines.AUTOCLAVE,
                     "diamethyst_block_crystallization",
-                    8 * 18 * 60 * 20,
+                    8 * 4 * 60 * 20,
                     List.of(
                             ItemRecipeIngredient.of(Ingredient.of(ConcoctiItems.DIAMETHYST_BLOCK), 1, true)
                     ),
@@ -1178,7 +1178,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     output,
                     ConcoctiMachines.AUTOCLAVE,
                     "lapis_lazuli_crystallization",
-                    15 * 20,
+                    10 * 20,
                     List.of(
                             ItemRecipeIngredient.of(Ingredient.of(Items.LAPIS_LAZULI), 1, true)
                     ),
@@ -1194,7 +1194,7 @@ public class ConcoctiRecipeProvider extends RecipeProvider {
                     output,
                     ConcoctiMachines.AUTOCLAVE,
                     "lapis_block_crystallization",
-                    8 * 15 * 20,
+                    8 * 10 * 20,
                     List.of(
                             ItemRecipeIngredient.of(Ingredient.of(Items.LAPIS_BLOCK), 1, true)
                     ),

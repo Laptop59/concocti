@@ -1,19 +1,16 @@
 package io.github.laptop59.concocti.common.menu;
 
-import io.github.laptop59.concocti.common.abstraction.Complexion;
-import io.github.laptop59.concocti.common.abstraction.ComplexionViewer;
 import io.github.laptop59.concocti.common.abstraction.Properties;
 import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMultiblockBlockEntity;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
-import net.minecraft.util.Mth;
+import io.github.laptop59.concocti.common.machine.ConcoctiMultiBlockMachine;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.Container;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,7 +21,7 @@ import java.util.function.Supplier;
 /**
  * A class which serves as a base for a Concocti Multiblock's menu.
  */
-public class ConcoctiMultiblockMenu extends AbstractConcoctiMachineMenu<ConcoctiMultiblockMenu> {
+public class ConcoctiMultiblockMenu extends AbstractConcoctiMachineMenuSyncedExtra<ConcoctiMultiblockMenu, ConcoctiMultiBlockMachine.Extra> {
     protected static final List<Property<?>> BASE_PROPERTIES = List.of(
             Properties.VALID,
             Properties.BUILD_PREVIEW,
@@ -35,36 +32,16 @@ public class ConcoctiMultiblockMenu extends AbstractConcoctiMachineMenu<Concocti
 
     protected String machineId;
 
-    // client constructor
+    // Client
     public ConcoctiMultiblockMenu(
-            Supplier<MenuType<ConcoctiMultiblockMenu>> menuTypeSupplier, int containerId, Inventory playerInventory
+            Supplier<MenuType<ConcoctiMultiblockMenu>> menuTypeSupplier,  int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf
     ) {
-        this(containerId, playerInventory, menuTypeSupplier, false);
-        initializeViewer((SimpleContainerData) this.data);
+        super(containerId, playerInventory, 3, buf, menuTypeSupplier);
     }
 
-    // server constructor
-    public ConcoctiMultiblockMenu(
-            Supplier<MenuType<ConcoctiMultiblockMenu>> menuTypeSupplier, int containerId, Inventory playerInventory, Container container, ContainerData data) {
-        this(containerId, playerInventory, container, data, menuTypeSupplier, false);
-        initializeViewer((Complexion) data);
-    }
-
-
-    private ConcoctiMultiblockMenu(
-            int containerId, Inventory playerInventory,
-            Supplier<MenuType<ConcoctiMultiblockMenu>> menuSupplier, boolean ignoredViewer) {
-        super(containerId, playerInventory, 2, menuSupplier);
-        // Place the machine, player inventory and hotbar slots.
-        addSlots(playerInventory);
-    }
-
-    private ConcoctiMultiblockMenu(
-            int containerId, Inventory playerInventory, Container container, ContainerData data,
-            Supplier<MenuType<ConcoctiMultiblockMenu>> menuSupplier, boolean ignoredViewer) {
-        super(containerId, playerInventory, container, data, menuSupplier);
-        // Place the machine, player inventory and hotbar slots.
-        addSlots(playerInventory);
+    // Server
+    public ConcoctiMultiblockMenu(Supplier<MenuType<ConcoctiMultiblockMenu>> menuTypeSupplier, int containerId, Inventory playerInventory, Container container) {
+        super(containerId, playerInventory, container, menuTypeSupplier);
     }
 
     protected void addSlots(Inventory playerInventory) {
@@ -80,8 +57,6 @@ public class ConcoctiMultiblockMenu extends AbstractConcoctiMachineMenu<Concocti
         for (int k = 0; k < 9; k++) {
             this.addSlot(new Slot(playerInventory, k, 8 + k * 18, 142));
         }
-
-        this.addDataSlots(data);
     }
 
     @Override
@@ -92,33 +67,6 @@ public class ConcoctiMultiblockMenu extends AbstractConcoctiMachineMenu<Concocti
     @Override
     public List<Property<?>> getMachineProperties() {
         return new ArrayList<>(BASE_PROPERTIES);
-    }
-
-    protected int getPropertiesSize() {
-        int size = 0;
-        for (Property<?> property : getMachineProperties())
-            size += property.codec().size();
-        return size;
-    }
-
-    protected void initializeViewer(SimpleContainerData containerData) {
-        ConcoctiMultiblockMenu menu = this;
-        viewer = new ComplexionViewer(containerData) {
-            @Override
-            public List<Property<?>> getProperties() {
-                return menu.getMachineProperties();
-            }
-        };
-    }
-
-    protected void initializeViewer(Complexion containerData) {
-        ConcoctiMultiblockMenu menu = this;
-        viewer = new ComplexionViewer(containerData) {
-            @Override
-            public List<Property<?>> getProperties() {
-                return menu.getMachineProperties();
-            }
-        };
     }
 
     @Override
@@ -180,11 +128,11 @@ public class ConcoctiMultiblockMenu extends AbstractConcoctiMachineMenu<Concocti
     }
 
     public boolean isValid() {
-        return viewer.get(Properties.VALID);
+        return syncedExtra.valid();
     }
 
     public boolean showBuildPreview() {
-        return viewer.get(Properties.BUILD_PREVIEW);
+        return syncedExtra.buildPreview();
     }
 
     public void changeBuildPreview() {

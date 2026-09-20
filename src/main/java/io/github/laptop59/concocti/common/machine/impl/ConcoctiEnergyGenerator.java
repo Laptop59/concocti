@@ -268,7 +268,6 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
     }
 
     public static class Menu extends AbstractConcoctiMachineMenu<Menu> {
-
         @Contract(pure = true)
         @Override
         public List<Property<?>> getMachineSpecificProperties() {
@@ -277,14 +276,14 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
 
         // Client
         public Menu(
-                int containerId, Inventory playerInventory
+                int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf
         ) {
-            super(containerId, playerInventory, 3, INSTANCE.MENU);
+            super(containerId, playerInventory, 3, buf, INSTANCE.MENU);
         }
 
         // Server
-        public Menu(int containerId, Inventory playerInventory, Container container, ContainerData data) {
-            super(containerId, playerInventory, container, data, INSTANCE.MENU);
+        public Menu(int containerId, Inventory playerInventory, Container container) {
+            super(containerId, playerInventory, container, INSTANCE.MENU);
         }
 
         @Override
