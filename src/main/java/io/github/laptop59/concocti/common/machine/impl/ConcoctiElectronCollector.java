@@ -5,9 +5,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.laptop59.concocti.client.gui.AbstractConcoctiMachineScreen;
 import io.github.laptop59.concocti.client.gui.components.*;
-import io.github.laptop59.concocti.common.abstraction.ConcoctiMachineComplexion;
-import io.github.laptop59.concocti.common.abstraction.Properties;
-import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
@@ -15,6 +12,7 @@ import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
 import io.github.laptop59.concocti.common.detail.DetailCodec;
 import io.github.laptop59.concocti.common.detail.DetailHolder;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
+import io.github.laptop59.concocti.common.machine.AbstractConcoctiRecipeCategory;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachineDetails;
 import io.github.laptop59.concocti.common.machine.InputOutput;
@@ -23,7 +21,6 @@ import io.github.laptop59.concocti.common.recipe.FluidOutput;
 import io.github.laptop59.concocti.common.recipe.LightningRecipeInput;
 import io.github.laptop59.concocti.common.recipe.LightningState;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
-import io.github.laptop59.concocti.common.machine.AbstractConcoctiRecipeCategory;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.client.gui.GuiGraphics;
@@ -59,7 +56,6 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -102,7 +98,6 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
                 Component.translatable("block.concocti.concocti_electron_collector"),
                 List.of(SlotType.FLUID_OUTPUT),
                 Menu::new,
-                blockEntity -> blockEntity.dataAccess,
                 new EnumMap<>(SlotType.class),
                 new EnumMap<>(
                         Map.of(
@@ -140,12 +135,6 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
                 DetailCodec.LIGHTNING_STATE, "lightning_state", new LightningState(false), this
         );
 
-        // Slots: NONE
-
-        // Properties
-        public final Property<FluidStack> FLUID_OUTPUT = Properties.FLUID_OUTPUT.newWithLinker(() -> fluidOutput.get().getFluid());
-        public final Property<LightningState> LIGHTNING_STATE = Properties.LIGHTNING_STATE.newWithLinker(lightningState::get);
-
         @Override
         protected ConcoctiElectronCollector getMachineInstance() {
             return INSTANCE;
@@ -164,12 +153,6 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
         protected boolean isItemValidInMachine(int slot, @NotNull ItemStack stack) {
             return false;
         }
-
-        protected final ConcoctiMachineComplexion dataAccess = new ConcoctiMachineComplexion(
-                this,
-                FLUID_OUTPUT.of(FluidStack.EMPTY),
-                LIGHTNING_STATE.of(new LightningState(false))
-        );
 
         public BlockEntity(BlockPos pos, BlockState blockState) {
             super(
@@ -361,15 +344,6 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
     }
 
     public static class Menu extends AbstractConcoctiMachineMenuSyncedExtra<Menu, Extra> {
-        @Contract(pure = true)
-        @Override
-        public List<Property<?>> getMachineSpecificProperties() {
-            return List.of(
-                    Properties.FLUID_OUTPUT,
-                    Properties.LIGHTNING_STATE
-            );
-        }
-
         // Client
         public Menu(
                 int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf

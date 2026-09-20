@@ -2,9 +2,12 @@ package io.github.laptop59.concocti.common.machine;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.laptop59.concocti.client.gui.AbstractConcoctiMachineScreen;
-import io.github.laptop59.concocti.client.gui.components.*;
-import io.github.laptop59.concocti.common.abstraction.Complexion;
-import io.github.laptop59.concocti.common.block.*;
+import io.github.laptop59.concocti.client.gui.components.ProgressBar;
+import io.github.laptop59.concocti.client.gui.components.RenderInfo;
+import io.github.laptop59.concocti.client.gui.components.Renderable;
+import io.github.laptop59.concocti.client.gui.components.SlotType;
+import io.github.laptop59.concocti.common.block.AbstractConcoctiMultiBlockControllerBlock;
+import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMultiblockBlockEntity;
 import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
 import io.github.laptop59.concocti.common.menu.ConcoctiMultiblockMenu;
@@ -91,7 +94,6 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
                 Component.translatable("block.concocti." + id),
                 List.of(),
                 (a, b, c) -> new ConcoctiMultiblockMenu(getInstance(id).MENU, a, b, c),
-                BlockEntity::getDataAccess,
                 new EnumMap<>(SlotType.class),
                 new EnumMap<>(SlotType.class),
                 InputOutput.empty(),
@@ -154,10 +156,6 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
             super.postConstructor(blockEntityType, pos, blockState, extraData);
             this.structure = (MultiblockStructure) extraData[1];
             updateHatchPositions();
-        }
-
-        public Complexion getDataAccess() {
-            return dataAccess;
         }
 
         @Override

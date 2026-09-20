@@ -1,7 +1,5 @@
 package io.github.laptop59.concocti.common.menu;
 
-import io.github.laptop59.concocti.common.abstraction.Properties;
-import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.entity.ConcoctiHatchBlockEntity;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -14,22 +12,11 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-
 /**
  * A class which serves as a base for a hatch's menu.
  */
 public class ConcoctiFluidHatchMenu extends AbstractConcoctiMachineMenu<ConcoctiFluidHatchMenu> {
     public static final int FLUID_TANK = 0;
-
-    protected static final List<Property<?>> BASE_PROPERTIES = List.of(
-            Properties.EJECT_ON,
-            Properties.PULL_ON,
-            Properties.MACHINE_SETTINGS_SLOTS,
-            Properties.ENERGY_STORED,
-            Properties.MAX_ENERGY_STORED,
-            Properties.FLUID_TANK
-    );
 
     // client constructor
     public ConcoctiFluidHatchMenu(
@@ -53,22 +40,6 @@ public class ConcoctiFluidHatchMenu extends AbstractConcoctiMachineMenu<Concocti
         for (int k = 0; k < 9; k++) {
             this.addSlot(new Slot(playerInventory, k, 8 + k * 18, 142));
         }
-    }
-
-    @Override
-    public List<Property<?>> getMachineSpecificProperties() {
-        return getMachineProperties();
-    }
-
-    public List<Property<?>> getMachineProperties() {
-        return BASE_PROPERTIES;
-    }
-
-    protected int getPropertiesSize() {
-        int size = 0;
-        for (Property<?> property : getMachineProperties())
-            size += property.codec().size();
-        return size;
     }
 
     /**

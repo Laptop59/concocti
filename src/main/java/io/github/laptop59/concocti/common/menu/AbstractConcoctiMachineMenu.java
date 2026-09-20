@@ -1,8 +1,6 @@
 package io.github.laptop59.concocti.common.menu;
 
 import io.github.laptop59.concocti.client.gui.components.MachineSettingsSlots;
-import io.github.laptop59.concocti.common.abstraction.Properties;
-import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -12,13 +10,13 @@ import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.*;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -34,19 +32,6 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
     protected SyncedMachineData.Base syncedBase;
     protected SyncedMachineData.Settings syncedSettings;
     protected SyncedFluids syncedFluids;
-
-    protected final List<Property<?>> BASE_PROPERTIES = List.of(
-            Properties.TICKS_LEFT,
-            Properties.TOTAL_TICKS,
-            Properties.TICK_MULTIPLIER,
-            Properties.ENERGY_STORED,
-            Properties.MAX_ENERGY_STORED,
-            Properties.FACING_DIRECTION,
-            Properties.MACHINE_SETTINGS_SLOTS,
-
-            Properties.EJECT_ON,
-            Properties.PULL_ON
-    );
 
     // server constructor
     protected AbstractConcoctiMachineMenu(
@@ -94,18 +79,6 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
         for (int k = 0; k < 9; k++) {
             this.addSlot(new Slot(playerInventory, k, 8 + k * 18, 142));
         }
-    }
-
-    /**
-     * Gets all properties synced by a {@link ContainerData} for this menu.
-     */
-    @Contract(pure = true)
-    public abstract List<Property<?>> getMachineSpecificProperties();
-
-    public List<Property<?>> getMachineProperties() {
-        ArrayList<Property<?>> properties = new ArrayList<>(BASE_PROPERTIES);
-        properties.addAll(getMachineSpecificProperties());
-        return properties;
     }
 
     /**

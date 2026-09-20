@@ -6,24 +6,17 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.laptop59.concocti.client.gui.AbstractConcoctiMachineScreen;
 import io.github.laptop59.concocti.client.gui.components.*;
 import io.github.laptop59.concocti.common.ConcoctiSounds;
-import io.github.laptop59.concocti.common.abstraction.ConcoctiMachineComplexion;
-import io.github.laptop59.concocti.common.abstraction.Properties;
-import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineOnlyItemsFluidsBlockEntity;
 import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
 import io.github.laptop59.concocti.common.detail.DetailCodec;
 import io.github.laptop59.concocti.common.detail.DetailHolder;
-import io.github.laptop59.concocti.common.machine.ConcoctiMachineDetails;
-import io.github.laptop59.concocti.common.machine.ConcoctiMachineOnlyItemsFluids;
-import io.github.laptop59.concocti.common.machine.InputOutput;
-import io.github.laptop59.concocti.common.machine.ItemsFluidsInputValue;
+import io.github.laptop59.concocti.common.machine.*;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.recipe.ItemRecipeIngredient;
 import io.github.laptop59.concocti.common.recipe.ItemsFluidsRecipeInput;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
-import io.github.laptop59.concocti.common.machine.AbstractConcoctiRecipeCategory;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
@@ -55,11 +48,13 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -117,7 +112,6 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
                         SlotType.BOTH_FLUIDS_OUTPUT
                 ),
                 Menu::new,
-                blockEntity -> blockEntity.dataAccess,
                 new EnumMap<>(
                         Map.of(
                                 SlotType.ITEM_INPUT, List.of(INPUT_SLOT)
@@ -155,10 +149,6 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
         private final DetailHolder<FluidTank> byproductFluidOutput = new DetailHolder<>(
                 DetailCodec.FLUID_TANK, "byproduct_fluid_output", new FluidTank(TANK_CAPACITY), this
         );
-
-        // Properties
-        public final Property<FluidStack> PURE_FLUID_OUTPUT = Properties.PURE_FLUID_OUTPUT.newWithLinker(() -> pureFluidOutput.get().getFluid());
-        public final Property<FluidStack> BYPRODUCT_FLUID_OUTPUT = Properties.BYPRODUCT_FLUID_OUTPUT.newWithLinker(() -> byproductFluidOutput.get().getFluid());
 
         @Override
         public List<IFluidHandler> getIndexedFluidHandlers() {
@@ -213,12 +203,6 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
         protected boolean isItemValidInMachine(int slot, @NotNull ItemStack stack) {
             return slot == INPUT_SLOT;
         }
-
-        protected final ConcoctiMachineComplexion dataAccess = new ConcoctiMachineComplexion(
-                this,
-                PURE_FLUID_OUTPUT.of(FluidStack.EMPTY),
-                BYPRODUCT_FLUID_OUTPUT.of(FluidStack.EMPTY)
-        );
 
         public BlockEntity(BlockPos pos, BlockState blockState) {
             super(
@@ -429,15 +413,6 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
     }
 
     public static class Menu extends AbstractConcoctiMachineMenu<Menu> {
-        @Contract(pure = true)
-        @Override
-        public List<Property<?>> getMachineSpecificProperties() {
-            return List.of(
-                    Properties.PURE_FLUID_OUTPUT,
-                    Properties.BYPRODUCT_FLUID_OUTPUT
-            );
-        }
-
         // Client
         public Menu(
                 int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf
