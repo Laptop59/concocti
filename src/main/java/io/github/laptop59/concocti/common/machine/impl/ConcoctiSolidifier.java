@@ -85,6 +85,9 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
     private static final int BASE_ITEM_SLOT = 3;
     private static final int OUTPUT_SLOT = 4;
 
+    // Fluids
+    public static final int FLUID_INPUT = 0;
+
     public Supplier<ConcoctiMachineDetails<BlockEntity, Menu, ItemsFluidsInputValue, ItemsFluidsRecipeInput, Recipe>> getDetails() {
         return () -> new ConcoctiMachineDetails<>(
                 BlockEntity.class,
@@ -396,14 +399,14 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
 
         // Client
         public Menu(
-                int containerId, Inventory playerInventory
+                int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf
         ) {
-            super(containerId, playerInventory, 5, INSTANCE.MENU);
+            super(containerId, playerInventory, 5, buf, INSTANCE.MENU);
         }
 
         // Server
-        public Menu(int containerId, Inventory playerInventory, Container container, ContainerData data) {
-            super(containerId, playerInventory, container, data, INSTANCE.MENU);
+        public Menu(int containerId, Inventory playerInventory, Container container) {
+            super(containerId, playerInventory, container, INSTANCE.MENU);
         }
 
         @Override
@@ -426,7 +429,7 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
         }
 
         public FluidStack getInputFluidStack() {
-            return viewer.get(Properties.FLUID_INPUT);
+            return syncedFluids.get(FLUID_INPUT);
         }
 
         public int getMaxFluidLeft() {

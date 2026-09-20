@@ -31,7 +31,7 @@ import java.util.Objects;
 public class ConcoctiEmiPlugin implements EmiPlugin {
     @Override
     public void register(EmiRegistry registry) {
-        for (var machine : ConcoctiMachines.MACHINES) {
+        for (var machine : ConcoctiMachines.MACHINES.values()) {
             registerMachine(registry, machine);
         }
         registerInfos(registry);

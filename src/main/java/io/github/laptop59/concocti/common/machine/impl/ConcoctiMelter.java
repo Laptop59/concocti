@@ -84,6 +84,10 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
     // Details
     public final static String ID = "concocti_melter";
 
+    // Fluids
+    public static final int FLUID_PURE_OUTPUT = 0;
+    public static final int FLUID_BYPRODUCT_OUTPUT = 1;
+
     public ConcoctiMelter() {
         super(
                 ID,
@@ -439,14 +443,14 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
 
         // Client
         public Menu(
-                int containerId, Inventory playerInventory
+                int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf
         ) {
-            super(containerId, playerInventory, 3, INSTANCE.MENU);
+            super(containerId, playerInventory, 3, buf, INSTANCE.MENU);
         }
 
         // Server
-        public Menu(int containerId, Inventory playerInventory, Container container, ContainerData data) {
-            super(containerId, playerInventory, container, data, INSTANCE.MENU);
+        public Menu(int containerId, Inventory playerInventory, Container container) {
+            super(containerId, playerInventory, container, INSTANCE.MENU);
         }
 
         @Override
@@ -464,11 +468,11 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
         }
 
         public FluidStack getPureFluidStack() {
-            return viewer.get(Properties.PURE_FLUID_OUTPUT);
+            return syncedFluids.get(FLUID_PURE_OUTPUT);
         }
 
         public FluidStack getByproductFluidStack() {
-            return viewer.get(Properties.BYPRODUCT_FLUID_OUTPUT);
+            return syncedFluids.get(FLUID_BYPRODUCT_OUTPUT);
         }
 
         public int getMaxFluidLeft() {

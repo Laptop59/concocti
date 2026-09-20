@@ -19,11 +19,13 @@ import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachineDetails;
 import io.github.laptop59.concocti.common.machine.InputOutput;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
+import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenuSyncedExtra;
 import io.github.laptop59.concocti.common.recipe.FluidOutput;
 import io.github.laptop59.concocti.common.recipe.LightningRecipeInput;
 import io.github.laptop59.concocti.common.recipe.LightningState;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
 import io.github.laptop59.concocti.common.machine.AbstractConcoctiRecipeCategory;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
@@ -87,6 +89,9 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
 
     // Details
     public final static String ID = "concocti_electron_collector";
+
+    // Fluids
+    public static final int FLUID_OUTPUT = 0;
 
     public Supplier<ConcoctiMachineDetails<BlockEntity, Menu, LightningState, LightningRecipeInput, Recipe>> getDetails() {
         return () -> new ConcoctiMachineDetails<>(
@@ -358,8 +363,7 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
         }
     }
 
-    public static class Menu extends AbstractConcoctiMachineMenu<Menu> {
-
+    public static class Menu extends AbstractConcoctiMachineMenuSyncedExtra<Menu, Extra> {
         @Contract(pure = true)
         @Override
         public List<Property<?>> getMachineSpecificProperties() {
@@ -371,14 +375,14 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
 
         // Client
         public Menu(
-                int containerId, Inventory playerInventory
+                int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf
         ) {
-            super(containerId, playerInventory, 2, INSTANCE.MENU);
+            super(containerId, playerInventory, 2, buf, INSTANCE.MENU);
         }
 
         // Server
-        public Menu(int containerId, Inventory playerInventory, Container container, ContainerData data) {
-            super(containerId, playerInventory, container, data, INSTANCE.MENU);
+        public Menu(int containerId, Inventory playerInventory, Container container) {
+            super(containerId, playerInventory, container, INSTANCE.MENU);
         }
 
         @Override
@@ -391,7 +395,7 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
         }
 
         public FluidStack getFluidOutput() {
-            return viewer.get(Properties.FLUID_OUTPUT);
+            return syncedFluids.get(FLUID_OUTPUT);
         }
 
         public int getMaxFluidOutput() {
@@ -399,7 +403,7 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
         }
 
         public LightningState getLightningState() {
-            return viewer.get(Properties.LIGHTNING_STATE);
+            return syncedExtra.lightningState();
         }
     }
 
@@ -512,6 +516,18 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
 
             builder.addCatalystSlot(8, 16, Ingredient.of(rod));
         }
+    }
+
+    public record Extra(LightningState lightningState) {
+        public static StreamCodec<ByteBuf, Extra> STREAM_CODEC = LightningState.STREAM_CODEC.map(
+                Extra::new,
+                Extra::lightningState
+        );
+    }
+
+    @Override
+    public StreamCodec<? super RegistryFriendlyByteBuf, ?> getExtraDataStreamCodec() {
+        return Extra.STREAM_CODEC;
     }
 
     public BlockEntityConstructor<BlockEntity> getBlockEntityConstructor() {

@@ -42,6 +42,7 @@ import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.NewRegistryEvent;
 import org.slf4j.Logger;
 
 import java.lang.reflect.Constructor;
@@ -75,7 +76,7 @@ public class Concocti {
 
     @SubscribeEvent
     private static void registerScreens(RegisterMenuScreensEvent event) {
-        for (var machine : ConcoctiMachines.MACHINES) {
+        for (var machine : ConcoctiMachines.MACHINES.values()) {
             registerScreen(event, machine);
         }
         event.register(ConcoctiMenus.CONCOCTI_ITEM_HATCH_MENU.get(), ConcoctiItemHatchScreen::new);

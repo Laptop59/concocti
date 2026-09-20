@@ -18,8 +18,10 @@ import io.github.laptop59.concocti.common.detail.DetailHolder;
 import io.github.laptop59.concocti.common.machine.*;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.menu.ResultSlot;
+import io.github.laptop59.concocti.common.menu.SyncedMachineData;
 import io.github.laptop59.concocti.common.recipe.*;
 import io.github.laptop59.concocti.common.machine.AbstractConcoctiRecipeCategory;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
@@ -81,6 +83,13 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
     private static final int INPUT_SLOT_2 = 3;
     private static final int INPUT_SLOT_3 = 4;
     private static final int INPUT_SLOT_4 = 5;
+
+    // Fluids
+    public static final int FLUID_INPUT_1 = 0;
+    public static final int FLUID_INPUT_2 = 1;
+    public static final int FLUID_INPUT_3 = 2;
+    public static final int FLUID_INPUT_4 = 3;
+    public static final int FLUID_OUTPUT = 4;
 
     public Supplier<ConcoctiMachineDetails<BlockEntity, Menu, ItemsFluidsInputValue, ItemsFluidsRecipeInput, Recipe>> getDetails() {
         return () -> new ConcoctiMachineDetails<>(
@@ -502,14 +511,14 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
 
         // Client
         public Menu(
-                int containerId, Inventory playerInventory
+                int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf
         ) {
-            super(containerId, playerInventory, 7, INSTANCE.MENU);
+            super(containerId, playerInventory, 7, buf, INSTANCE.MENU);
         }
 
         // Server
-        public Menu(int containerId, Inventory playerInventory, Container container, ContainerData data) {
-            super(containerId, playerInventory, container, data, INSTANCE.MENU);
+        public Menu(int containerId, Inventory playerInventory, Container container) {
+            super(containerId, playerInventory, container, INSTANCE.MENU);
         }
 
         @Override
@@ -534,15 +543,15 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
 
         public List<FluidStack> getInputFluidStacks() {
             return List.of(
-                    viewer.get(Properties.FLUID_INPUT_1),
-                    viewer.get(Properties.FLUID_INPUT_2),
-                    viewer.get(Properties.FLUID_INPUT_3),
-                    viewer.get(Properties.FLUID_INPUT_4)
+                    syncedFluids.get(FLUID_INPUT_1),
+                    syncedFluids.get(FLUID_INPUT_2),
+                    syncedFluids.get(FLUID_INPUT_3),
+                    syncedFluids.get(FLUID_INPUT_4)
             );
         }
 
         public FluidStack getOutputFluidStack() {
-            return viewer.get(Properties.FLUID_OUTPUT);
+            return syncedFluids.get(FLUID_OUTPUT);
         }
 
         public int getInputFluidStackSize() {

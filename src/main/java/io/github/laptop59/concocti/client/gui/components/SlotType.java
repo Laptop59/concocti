@@ -1,6 +1,9 @@
 package io.github.laptop59.concocti.client.gui.components;
 
 import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 
 public enum SlotType {
     NONE(0, 0xe8e8e8),
@@ -32,6 +35,11 @@ public enum SlotType {
     ALL_INPUTS_AND_OUTPUTS(1102, 0xffffff, SlotFlag.ITEM | SlotFlag.FLUID | SlotFlag.INPUT | SlotFlag.OUTPUT);
 
     public static final Codec<SlotType> CODEC = Codec.INT.xmap(
+            SlotType::byId,
+            SlotType::getId
+    );
+
+    public static final StreamCodec<ByteBuf, SlotType> STREAM_CODEC = ByteBufCodecs.VAR_INT.map(
             SlotType::byId,
             SlotType::getId
     );

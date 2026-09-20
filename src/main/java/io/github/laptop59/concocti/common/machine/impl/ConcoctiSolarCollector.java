@@ -18,9 +18,11 @@ import io.github.laptop59.concocti.common.detail.DetailHolder;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.machine.*;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
+import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenuSyncedExtra;
 import io.github.laptop59.concocti.common.menu.ConcoctiUpgradeSlot;
 import io.github.laptop59.concocti.common.menu.ResultSlot;
 import io.github.laptop59.concocti.common.recipe.*;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -85,6 +87,10 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
 
     // Details
     public final static String ID = "concocti_solar_collector";
+
+    // Fluids
+    public static final int FLUID_INPUT = 0;
+    public static final int FLUID_OUTPUT = 1;
 
     public Supplier<ConcoctiMachineDetails<BlockEntity, Menu, ItemsFluidsSolarInputValue, ItemsFluidsSolarRecipeInput, Recipe>> getDetails() {
         return () -> new ConcoctiMachineDetails<>(
@@ -567,7 +573,7 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
         }
     }
 
-    public static class Menu extends AbstractConcoctiMachineMenu<Menu> {
+    public static class Menu extends AbstractConcoctiMachineMenuSyncedExtra<Menu, Extra> {
 
         @Contract(pure = true)
         @Override
@@ -582,14 +588,14 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
 
         // Client
         public Menu(
-                int containerId, Inventory playerInventory
+                int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf
         ) {
-            super(containerId, playerInventory, 4, INSTANCE.MENU);
+            super(containerId, playerInventory, 4, buf, INSTANCE.MENU);
         }
 
         // Server
-        public Menu(int containerId, Inventory playerInventory, Container container, ContainerData data) {
-            super(containerId, playerInventory, container, data, INSTANCE.MENU);
+        public Menu(int containerId, Inventory playerInventory, Container container) {
+            super(containerId, playerInventory, container, INSTANCE.MENU);
         }
 
         @Override
@@ -607,7 +613,7 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
         }
 
         public FluidStack getFluidInput() {
-            return viewer.get(Properties.FLUID_INPUT);
+            return syncedFluids.get(FLUID_INPUT);
         }
 
         public int getMaxFluidInput() {
@@ -615,7 +621,7 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
         }
 
         public FluidStack getFluidOutput() {
-            return viewer.get(Properties.FLUID_OUTPUT);
+            return syncedFluids.get(FLUID_OUTPUT);
         }
 
         public int getMaxFluidOutput() {
@@ -626,12 +632,12 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
          * Returns the amount of solar/maximum solar left in this block.
          */
         public long getNumberSolarLeft(boolean max) {
-            SolarState state = viewer.get(Properties.SOLAR_STATE);
+            SolarState state = syncedExtra.solarState();
             return max ? state.getMaxSolarAmount() : state.getSolarAmount();
         }
 
         public Long getProductionRate() {
-            return viewer.get(Properties.SOLAR_PRODUCTION_RATE);
+            return syncedExtra.solarProductionRate();
         }
     }
 
@@ -759,6 +765,22 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
         public int getHorizontalArrowOffset(@NotNull Recipe recipe) {
             return 6;
         }
+    }
+
+    public record Extra(
+            SolarState solarState,
+            long solarProductionRate
+    ) {
+        public static StreamCodec<ByteBuf, Extra> STREAM_CODEC = StreamCodec.composite(
+                SolarState.STREAM_CODEC, Extra::solarState,
+                ByteBufCodecs.VAR_LONG, Extra::solarProductionRate,
+                Extra::new
+        );
+    }
+
+    @Override
+    public StreamCodec<? super RegistryFriendlyByteBuf, ?> getExtraDataStreamCodec() {
+        return Extra.STREAM_CODEC;
     }
 
     public BlockEntityConstructor<BlockEntity> getBlockEntityConstructor() {

@@ -43,6 +43,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
@@ -85,6 +86,9 @@ public class ConcoctiCrystallizer extends ConcoctiMachineOnlyItemsFluids<
     // Slots
     private static final int SEED_CRYSTAL_INPUT_SLOT = 2;
     private static final int OUTPUT_SLOT = 3;
+
+    // Fluids
+    private static final int FLUID_INPUT = 0;
 
     public Supplier<ConcoctiMachineDetails<BlockEntity, Menu, ItemsFluidsInputValue, ItemsFluidsRecipeInput, Recipe>> getDetails() {
         return () -> new ConcoctiMachineDetails<>(
@@ -368,7 +372,6 @@ public class ConcoctiCrystallizer extends ConcoctiMachineOnlyItemsFluids<
     }
 
     public static class Menu extends AbstractConcoctiMachineMenu<Menu> {
-
         @Contract(pure = true)
         @Override
         public List<Property<?>> getMachineSpecificProperties() {
@@ -379,14 +382,14 @@ public class ConcoctiCrystallizer extends ConcoctiMachineOnlyItemsFluids<
 
         // Client
         public Menu(
-                int containerId, Inventory playerInventory
+                int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf
         ) {
-            super(containerId, playerInventory, 4, INSTANCE.MENU);
+            super(containerId, playerInventory, 4, buf, INSTANCE.MENU);
         }
 
         // Server
-        public Menu(int containerId, Inventory playerInventory, Container container, ContainerData data) {
-            super(containerId, playerInventory, container, data, INSTANCE.MENU);
+        public Menu(int containerId, Inventory playerInventory, Container container) {
+            super(containerId, playerInventory, container, INSTANCE.MENU);
         }
 
         @Override
@@ -406,7 +409,7 @@ public class ConcoctiCrystallizer extends ConcoctiMachineOnlyItemsFluids<
         }
 
         public FluidStack getInputFluidStack() {
-            return viewer.get(Properties.FLUID_INPUT);
+            return syncedFluids.get(FLUID_INPUT);
         }
 
         public int getMaxFluidLeft() {

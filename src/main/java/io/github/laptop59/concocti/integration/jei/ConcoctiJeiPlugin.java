@@ -129,7 +129,7 @@ public class ConcoctiJeiPlugin implements IModPlugin {
     }
 
     private void registerForAllMachines(Consumer<ConcoctiMachine<?, ?, ?, ?, ?, ?, ?, ?, ?>> machineConsumer) {
-        for (var machine : ConcoctiMachines.MACHINES) {
+        for (var machine : ConcoctiMachines.MACHINES.values()) {
             machineConsumer.accept(machine);
         }
     }

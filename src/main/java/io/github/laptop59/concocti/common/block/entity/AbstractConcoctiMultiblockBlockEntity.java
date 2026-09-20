@@ -143,7 +143,7 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
      */
     @Override
     protected @NotNull ConcoctiMultiblockMenu createMenu(int containerId, @NotNull Inventory inventory) {
-        return new ConcoctiMultiblockMenu(getMachineInstance().MENU, containerId, inventory, this, dataAccess);
+        return new ConcoctiMultiblockMenu(getMachineInstance().MENU, containerId, inventory, this);
     }
 
     /**

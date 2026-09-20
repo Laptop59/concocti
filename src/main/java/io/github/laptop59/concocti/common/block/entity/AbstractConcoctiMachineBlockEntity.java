@@ -417,10 +417,9 @@ public abstract class AbstractConcoctiMachineBlockEntity
      * Creates a menu for this block entity.
      */
     @Override
-    @SuppressWarnings("unchecked")
     protected @NotNull M createMenu(int containerId, @NotNull Inventory inventory) {
         MenuServerConstructor<M> menuClass = getMachineDetails().menuServerConstructor();
-        return menuClass.create(containerId, inventory, this, getMachineDetails().complexion().apply((T) this));
+        return menuClass.create(containerId, inventory, this);
     }
 
     /**

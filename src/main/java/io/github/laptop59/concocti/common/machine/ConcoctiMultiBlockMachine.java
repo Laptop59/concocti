@@ -12,10 +12,12 @@ import io.github.laptop59.concocti.common.menu.ConcoctiMultiblockMenu;
 import io.github.laptop59.concocti.common.multiblock.MultiblockStructure;
 import io.github.laptop59.concocti.common.recipe.*;
 import io.github.laptop59.concocti.network.ConcoctiMachineSettingsBuildPreviewChangeC2S;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -89,7 +91,7 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
                 this.RECIPE_TYPE,
                 Component.translatable("block.concocti." + id),
                 List.of(),
-                (a, b, c, d) -> new ConcoctiMultiblockMenu(getInstance(id).MENU, a, b, c, d),
+                (a, b, c) -> new ConcoctiMultiblockMenu(getInstance(id).MENU, a, b, c),
                 BlockEntity::getDataAccess,
                 new EnumMap<>(SlotType.class),
                 new EnumMap<>(SlotType.class),
@@ -111,7 +113,7 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
 
     @Override
     public MenuClientConstructor<ConcoctiMultiblockMenu> getMenuClientConstructor() {
-        return (containerId, inventory) -> new ConcoctiMultiblockMenu(getInstance(id).MENU, containerId, inventory);
+        return (containerId, inventory, buf) -> new ConcoctiMultiblockMenu(getInstance(id).MENU, containerId, inventory, buf);
     }
 
     @Override
@@ -446,5 +448,28 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
             }
             return super.mouseClicked(mouseX, mouseY, button);
         }
+    }
+
+    public record Extra(
+            boolean valid,
+            boolean buildPreview
+    ) {
+        public static final byte VALID_FLAG = 1 << 0;
+        public static final byte BUILD_PREVIEW_FLAG = 1 << 1;
+
+        public static final StreamCodec<ByteBuf, Extra> STREAM_CODEC = StreamCodec.of(
+                (buffer, value) -> {
+                    int flags = (value.valid ? VALID_FLAG : 0) | (value.buildPreview ? BUILD_PREVIEW_FLAG : 0);
+                    buffer.writeByte(flags);
+                },
+                buffer -> {
+                    byte b = buffer.readByte();
+
+                    boolean valid = (b & VALID_FLAG) != 0;
+                    boolean buildPreview = (b & BUILD_PREVIEW_FLAG) != 0;
+
+                    return new Extra(valid, buildPreview);
+                }
+        );
     }
 }
