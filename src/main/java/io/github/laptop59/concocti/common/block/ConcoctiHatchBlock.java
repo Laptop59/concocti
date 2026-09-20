@@ -3,10 +3,13 @@ package io.github.laptop59.concocti.common.block;
 import com.mojang.serialization.MapCodec;
 import io.github.laptop59.concocti.common.block.entity.ConcoctiHatchBlockEntity;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.*;
+import net.minecraft.world.Containers;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -65,13 +68,14 @@ public class ConcoctiHatchBlock extends BaseEntityBlock implements EntityBlock {
         if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         } else {
-            MenuProvider provider = this.getMenuProvider(state, level, pos);
-            if (provider != null) {
-                player.openMenu(provider);
-            }
-
+            openMenu(level, pos, player);
             return InteractionResult.CONSUME;
         }
+    }
+
+    public void openMenu(Level level, BlockPos pos, Player player) {
+        ConcoctiHatchBlockEntity blockEntity = (ConcoctiHatchBlockEntity) level.getBlockEntity(pos);
+        player.openMenu(blockEntity, blockEntity::writeCompleteSyncedDataToBuf);
     }
 
     @Override

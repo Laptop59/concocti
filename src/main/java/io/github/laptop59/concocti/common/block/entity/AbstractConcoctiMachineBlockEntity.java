@@ -4,6 +4,7 @@ import io.github.laptop59.concocti.client.gui.components.MachineSettings;
 import io.github.laptop59.concocti.client.gui.components.MachineSettingsSlots;
 import io.github.laptop59.concocti.client.gui.components.SlotFlag;
 import io.github.laptop59.concocti.client.gui.components.SlotType;
+import io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock;
 import io.github.laptop59.concocti.common.block.frame.FrameAttributes;
 import io.github.laptop59.concocti.common.detail.DetailContext;
 import io.github.laptop59.concocti.common.detail.DetailHolder;
@@ -16,10 +17,7 @@ import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachineDetails;
 import io.github.laptop59.concocti.common.machine.FluidTankHolder;
 import io.github.laptop59.concocti.common.machine.SettingsHolder;
-import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
-import io.github.laptop59.concocti.common.menu.ConcoctiFrameSlot;
-import io.github.laptop59.concocti.common.menu.ConcoctiUpgradeSlot;
-import io.github.laptop59.concocti.common.menu.MenuServerConstructor;
+import io.github.laptop59.concocti.common.menu.*;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
 import io.github.laptop59.concocti.common.util.ConcoctiTransferrer;
 import io.github.laptop59.concocti.common.util.Lazy;
@@ -45,6 +43,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -73,7 +72,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
         <T extends AbstractConcoctiMachineBlockEntity<T, M, V, I, R>,
                 M extends AbstractConcoctiMachineMenu<M>, V, I extends RecipeInput, R extends ProcessingRecipe<R, I>>
         extends AbstractPoweredBlockEntity
-        implements ItemHandlerBlockEntity, FluidHandlerBlockEntity, EnergyStorageBlockEntity, Details, SettingsHolder, FluidTankHolder {
+        implements ItemHandlerBlockEntity, FluidHandlerBlockEntity, EnergyStorageBlockEntity, Details, SettingsHolder, FluidTankHolder, SyncedDataCreator {
 
     public int ticksLeft = 0;
     public int totalTicks = 0;
@@ -648,6 +647,31 @@ public abstract class AbstractConcoctiMachineBlockEntity
         tag.putBoolean("eject_on", this.ejectOn);
         tag.putBoolean("pull_on", this.pullOn);
         serialize(new DetailContext(tag, registries, null));
+    }
+
+    public SyncedMachineData createSyncedData(boolean complete) {
+        BlockState blockState = getBlockState();
+        return new SyncedMachineData(
+                new SyncedMachineData.Base(
+                        ticksLeft,
+                        totalTicks,
+                        getTickMultiplier(),
+                        energy.getEnergyStored(),
+                        energy.getMaxEnergyStored()
+                ),
+                new SyncedMachineData.Settings(
+                        Optional.of(blockState.getValue(AbstractConcoctiMachineBlock.FACING)),
+                        machineSettings.slots,
+                        ejectOn,
+                        pullOn
+                ),
+                // TODO: complete this
+                new SyncedMachineData.Fluids(new FluidStack[0]),
+                new SyncedMachineData.Extra(
+                        getMachineInstance(),
+                        null
+                )
+        );
     }
 
     @Override

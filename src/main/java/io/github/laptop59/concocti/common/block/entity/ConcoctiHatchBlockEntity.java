@@ -16,6 +16,7 @@ import io.github.laptop59.concocti.common.machine.SettingsHolder;
 import io.github.laptop59.concocti.common.menu.ConcoctiEnergyHatchMenu;
 import io.github.laptop59.concocti.common.menu.ConcoctiFluidHatchMenu;
 import io.github.laptop59.concocti.common.menu.ConcoctiItemHatchMenu;
+import io.github.laptop59.concocti.common.menu.SyncedMachineData;
 import io.github.laptop59.concocti.common.util.ConcoctiTransferrer;
 import io.github.laptop59.concocti.common.util.Lazy;
 import net.minecraft.core.BlockPos;
@@ -33,6 +34,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
@@ -43,8 +45,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity implements ItemHandlerBlockEntity, FluidHandlerBlockEntity, EnergyStorageBlockEntity, Details, SettingsHolder, FluidTankHolder {
+public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity implements ItemHandlerBlockEntity, FluidHandlerBlockEntity, EnergyStorageBlockEntity, Details, SettingsHolder, FluidTankHolder, SyncedDataCreator {
     public boolean ejectOn;
     public boolean pullOn;
     public ConcoctiFluidTankHandler fluidHandler;
@@ -267,8 +270,6 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
         ConcoctiHatchBlock block = (ConcoctiHatchBlock) blockState.getBlock();
 
         HatchType type = block.getType();
-        HatchPurpose purpose = block.getPurpose();
-
         if (type == HatchType.ITEM) {
             this.resetItemHandler(9);
         }
@@ -407,6 +408,30 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
         tag.putBoolean("eject_on", this.ejectOn);
         tag.putBoolean("pull_on", this.pullOn);
         serialize(new DetailContext(tag, registries, null));
+    }
+
+    public SyncedMachineData createSyncedData(boolean complete) {
+        return new SyncedMachineData(
+                new SyncedMachineData.Base(
+                        0,
+                        0,
+                        0,
+                        energy.getEnergyStored(),
+                        energy.getMaxEnergyStored()
+                ),
+                new SyncedMachineData.Settings(
+                        Optional.empty(),
+                        machineSettings.slots,
+                        ejectOn,
+                        pullOn
+                ),
+                // TODO: Complete fluids
+                new SyncedMachineData.Fluids(new FluidStack[0]),
+                new SyncedMachineData.Extra(
+                        null,
+                        null
+                )
+        );
     }
 
     @Override

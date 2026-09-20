@@ -105,8 +105,8 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
     /**
      * Gets the facing direction of this machine.
      */
-    public Direction getFacingDirection() {
-        return syncedSettings.facingDirection();
+    public @Nullable Direction getFacingDirection() {
+        return syncedSettings.facingDirection().orElse(null);
     }
 
     /**
