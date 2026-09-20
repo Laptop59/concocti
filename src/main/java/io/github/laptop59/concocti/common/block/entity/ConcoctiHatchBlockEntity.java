@@ -4,9 +4,6 @@ import io.github.laptop59.concocti.client.gui.components.MachineSettings;
 import io.github.laptop59.concocti.client.gui.components.MachineSettingsSlots;
 import io.github.laptop59.concocti.client.gui.components.SlotFlag;
 import io.github.laptop59.concocti.client.gui.components.SlotType;
-import io.github.laptop59.concocti.common.abstraction.Complexion;
-import io.github.laptop59.concocti.common.abstraction.Properties;
-import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.ConcoctiHatchBlock;
 import io.github.laptop59.concocti.common.block.HatchPurpose;
@@ -34,10 +31,8 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
-import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
@@ -46,7 +41,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity implements ItemHandlerBlockEntity, FluidHandlerBlockEntity, EnergyStorageBlockEntity, Details, SettingsHolder, FluidTankHolder {
     public boolean ejectOn;
@@ -67,32 +63,10 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
             DetailCodec.FLUID_TANK, "fluid_tank", new FluidTank(TANK_CAPACITY), this
     );
 
-    // Properties
-    public final Property<Boolean> EJECT_ON =
-            Properties.EJECT_ON.newWithLinker(() -> ejectOn);
-    public final Property<Boolean> PULL_ON =
-            Properties.PULL_ON.newWithLinker(() -> pullOn);
-    public final Property<MachineSettingsSlots> MACHINE_SETTINGS_SLOTS =
-            Properties.MACHINE_SETTINGS_SLOTS.newWithLinker(() -> machineSettings.slots);
-    public final Property<Integer> ENERGY_STORED =
-            Properties.ENERGY_STORED.newWithLinker(() -> energy.getEnergyStored());
-    public final Property<Integer> MAX_ENERGY_STORED =
-            Properties.MAX_ENERGY_STORED.newWithLinker(() -> energy.getMaxEnergyStored());
-    public final Property<FluidStack> FLUID_TANK = Properties.FLUID_TANK.newWithLinker(() -> fluidTank.get().getFluid());
-
     protected final Lazy<IItemHandler> inputItemHandler;
     protected final Lazy<IFluidHandler> inputFluidHandler;
     protected final Lazy<IItemHandler> outputItemHandler;
     protected final Lazy<IFluidHandler> outputFluidHandler;
-
-    protected final Complexion dataAccess = new Complexion(
-            EJECT_ON.of(false),
-            PULL_ON.of(false),
-            MACHINE_SETTINGS_SLOTS.of(new MachineSettingsSlots()),
-            ENERGY_STORED.of(0),
-            MAX_ENERGY_STORED.of(0),
-            FLUID_TANK.of(new FluidStack(Fluids.EMPTY, 0))
-    );
 
     /**
      * Gets the item handler from a particular direction.

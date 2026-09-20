@@ -4,8 +4,6 @@ import io.github.laptop59.concocti.client.gui.components.MachineSettings;
 import io.github.laptop59.concocti.client.gui.components.MachineSettingsSlots;
 import io.github.laptop59.concocti.client.gui.components.SlotFlag;
 import io.github.laptop59.concocti.client.gui.components.SlotType;
-import io.github.laptop59.concocti.common.abstraction.Properties;
-import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.frame.FrameAttributes;
 import io.github.laptop59.concocti.common.detail.DetailContext;
 import io.github.laptop59.concocti.common.detail.DetailHolder;
@@ -58,7 +56,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock.FACING;
 import static io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock.LIT;
 
 /**
@@ -101,27 +98,6 @@ public abstract class AbstractConcoctiMachineBlockEntity
     // Slots
     public static final int UPGRADE_SLOT = 0;
     public static final int FRAME_SLOT = 1;
-
-    // Properties
-    public final Property<Integer> TICKS_LEFT =
-            Properties.TICKS_LEFT.newWithLinker(() -> ticksLeft);
-    public final Property<Integer> TOTAL_TICKS =
-            Properties.TOTAL_TICKS.newWithLinker(() -> totalTicks);
-    public final Property<Integer> TICK_MULTIPLIER =
-            Properties.TICK_MULTIPLIER.newWithLinker(this::getTickMultiplier);
-    public final Property<Integer> ENERGY_STORED =
-            Properties.ENERGY_STORED.newWithLinker(() -> energy.getEnergyStored());
-    public final Property<Integer> MAX_ENERGY_STORED =
-            Properties.MAX_ENERGY_STORED.newWithLinker(() -> energy.getMaxEnergyStored());
-    public final Property<Boolean> EJECT_ON =
-            Properties.EJECT_ON.newWithLinker(() -> ejectOn);
-    public final Property<Boolean> PULL_ON =
-            Properties.PULL_ON.newWithLinker(() -> pullOn);
-
-    public final Property<Direction> FACING_DIRECTION =
-            Properties.FACING_DIRECTION.newWithLinker(() -> getBlockState().getValue(FACING));
-    public final Property<MachineSettingsSlots> MACHINE_SETTINGS_SLOTS =
-            Properties.MACHINE_SETTINGS_SLOTS.newWithLinker(() -> machineSettings.slots);
 
     protected Lazy<IItemHandler> inputItemHandler;
     protected Lazy<IFluidHandler> inputFluidHandler;

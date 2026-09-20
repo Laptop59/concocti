@@ -6,8 +6,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.laptop59.concocti.client.gui.AbstractConcoctiMachineScreen;
 import io.github.laptop59.concocti.client.gui.components.*;
 import io.github.laptop59.concocti.common.ConcoctiSounds;
-import io.github.laptop59.concocti.common.abstraction.ConcoctiMachineComplexion;
-import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineOnlyItemsFluidsBlockEntity;
@@ -53,7 +51,6 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.registries.datamaps.builtin.FurnaceFuel;
 import net.neoforged.neoforge.registries.datamaps.builtin.NeoForgeDataMaps;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -97,7 +94,6 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
                         SlotType.ENERGY_OUTPUT
                 ),
                 Menu::new,
-                blockEntity -> blockEntity.dataAccess,
                 new EnumMap<>(
                         Map.of(
                                 SlotType.ITEM_INPUT, List.of(INPUT_OUTPUT_SLOT),
@@ -145,8 +141,6 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
         protected boolean isItemValidInMachine(int slot, @NotNull ItemStack stack) {
             return slot == INPUT_OUTPUT_SLOT;
         }
-
-        protected final ConcoctiMachineComplexion dataAccess = new ConcoctiMachineComplexion(this);
 
         public BlockEntity(BlockPos pos, BlockState blockState) {
             super(
@@ -265,12 +259,6 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
     }
 
     public static class Menu extends AbstractConcoctiMachineMenu<Menu> {
-        @Contract(pure = true)
-        @Override
-        public List<Property<?>> getMachineSpecificProperties() {
-            return List.of();
-        }
-
         // Client
         public Menu(
                 int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf

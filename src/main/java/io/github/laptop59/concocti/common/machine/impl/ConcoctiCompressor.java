@@ -5,9 +5,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.laptop59.concocti.client.gui.AbstractConcoctiMachineScreen;
 import io.github.laptop59.concocti.client.gui.components.*;
-import io.github.laptop59.concocti.common.abstraction.ConcoctiMachineComplexion;
-import io.github.laptop59.concocti.common.abstraction.Properties;
-import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
@@ -51,7 +48,6 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -112,7 +108,6 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
                         SlotType.ALL_FLUID_INPUTS
                 ),
                 Menu::new,
-                blockEntity -> blockEntity.dataAccess,
                 new EnumMap<>(
                         Map.of(
                                 SlotType.ITEM_INPUT_1, List.of(INPUT_SLOT_1),
@@ -198,13 +193,6 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
                 DetailCodec.FLUID_TANK, "fluid_output", new FluidTank(TANK_CAPACITY * 2), this
         );
 
-        // Properties
-        public final Property<FluidStack> FLUID_INPUT_1 = Properties.FLUID_INPUT_1.newWithLinker(fluidInput1.get()::getFluid);
-        public final Property<FluidStack> FLUID_INPUT_2 = Properties.FLUID_INPUT_2.newWithLinker(fluidInput2.get()::getFluid);
-        public final Property<FluidStack> FLUID_INPUT_3 = Properties.FLUID_INPUT_3.newWithLinker(fluidInput3.get()::getFluid);
-        public final Property<FluidStack> FLUID_INPUT_4 = Properties.FLUID_INPUT_4.newWithLinker(fluidInput4.get()::getFluid);
-        public final Property<FluidStack> FLUID_OUTPUT = Properties.FLUID_OUTPUT.newWithLinker(fluidOutput.get()::getFluid);
-
         @Override
         protected ConcoctiCompressor getMachineInstance() {
             return INSTANCE;
@@ -225,15 +213,6 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
         protected boolean isItemValidInMachine(int slot, @NotNull ItemStack stack) {
             return true;
         }
-
-        protected final ConcoctiMachineComplexion dataAccess = new ConcoctiMachineComplexion(
-                this,
-                FLUID_INPUT_1.of(FluidStack.EMPTY.copy()),
-                FLUID_INPUT_2.of(FluidStack.EMPTY.copy()),
-                FLUID_INPUT_3.of(FluidStack.EMPTY.copy()),
-                FLUID_INPUT_4.of(FluidStack.EMPTY.copy()),
-                FLUID_OUTPUT.of(FluidStack.EMPTY.copy())
-        );
 
         public BlockEntity(BlockPos pos, BlockState blockState) {
             super(
@@ -493,18 +472,6 @@ public class ConcoctiCompressor extends ConcoctiMachineOnlyItemsFluids<
     }
 
     public static class Menu extends AbstractConcoctiMachineMenu<Menu> {
-        @Contract(pure = true)
-        @Override
-        public List<Property<?>> getMachineSpecificProperties() {
-            return List.of(
-                    Properties.FLUID_INPUT_1,
-                    Properties.FLUID_INPUT_2,
-                    Properties.FLUID_INPUT_3,
-                    Properties.FLUID_INPUT_4,
-                    Properties.FLUID_OUTPUT
-            );
-        }
-
         // Client
         public Menu(
                 int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf

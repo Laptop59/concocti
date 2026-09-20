@@ -1,7 +1,5 @@
 package io.github.laptop59.concocti.common.menu;
 
-import io.github.laptop59.concocti.common.abstraction.Properties;
-import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMultiblockBlockEntity;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.machine.ConcoctiMultiBlockMachine;
@@ -9,29 +7,18 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.*;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Supplier;
 
 /**
  * A class which serves as a base for a Concocti Multiblock's menu.
  */
 public class ConcoctiMultiblockMenu extends AbstractConcoctiMachineMenuSyncedExtra<ConcoctiMultiblockMenu, ConcoctiMultiBlockMachine.Extra> {
-    protected static final List<Property<?>> BASE_PROPERTIES = List.of(
-            Properties.VALID,
-            Properties.BUILD_PREVIEW,
-            Properties.TICKS_LEFT,
-            Properties.TOTAL_TICKS,
-            Properties.TICK_MULTIPLIER
-    );
-
-    protected String machineId;
-
     // Client
     public ConcoctiMultiblockMenu(
             Supplier<MenuType<ConcoctiMultiblockMenu>> menuTypeSupplier,  int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf
@@ -57,16 +44,6 @@ public class ConcoctiMultiblockMenu extends AbstractConcoctiMachineMenuSyncedExt
         for (int k = 0; k < 9; k++) {
             this.addSlot(new Slot(playerInventory, k, 8 + k * 18, 142));
         }
-    }
-
-    @Override
-    public List<Property<?>> getMachineSpecificProperties() {
-        return List.of();
-    }
-
-    @Override
-    public List<Property<?>> getMachineProperties() {
-        return new ArrayList<>(BASE_PROPERTIES);
     }
 
     @Override

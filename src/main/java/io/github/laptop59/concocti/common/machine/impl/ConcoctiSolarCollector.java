@@ -5,9 +5,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.laptop59.concocti.client.gui.AbstractConcoctiMachineScreen;
 import io.github.laptop59.concocti.client.gui.components.*;
-import io.github.laptop59.concocti.common.abstraction.ConcoctiMachineComplexion;
-import io.github.laptop59.concocti.common.abstraction.Properties;
-import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
@@ -57,7 +54,6 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -100,7 +96,6 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
                 Component.translatable("block.concocti.concocti_solar_collector"),
                 List.of(SlotType.ITEM_INPUT, SlotType.FLUID_INPUT, SlotType.SOLAR_INPUT, SlotType.ITEM_OUTPUT, SlotType.FLUID_OUTPUT, SlotType.ITEM_INPUT_OUTPUT),
                 Menu::new,
-                blockEntity -> blockEntity.dataAccess,
                 new EnumMap<>(
                         Map.of(
                                 SlotType.ITEM_INPUT, List.of(INPUT_SLOT),
@@ -150,12 +145,6 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
                 DetailCodec.FLUID_TANK, "fluid_output", new FluidTank(TANK_CAPACITY), this
         );
 
-        // Properties
-        public final Property<SolarState> SOLAR = Properties.SOLAR_STATE.newWithLinker(solar::get);
-        public final Property<FluidStack> FLUID_INPUT = Properties.FLUID_INPUT.newWithLinker(() -> fluidInput.get().getFluid());
-        public final Property<FluidStack> FLUID_OUTPUT = Properties.FLUID_OUTPUT.newWithLinker(() -> fluidOutput.get().getFluid());
-        public final Property<Long> SOLAR_PRODUCTION_RATE = Properties.SOLAR_PRODUCTION_RATE.newWithLinker(this::solarEarnedPerTick);
-
         // at coefficient = 1 (coefficient can be less or greater than 1)
         public final long NORMALIZED_SOLAR_UNITS_PER_TICK = 1_000L;
         public static final long SOLAR_PER_MOLTEN_SOLARIUM_MILLIBUCKET = 1_000L; // constant, DO NOT CHANGE! WON'T BE CHANGEABLE, EVEN IN CONFIG!
@@ -178,14 +167,6 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
         protected boolean isItemValidInMachine(int slot, @NotNull ItemStack stack) {
             return false;
         }
-
-        protected final ConcoctiMachineComplexion dataAccess = new ConcoctiMachineComplexion(
-                this,
-                SOLAR.of(new SolarState(0, 0)),
-                FLUID_INPUT.of(FluidStack.EMPTY),
-                FLUID_OUTPUT.of(FluidStack.EMPTY),
-                SOLAR_PRODUCTION_RATE.of(0L)
-        );
 
         public BlockEntity(BlockPos pos, BlockState blockState) {
             super(
@@ -570,18 +551,6 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
     }
 
     public static class Menu extends AbstractConcoctiMachineMenuSyncedExtra<Menu, Extra> {
-
-        @Contract(pure = true)
-        @Override
-        public List<Property<?>> getMachineSpecificProperties() {
-            return List.of(
-                    Properties.SOLAR_STATE,
-                    Properties.FLUID_INPUT,
-                    Properties.FLUID_OUTPUT,
-                    Properties.SOLAR_PRODUCTION_RATE
-            );
-        }
-
         // Client
         public Menu(
                 int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf
