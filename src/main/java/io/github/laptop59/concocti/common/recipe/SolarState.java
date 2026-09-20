@@ -85,4 +85,15 @@ public class SolarState implements SolarStorage {
     public boolean canReceive() {
         return true;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof SolarState other && solarAmount == other.solarAmount
+                && maxSolarAmount == other.maxSolarAmount;
+    }
+
+    @Override
+    public int hashCode() {
+        return Long.hashCode(solarAmount ^ maxSolarAmount);
+    }
 }

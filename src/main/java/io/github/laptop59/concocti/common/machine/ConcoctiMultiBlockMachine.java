@@ -468,5 +468,10 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
                     return new Extra(valid, buildPreview);
                 }
         );
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof Extra(boolean valid1, boolean preview) && valid == valid1 && buildPreview == preview;
+        }
     }
 }

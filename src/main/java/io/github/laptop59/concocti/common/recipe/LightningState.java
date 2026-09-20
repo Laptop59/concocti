@@ -29,4 +29,14 @@ public class LightningState {
     public boolean getLightningCollected() {
         return lightningCollected;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof LightningState other && lightningCollected == other.lightningCollected;
+    }
+
+    @Override
+    public int hashCode() {
+        return Boolean.hashCode(lightningCollected);
+    }
 }

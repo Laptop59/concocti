@@ -12,6 +12,7 @@ import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineOn
 import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
 import io.github.laptop59.concocti.common.detail.DetailCodec;
 import io.github.laptop59.concocti.common.detail.DetailHolder;
+import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTank;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.machine.*;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenuSyncedExtra;
@@ -53,7 +54,6 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -83,6 +83,9 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
     // Fluids
     public static final int FLUID_INPUT = 0;
     public static final int FLUID_OUTPUT = 1;
+
+    // at coefficient = 1 (coefficient can be less or greater than 1)
+    public static final long NORMALIZED_SOLAR_UNITS_PER_TICK = 1_000L;
 
     public Supplier<ConcoctiMachineDetails<BlockEntity, Menu, ItemsFluidsSolarInputValue, ItemsFluidsSolarRecipeInput, Recipe>> getDetails() {
         return () -> new ConcoctiMachineDetails<>(
@@ -138,15 +141,13 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
 
     public static class BlockEntity extends AbstractConcoctiMachineOnlyItemsFluidsSolarBlockEntity<BlockEntity, Menu, Recipe> {
 
-        private final DetailHolder<FluidTank> fluidInput = new DetailHolder<>(
-                DetailCodec.FLUID_TANK, "fluid_input", new FluidTank(TANK_CAPACITY), this
+        private final DetailHolder<ConcoctiFluidTank> fluidInput = new DetailHolder<>(
+                DetailCodec.FLUID_TANK, "fluid_input", new ConcoctiFluidTank(TANK_CAPACITY), this
         );
-        private final DetailHolder<FluidTank> fluidOutput = new DetailHolder<>(
-                DetailCodec.FLUID_TANK, "fluid_output", new FluidTank(TANK_CAPACITY), this
+        private final DetailHolder<ConcoctiFluidTank> fluidOutput = new DetailHolder<>(
+                DetailCodec.FLUID_TANK, "fluid_output", new ConcoctiFluidTank(TANK_CAPACITY), this
         );
 
-        // at coefficient = 1 (coefficient can be less or greater than 1)
-        public final long NORMALIZED_SOLAR_UNITS_PER_TICK = 1_000L;
         public static final long SOLAR_PER_MOLTEN_SOLARIUM_MILLIBUCKET = 1_000L; // constant, DO NOT CHANGE! WON'T BE CHANGEABLE, EVEN IN CONFIG!
 
         @Override
@@ -155,7 +156,7 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
         }
 
         @Override
-        public List<IFluidHandler> getIndexedFluidHandlers() {
+        public List<ConcoctiFluidTank> getIndexedFluidHandlers() {
             return List.of(fluidInput.get(), fluidOutput.get());
         }
 
@@ -187,46 +188,6 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
         public void onUpgradeUnitsChange() {
             super.onUpgradeUnitsChange();
             solar.get().setMaxSolarAmount(calculateMaxSolarAmount());
-        }
-
-        public long solarEarnedPerTick() {
-            assert getLevel() != null;
-
-            BlockPos checkedPos = getBlockPos().above();
-            if (!getLevel().canSeeSky(checkedPos) || !getLevel().isDay() || getLevel().dimensionType().hasFixedTime()) return 0L; // No sun!
-
-            float rainLevel = Mth.clamp(getLevel().getRainLevel(1.0f), 0, 1);
-            float thunderLevel = Mth.clamp(getLevel().getThunderLevel(1.0f), 0, 1);
-            Biome biome = getLevel().getBiome(checkedPos).getDelegate().value();
-            float humidity = 0f;
-            switch (biome.getPrecipitationAt(checkedPos)) {
-                case RAIN -> humidity = 0.75f;
-                case SNOW -> humidity = 0.9f;
-            }
-            humidity = Mth.clamp(humidity, 0, 1);
-
-            double relativeTime = Mth.clamp(getLevel().getDayTime() % 24000L / 6000.0 - 1.0, -1, 1);
-            double timeScale = 1.0 - relativeTime * relativeTime;
-            double tempScale = getTemperatureScale(biome);
-
-            // Formula is: (not 100% realistic)
-            double coefficient = timeScale * tempScale * (1 - 0.2 * rainLevel - 0.3 * thunderLevel) * (1 - 0.15 * humidity);
-            return (long) (NORMALIZED_SOLAR_UNITS_PER_TICK * coefficient);
-        }
-
-        /** Returns a scale due to temperature in the range (0, 2).
-         * Higher the temperature, higher will be the scale.
-         * This function satisfies the following conditions:
-         * <ul>
-         * <li>f(x) ∈ (0, 2) for any x ∈ R</li>
-         * <li>f(0) = 0.5</li>
-         * <li>f(1) = 1.0</li>
-         * <li>f(2) = 1.5</li>
-         * </ul>
-         */
-        private double getTemperatureScale(Biome biome) {
-            float temperatureDelta = biome.getBaseTemperature() - 1.0f; // ranges between -1f to +1f (for normal biomes)
-            return 2.0 / (1.0 + Math.pow(3.0, -temperatureDelta));
         }
 
         @Override
@@ -309,9 +270,9 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
         }
 
         @Override
-        public void tick(Level level, BlockPos pos, BlockState state) {
-            solar.get().receiveSolar(solarEarnedPerTick(), false);
-            super.tick(level, pos, state);
+        protected void tickMachineSpecific(Level level, BlockPos pos, BlockState state) {
+            solar.get().receiveSolar(solarEarnedPerTick(level, pos), false);
+            super.tickMachineSpecific(level, pos, state);
         }
 
         @Override
@@ -341,6 +302,11 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
         @Override
         public List<IFluidTank> getFluidTanks() {
             return List.of(fluidOutput.get());
+        }
+
+        @Override
+        public Object getExtraData() {
+            return new Extra(solar.get(), solarEarnedPerTick(level, getBlockPos()));
         }
     }
 
@@ -741,6 +707,55 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
                 ByteBufCodecs.VAR_LONG, Extra::solarProductionRate,
                 Extra::new
         );
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof Extra(SolarState state, long productionRate) && solarState.equals(state)
+                    && solarProductionRate == productionRate;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(solarState, solarProductionRate);
+        }
+    }
+
+    public static long solarEarnedPerTick(@NotNull Level level, BlockPos blockPos) {
+        BlockPos checkedPos = blockPos.above();
+        if (!level.canSeeSky(checkedPos) || !level.isDay() || level.dimensionType().hasFixedTime()) return 0L; // No sun!
+
+        float rainLevel = Mth.clamp(level.getRainLevel(1.0f), 0, 1);
+        float thunderLevel = Mth.clamp(level.getThunderLevel(1.0f), 0, 1);
+        Biome biome = level.getBiome(checkedPos).getDelegate().value();
+        float humidity = 0f;
+        switch (biome.getPrecipitationAt(checkedPos)) {
+            case RAIN -> humidity = 0.75f;
+            case SNOW -> humidity = 0.9f;
+        }
+        humidity = Mth.clamp(humidity, 0, 1);
+
+        double relativeTime = Mth.clamp(level.getDayTime() % 24000L / 6000.0 - 1.0, -1, 1);
+        double timeScale = 1.0 - relativeTime * relativeTime;
+        double tempScale = getTemperatureScale(biome);
+
+        // Formula is: (not 100% realistic)
+        double coefficient = timeScale * tempScale * (1 - 0.2 * rainLevel - 0.3 * thunderLevel) * (1 - 0.15 * humidity);
+        return (long) (NORMALIZED_SOLAR_UNITS_PER_TICK * coefficient);
+    }
+
+    /** Returns a scale due to temperature in the range (0, 2).
+     * Higher the temperature, higher will be the scale.
+     * This function satisfies the following conditions:
+     * <ul>
+     * <li>f(x) ∈ (0, 2) for any x ∈ R</li>
+     * <li>f(0) = 0.5</li>
+     * <li>f(1) = 1.0</li>
+     * <li>f(2) = 1.5</li>
+     * </ul>
+     */
+    private static double getTemperatureScale(Biome biome) {
+        float temperatureDelta = biome.getBaseTemperature() - 1.0f; // ranges between -1f to +1f (for normal biomes)
+        return 2.0 / (1.0 + Math.pow(3.0, -temperatureDelta));
     }
 
     @Override

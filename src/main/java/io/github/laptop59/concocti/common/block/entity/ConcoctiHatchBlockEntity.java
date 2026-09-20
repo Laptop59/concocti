@@ -9,6 +9,7 @@ import io.github.laptop59.concocti.common.block.ConcoctiHatchBlock;
 import io.github.laptop59.concocti.common.block.HatchPurpose;
 import io.github.laptop59.concocti.common.block.HatchType;
 import io.github.laptop59.concocti.common.detail.*;
+import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTank;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTankHandler;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTankSlotTypedHandler;
 import io.github.laptop59.concocti.common.machine.FluidTankHolder;
@@ -37,7 +38,6 @@ import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -62,8 +62,8 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
     public static final int ENERGY_CAPACITY = 10_000_000;
 
     // Details
-    private final DetailHolder<FluidTank> fluidTank = new DetailHolder<>(
-            DetailCodec.FLUID_TANK, "fluid_tank", new FluidTank(TANK_CAPACITY), this
+    private final DetailHolder<ConcoctiFluidTank> fluidTank = new DetailHolder<>(
+            DetailCodec.FLUID_TANK, "fluid_tank", new ConcoctiFluidTank(TANK_CAPACITY), this
     );
 
     protected final Lazy<IItemHandler> inputItemHandler;
@@ -485,7 +485,7 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
     }
 
     @Override
-    public List<IFluidHandler> getIndexedFluidHandlers() {
+    public List<ConcoctiFluidTank> getIndexedFluidHandlers() {
         return List.of(fluidTank.get());
     }
 

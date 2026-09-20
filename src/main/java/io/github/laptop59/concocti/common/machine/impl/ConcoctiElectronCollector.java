@@ -11,6 +11,7 @@ import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBl
 import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
 import io.github.laptop59.concocti.common.detail.DetailCodec;
 import io.github.laptop59.concocti.common.detail.DetailHolder;
+import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTank;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.machine.AbstractConcoctiRecipeCategory;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
@@ -55,7 +56,6 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -128,8 +128,8 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
     public static class BlockEntity extends AbstractConcoctiMachineBlockEntity
             <BlockEntity, Menu, LightningState, LightningRecipeInput, Recipe> {
 
-        private final DetailHolder<FluidTank> fluidOutput = new DetailHolder<>(
-                DetailCodec.FLUID_TANK, "fluid_output", new FluidTank(TANK_CAPACITY), this
+        private final DetailHolder<ConcoctiFluidTank> fluidOutput = new DetailHolder<>(
+                DetailCodec.FLUID_TANK, "fluid_output", new ConcoctiFluidTank(TANK_CAPACITY), this
         );
         private final DetailHolder<LightningState> lightningState = new DetailHolder<>(
                 DetailCodec.LIGHTNING_STATE, "lightning_state", new LightningState(false), this
@@ -141,7 +141,7 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
         }
 
         @Override
-        public List<IFluidHandler> getIndexedFluidHandlers() {
+        public List<ConcoctiFluidTank> getIndexedFluidHandlers() {
             return List.of(fluidOutput.get());
         }
 
@@ -194,6 +194,11 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
 
         public void markLightningState() {
             lightningState.get().setLightningCollected(true);
+        }
+
+        @Override
+        public Object getExtraData() {
+            return new Extra(lightningState.get());
         }
     }
 
@@ -494,6 +499,16 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
                 Extra::new,
                 Extra::lightningState
         );
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof Extra(LightningState state) && lightningState.equals(state);
+        }
+
+        @Override
+        public int hashCode() {
+            return lightningState.hashCode();
+        }
     }
 
     @Override

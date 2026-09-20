@@ -10,6 +10,7 @@ import io.github.laptop59.concocti.common.detail.DetailContext;
 import io.github.laptop59.concocti.common.detail.DetailHolder;
 import io.github.laptop59.concocti.common.detail.DetailHolders;
 import io.github.laptop59.concocti.common.detail.Details;
+import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTank;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTankHandler;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTankSlotTypedHandler;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
@@ -21,6 +22,7 @@ import io.github.laptop59.concocti.common.menu.*;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
 import io.github.laptop59.concocti.common.util.ConcoctiTransferrer;
 import io.github.laptop59.concocti.common.util.Lazy;
+import io.github.laptop59.concocti.network.SyncMachinePayloadS2C;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -30,6 +32,8 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ContainerData;
@@ -47,6 +51,7 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -80,6 +85,8 @@ public abstract class AbstractConcoctiMachineBlockEntity
     public float rateConsumption;
     public boolean ejectOn;
     public boolean pullOn;
+
+    protected DirtyTracker dirty = new DirtyTracker(this);
 
     public RecipeHolder<R> lastRecipe = null;
 
@@ -524,7 +531,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
     /**
      * Gets all the separate handlers of fluid stacks of this machine, which are indexed consistently.
      */
-    public List<IFluidHandler> getIndexedFluidHandlers() {
+    public List<ConcoctiFluidTank> getIndexedFluidHandlers() {
         return List.of();
     }
 
@@ -536,11 +543,36 @@ public abstract class AbstractConcoctiMachineBlockEntity
      * A basic implementation of a Concocti Machine's server tick.
      */
     public void tick(Level level, BlockPos pos, BlockState state) {
+        tickMachineSpecific(level, pos, state);
+
         int currentUpgradeUnits = ConcoctiUpgradeSlot.getUpgradeUnits(this.getItem(UPGRADE_SLOT));
         if (currentUpgradeUnits != this.lastUpgradeUnits) {
             this.lastUpgradeUnits = currentUpgradeUnits;
+            setNewEnergyMultiplier(getInefficientEnergyMultiplier());
             this.onUpgradeUnitsChange();
         }
+
+        dirty.update();
+        if (dirty.clearDirtyFlag()) {
+            updateToClients();
+        }
+    }
+
+    protected void updateToClients() {
+        if (level instanceof ServerLevel serverLevel) {
+            SyncedMachineData data = createSyncedData(false);
+            for (ServerPlayer player : serverLevel.players()) {
+                if (player.containerMenu instanceof AbstractConcoctiMachineMenu<?> menu && menu.getContainer() == this) {
+                    PacketDistributor.sendToPlayer(player, new SyncMachinePayloadS2C(
+                            menu.containerId,
+                            data
+                    ));
+                }
+            }
+        }
+    }
+
+    protected void tickMachineSpecific(Level level, BlockPos pos, BlockState state) {
         if (this.ticksLeft >= this.totalTicks) this.lastRecipe = null;
         if (--this.autoCooldown <= 0) {
             this.autoCooldown = AUTO_COOLDOWN;
@@ -600,6 +632,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
     @Override
     protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
         super.loadAdditional(tag, registries);
+
         this.ticksLeft = tag.getInt("ticks_left");
         this.lastRecipe = null;
         if (tag.contains("last_recipe_id", Tag.STRING_SIZE)) {
@@ -626,6 +659,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
                 .getOrThrow();
         this.ejectOn = tag.contains("eject_on") && tag.getBoolean("eject_on");
         this.pullOn = tag.contains("pull_on") && tag.getBoolean("pull_on");
+
         deserialize(new DetailContext(tag, registries, null));
     }
 
@@ -665,13 +699,33 @@ public abstract class AbstractConcoctiMachineBlockEntity
                         ejectOn,
                         pullOn
                 ),
-                // TODO: complete this
-                new SyncedMachineData.Fluids(new FluidStack[0]),
+                new SyncedMachineData.Fluids(
+                        getSyncedFluidStacks(complete)
+                ),
                 new SyncedMachineData.Extra(
                         getMachineInstance(),
-                        null
+                        getExtraData()
                 )
         );
+    }
+
+    protected FluidStack[] getSyncedFluidStacks(boolean complete) {
+        if (complete) {
+            List<ConcoctiFluidTank> tanks = getIndexedFluidHandlers();
+            FluidStack[] fluidStacks = new FluidStack[tanks.size()];
+
+            int i = 0;
+            for (ConcoctiFluidTank tank : tanks)
+                fluidStacks[i++] = tank.getFluid();
+
+            return fluidStacks;
+        } else {
+            return this.dirty.getDirtyFluidStacks();
+        }
+    }
+
+    public Object getExtraData() {
+        return null;
     }
 
     @Override

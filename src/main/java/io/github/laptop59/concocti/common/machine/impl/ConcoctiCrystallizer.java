@@ -12,6 +12,7 @@ import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
 import io.github.laptop59.concocti.common.block.entity.FluidHandlerBlockEntity;
 import io.github.laptop59.concocti.common.detail.DetailCodec;
 import io.github.laptop59.concocti.common.detail.DetailHolder;
+import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTank;
 import io.github.laptop59.concocti.common.machine.*;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.menu.ResultSlot;
@@ -47,8 +48,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -142,8 +141,8 @@ public class ConcoctiCrystallizer extends ConcoctiMachineOnlyItemsFluids<
             <BlockEntity, Menu, Recipe>
             implements FluidHandlerBlockEntity {
 
-        private final DetailHolder<FluidTank> fluidInput = new DetailHolder<>(
-                DetailCodec.FLUID_TANK, "fluid_input", new FluidTank(TANK_CAPACITY), this
+        private final DetailHolder<ConcoctiFluidTank> fluidInput = new DetailHolder<>(
+                DetailCodec.FLUID_TANK, "fluid_input", new ConcoctiFluidTank(TANK_CAPACITY), this
         );
 
         @Override
@@ -191,7 +190,7 @@ public class ConcoctiCrystallizer extends ConcoctiMachineOnlyItemsFluids<
         }
 
         @Override
-        public List<IFluidHandler> getIndexedFluidHandlers() {
+        public List<ConcoctiFluidTank> getIndexedFluidHandlers() {
             return List.of(fluidInput.get());
         }
 

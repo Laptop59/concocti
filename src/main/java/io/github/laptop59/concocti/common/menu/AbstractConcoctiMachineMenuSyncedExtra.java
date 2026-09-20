@@ -23,8 +23,8 @@ public abstract class AbstractConcoctiMachineMenuSyncedExtra<T extends AbstractC
 
     @Override
     @SuppressWarnings("unchecked")
-    protected void updateSyncedData(SyncedMachineData data) {
-        super.updateSyncedData(data);
+    public void updateWithSyncedData(SyncedMachineData data) {
+        super.updateWithSyncedData(data);
 
         this.syncedExtra = (E) data.extra().data();
         onExtraSync(syncedExtra);

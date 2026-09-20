@@ -10,6 +10,8 @@ public class MachineSettings {
     public List<SlotType> availableTypes;
     public MachineSettingsSlots slots;
 
+    protected boolean dirty = false;
+
     /**
      * Creates a new {@code MachineSettings} object based only on the available tank types.
      * <p></p>
@@ -48,6 +50,7 @@ public class MachineSettings {
         if (!availableTypes.contains(slotType))
             throw new IllegalArgumentException("This MachineSettings does not accept the " + slotType.name() + " tank type.");
         slots.put(direction, slotType);
+        dirty = true;
     }
 
     /**
@@ -57,6 +60,7 @@ public class MachineSettings {
      */
     void setSlots(EnumMap<Direction, SlotType> map) {
         this.slots.putAll(map);
+        dirty = true;
     }
 
     /**
@@ -94,4 +98,13 @@ public class MachineSettings {
             cycleSlotPrevious(direction);
     }
 
+    public boolean isDirty() {
+        return dirty;
+    }
+
+    public boolean clearDirtyFlag() {
+        boolean flag = dirty;
+        dirty = true;
+        return flag;
+    }
 }

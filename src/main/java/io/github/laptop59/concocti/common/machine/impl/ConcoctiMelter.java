@@ -12,6 +12,7 @@ import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineOn
 import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
 import io.github.laptop59.concocti.common.detail.DetailCodec;
 import io.github.laptop59.concocti.common.detail.DetailHolder;
+import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTank;
 import io.github.laptop59.concocti.common.machine.*;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.recipe.ItemRecipeIngredient;
@@ -143,15 +144,15 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
     public static class BlockEntity extends AbstractConcoctiMachineOnlyItemsFluidsBlockEntity
             <BlockEntity, Menu, Recipe> {
 
-        private final DetailHolder<FluidTank> pureFluidOutput = new DetailHolder<>(
-                DetailCodec.FLUID_TANK, "pure_fluid_output", new FluidTank(TANK_CAPACITY), this
+        private final DetailHolder<ConcoctiFluidTank> pureFluidOutput = new DetailHolder<>(
+                DetailCodec.FLUID_TANK, "pure_fluid_output", new ConcoctiFluidTank(TANK_CAPACITY), this
         );
-        private final DetailHolder<FluidTank> byproductFluidOutput = new DetailHolder<>(
-                DetailCodec.FLUID_TANK, "byproduct_fluid_output", new FluidTank(TANK_CAPACITY), this
+        private final DetailHolder<ConcoctiFluidTank> byproductFluidOutput = new DetailHolder<>(
+                DetailCodec.FLUID_TANK, "byproduct_fluid_output", new ConcoctiFluidTank(TANK_CAPACITY), this
         );
 
         @Override
-        public List<IFluidHandler> getIndexedFluidHandlers() {
+        public List<ConcoctiFluidTank> getIndexedFluidHandlers() {
             return List.of(
                     getPureFluidOutput(),
                     getByproductFluidOutput()
@@ -163,11 +164,11 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
             return INSTANCE;
         }
 
-        public FluidTank getPureFluidOutput() {
+        public ConcoctiFluidTank getPureFluidOutput() {
             return pureFluidOutput.get();
         }
 
-        public FluidTank getByproductFluidOutput() {
+        public ConcoctiFluidTank getByproductFluidOutput() {
             return byproductFluidOutput.get();
         }
 

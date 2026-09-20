@@ -1,5 +1,6 @@
 package io.github.laptop59.concocti.common.detail;
 
+import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTank;
 import io.github.laptop59.concocti.common.recipe.LightningState;
 import io.github.laptop59.concocti.common.recipe.SolarState;
 import net.minecraft.nbt.CompoundTag;
@@ -8,7 +9,7 @@ import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
 /* An object which describes how to serialize and deserialize an object. */
 public class DetailCodec<T> implements DetailSerializer<T>, DetailDeserializer<T> {
-    public static final DetailCodec<FluidTank> FLUID_TANK = new DetailCodec<>(
+    public static final DetailCodec<ConcoctiFluidTank> FLUID_TANK = new DetailCodec<>(
         (context, holder) -> {
             FluidTank tank = holder.get();
             if (tank.isEmpty()) return;
