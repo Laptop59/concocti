@@ -9,7 +9,6 @@ import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBl
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
 import io.github.laptop59.concocti.common.util.Lazy;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;

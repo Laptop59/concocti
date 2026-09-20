@@ -1,8 +1,6 @@
 package io.github.laptop59.concocti.integration.jei;
 
 import io.github.laptop59.concocti.common.Concocti;
-import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
-import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.item.ConcoctiItemsInfo;
 import io.github.laptop59.concocti.common.machine.AbstractConcoctiRecipeCategory;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachine;

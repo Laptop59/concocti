@@ -4,7 +4,6 @@ import io.github.laptop59.concocti.client.gui.components.ArrowProgress;
 import io.github.laptop59.concocti.client.gui.components.RenderInfo;
 import io.github.laptop59.concocti.client.gui.components.Renderable;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
-import io.github.laptop59.concocti.common.util.Lazy;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;

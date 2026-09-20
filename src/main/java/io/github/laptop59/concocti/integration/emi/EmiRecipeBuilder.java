@@ -1,19 +1,14 @@
 package io.github.laptop59.concocti.integration.emi;
 
-import dev.emi.emi.api.recipe.EmiRecipe;
 import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.SlotWidget;
 import dev.emi.emi.api.widget.WidgetHolder;
-import io.github.laptop59.concocti.client.ConcoctiClient;
 import io.github.laptop59.concocti.common.Concocti;
-import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
-import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import io.github.laptop59.concocti.common.machine.RecipeBuilder;
 import io.github.laptop59.concocti.common.machine.RecipeSlotFlags;
 import io.github.laptop59.concocti.common.recipe.FluidRecipeIngredient;
 import io.github.laptop59.concocti.common.recipe.ItemRecipeIngredient;
-import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;

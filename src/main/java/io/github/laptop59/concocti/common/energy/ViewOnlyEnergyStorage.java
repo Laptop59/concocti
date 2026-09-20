@@ -2,7 +2,6 @@ package io.github.laptop59.concocti.common.energy;
 
 import net.neoforged.neoforge.energy.IEnergyStorage;
 
-import java.util.List;
 import java.util.function.Supplier;
 
 public class ViewOnlyEnergyStorage implements IEnergyStorage {

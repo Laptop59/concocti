@@ -3,7 +3,6 @@ package io.github.laptop59.concocti.client.gui;
 import io.github.laptop59.concocti.client.gui.components.EnergyBar;
 import io.github.laptop59.concocti.client.gui.components.RenderInfo;
 import io.github.laptop59.concocti.client.gui.components.Renderable;
-import io.github.laptop59.concocti.common.machine.impl.ConcoctiCompressor;
 import io.github.laptop59.concocti.common.menu.ConcoctiEnergyHatchMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
