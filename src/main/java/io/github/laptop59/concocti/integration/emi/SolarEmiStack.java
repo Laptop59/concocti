@@ -1,10 +1,7 @@
 package io.github.laptop59.concocti.integration.emi;
 
-import com.google.common.collect.Lists;
-import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import dev.emi.emi.api.render.EmiRender;
 import dev.emi.emi.api.render.EmiTooltipComponents;
 import dev.emi.emi.api.stack.EmiStack;
 import io.github.laptop59.concocti.client.gui.components.SolarBar;
@@ -18,7 +15,6 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class SolarEmiStack extends EmiStack {
     public static final ResourceLocation ID_KEY = ResourceLocation.fromNamespaceAndPath(Concocti.MODID, "solar");

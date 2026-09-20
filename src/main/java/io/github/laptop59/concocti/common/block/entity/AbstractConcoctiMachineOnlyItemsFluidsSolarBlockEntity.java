@@ -4,7 +4,6 @@ import io.github.laptop59.concocti.common.detail.DetailCodec;
 import io.github.laptop59.concocti.common.detail.DetailHolder;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachineDetails;
 import io.github.laptop59.concocti.common.machine.ItemsFluidsSolarInputValue;
-import io.github.laptop59.concocti.common.machine.SolarStorage;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.recipe.ItemsFluidsSolarRecipeInput;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
@@ -12,7 +11,6 @@ import io.github.laptop59.concocti.common.recipe.SolarState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
 import java.util.function.Supplier;
 

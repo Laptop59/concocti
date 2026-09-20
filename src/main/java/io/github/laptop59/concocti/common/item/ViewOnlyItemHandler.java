@@ -3,7 +3,6 @@ package io.github.laptop59.concocti.common.item;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.IItemHandler;
 
-import java.util.List;
 import java.util.function.Supplier;
 
 public class ViewOnlyItemHandler implements IItemHandler {

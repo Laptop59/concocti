@@ -7,7 +7,6 @@ import io.github.laptop59.concocti.common.abstraction.Complexion;
 import io.github.laptop59.concocti.common.block.*;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMultiblockBlockEntity;
 import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
-import io.github.laptop59.concocti.common.menu.ConcoctiEnergyHatchMenu;
 import io.github.laptop59.concocti.common.menu.ConcoctiMultiblockMenu;
 import io.github.laptop59.concocti.common.multiblock.MultiblockStructure;
 import io.github.laptop59.concocti.common.recipe.*;

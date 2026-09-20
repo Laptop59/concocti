@@ -1,9 +1,7 @@
 package io.github.laptop59.concocti.integration.emi;
 
-import com.google.common.collect.Lists;
 import dev.emi.emi.api.render.EmiRender;
 import dev.emi.emi.api.stack.Comparison;
-import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;

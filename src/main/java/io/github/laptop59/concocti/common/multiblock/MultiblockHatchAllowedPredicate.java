@@ -4,7 +4,6 @@ import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.ConcoctiHatchBlock;
 import io.github.laptop59.concocti.common.block.Hatch;
 import io.github.laptop59.concocti.common.block.entity.ConcoctiHatchBlockEntity;
-import io.github.laptop59.concocti.common.item.ConcoctiItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
