@@ -13,6 +13,8 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
+
 /// Data that synchronizes the state of a machine between the server and the client.
 public record SyncedMachineData(
         Base base,
@@ -42,14 +44,14 @@ public record SyncedMachineData(
 
     /// Settings of a machine that are synchronized.
     public record Settings(
-            Direction facingDirection,
+            Optional<Direction> facingDirection,
             MachineSettingsSlots machineSettingsSlots,
 
             boolean ejectOn,
             boolean pullOn
     ) {
         public static final StreamCodec<ByteBuf, Settings> STREAM_CODEC = StreamCodec.composite(
-                Direction.STREAM_CODEC, Settings::facingDirection,
+                Direction.STREAM_CODEC.apply(ByteBufCodecs::optional), Settings::facingDirection,
                 MachineSettingsSlots.STREAM_CODEC, Settings::machineSettingsSlots,
 
                 ByteBufCodecs.BOOL, Settings::ejectOn,
@@ -114,12 +116,16 @@ public record SyncedMachineData(
 
     /// Extra machine data which is synchronized depending on the machine itself.
     public record Extra(
-            ConcoctiMachine machine,
-            Object data
+            @Nullable ConcoctiMachine machine,
+            @Nullable Object data
     ) {
         public static final StreamCodec<RegistryFriendlyByteBuf, Extra> STREAM_CODEC = new StreamCodec<>() {
             @Override
             public @NotNull Extra decode(@NotNull RegistryFriendlyByteBuf buffer) {
+                if (buffer.readByte() == 0) {
+                    return new Extra(null, null);
+                }
+
                 String machineId = ByteBufCodecs.STRING_UTF8.decode(buffer);
                 var machine = ConcoctiMachines.MACHINES.get(machineId);
                 if (machine == null) {
@@ -139,11 +145,16 @@ public record SyncedMachineData(
             @Override
             @SuppressWarnings("unchecked")
             public void encode(@NotNull RegistryFriendlyByteBuf buffer, @NotNull Extra value) {
-                ByteBufCodecs.STRING_UTF8.encode(buffer, value.machine.ID);
+                if (value.machine != null) {
+                    buffer.writeByte(1);
+                    ByteBufCodecs.STRING_UTF8.encode(buffer, value.machine.ID);
 
-                StreamCodec<RegistryFriendlyByteBuf, Object> codec = value.machine.MACHINE_SPECIFIC_SYNCED_DATA_STREAM_CODEC;
-                if (codec != null) {
-                    codec.encode(buffer, value.data);
+                    StreamCodec<RegistryFriendlyByteBuf, Object> codec = value.machine.MACHINE_SPECIFIC_SYNCED_DATA_STREAM_CODEC;
+                    if (codec != null) {
+                        codec.encode(buffer, value.data);
+                    }
+                } else {
+                    buffer.writeByte(0);
                 }
             }
         };

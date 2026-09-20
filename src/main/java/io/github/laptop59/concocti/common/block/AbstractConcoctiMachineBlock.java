@@ -11,7 +11,10 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.*;
+import net.minecraft.world.Containers;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -165,19 +168,14 @@ public abstract class AbstractConcoctiMachineBlock<B extends AbstractConcoctiMac
         if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         } else {
-            MenuProvider provider = this.getMenuProvider(state, level, pos);
-            if (provider != null) {
-                player.openMenu(provider);
-            }
-
+            openMenu(level, pos, player);
             return InteractionResult.CONSUME;
         }
     }
 
-    @Override
-    public MenuProvider getMenuProvider(@NotNull BlockState state, Level level, @NotNull BlockPos pos) {
-        BlockEntity blockEntity = level.getBlockEntity(pos);
-        return canBeCast(blockEntity) ? cast(blockEntity) : null;
+    public void openMenu(Level level, BlockPos pos, Player player) {
+        AbstractConcoctiMachineBlockEntity<?, ?, ?, ?, ?> blockEntity = cast(level.getBlockEntity(pos));
+        player.openMenu(blockEntity, blockEntity::writeCompleteSyncedDataToBuf);
     }
 
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> blockEntityType) {
