@@ -76,7 +76,7 @@ public class DirtyTracker {
         pullOn = entity.pullOn;
     }
 
-    public boolean clearDirtyFlag() {
+    public boolean clearDirtyFlags() {
         boolean flag = baseDirty || settingsDirty || fluidsDirty || extraDirty;
         baseDirty = false;
         settingsDirty = false;

@@ -15,7 +15,7 @@ public final class SyncedFluids {
     }
 
     /// Creates a new instance from the given data.
-    public SyncedFluids(SyncedMachineData.Fluids data) {
+    public SyncedFluids(io.github.laptop59.concocti.common.synchronization.SyncedFluids data) {
         FluidStack[] dataStacks = data.fluidStacks();
         fluidStacks = new FluidStack[dataStacks.length];
         for (int i = 0; i < dataStacks.length; i++) {
@@ -24,7 +24,7 @@ public final class SyncedFluids {
     }
 
     /// Updates this fluid storage with the given data.
-    public void sync(SyncedMachineData.Fluids data) {
+    public void sync(io.github.laptop59.concocti.common.synchronization.SyncedFluids data) {
         if (data.fluidStacks().length != fluidStacks.length) {
             throw new RuntimeException("Lengths don't match!");
         }

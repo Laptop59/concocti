@@ -1,6 +1,6 @@
 package io.github.laptop59.concocti.network;
 
-import io.github.laptop59.concocti.common.menu.SyncedMachineData;
+import io.github.laptop59.concocti.common.synchronization.SyncedMachineDataUpdate;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -12,7 +12,7 @@ import static io.github.laptop59.concocti.common.Concocti.MODID;
 
 public record SyncMachinePayloadS2C(
     int containerId,
-    SyncedMachineData data
+    SyncedMachineDataUpdate update
 ) implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<SyncMachinePayloadS2C> TYPE =
             new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(MODID, "sync_machine"));
@@ -21,7 +21,7 @@ public record SyncMachinePayloadS2C(
             StreamCodec.composite(
                     // Container ID is always between 0-99 so it fits as one byte in VarInt
                     ByteBufCodecs.VAR_INT, SyncMachinePayloadS2C::containerId,
-                    SyncedMachineData.STREAM_CODEC, SyncMachinePayloadS2C::data,
+                    SyncedMachineDataUpdate.STREAM_CODEC, SyncMachinePayloadS2C::update,
                     SyncMachinePayloadS2C::new
             );
 

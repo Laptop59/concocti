@@ -306,7 +306,8 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
 
         @Override
         public Object getExtraData() {
-            return new Extra(solar.get(), solarEarnedPerTick(level, getBlockPos()));
+            SolarState solarState = solar.get();
+            return new Extra(solarState.getSolarAmount(), solarState.getMaxSolarAmount(), solarEarnedPerTick(level, getBlockPos()));
         }
     }
 
@@ -563,8 +564,7 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
          * Returns the amount of solar/maximum solar left in this block.
          */
         public long getNumberSolarLeft(boolean max) {
-            SolarState state = syncedExtra.solarState();
-            return max ? state.getMaxSolarAmount() : state.getSolarAmount();
+            return max ? syncedExtra.maxSolarAmount : syncedExtra.solarAmount;
         }
 
         public Long getProductionRate() {
@@ -699,24 +699,28 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
     }
 
     public record Extra(
-            SolarState solarState,
+            long solarAmount,
+            long maxSolarAmount,
             long solarProductionRate
     ) {
         public static StreamCodec<ByteBuf, Extra> STREAM_CODEC = StreamCodec.composite(
-                SolarState.STREAM_CODEC, Extra::solarState,
+                ByteBufCodecs.VAR_LONG, Extra::solarAmount,
+                ByteBufCodecs.VAR_LONG, Extra::maxSolarAmount,
                 ByteBufCodecs.VAR_LONG, Extra::solarProductionRate,
                 Extra::new
         );
 
         @Override
         public boolean equals(Object obj) {
-            return obj instanceof Extra(SolarState state, long productionRate) && solarState.equals(state)
-                    && solarProductionRate == productionRate;
+            return obj instanceof Extra(long solarAmount, long maxSolarAmount, long solarProductionRate)
+                    && this.solarAmount == solarAmount
+                    && this.maxSolarAmount == maxSolarAmount
+                    && this.solarProductionRate == solarProductionRate;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(solarState, solarProductionRate);
+            return Objects.hash(solarAmount, maxSolarAmount, solarProductionRate);
         }
     }
 
