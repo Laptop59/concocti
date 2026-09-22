@@ -58,7 +58,7 @@ public class DirtyTracker {
         }
 
         Object extraData = entity.getExtraData();
-        if (Objects.equals(extraData, this.extraData)) {
+        if (!Objects.equals(extraData, this.extraData)) {
             extraDirty = true;
         }
         this.extraData = extraData;

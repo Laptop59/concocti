@@ -17,7 +17,6 @@ import io.github.laptop59.concocti.common.fluid.MergedViewOnlyFluidHandler;
 import io.github.laptop59.concocti.common.fluid.ViewOnlyFluidHandler;
 import io.github.laptop59.concocti.common.item.MergedItemHandler;
 import io.github.laptop59.concocti.common.item.ViewOnlyItemHandler;
-import io.github.laptop59.concocti.common.machine.ConcoctiMultiBlockMachine;
 import io.github.laptop59.concocti.common.machine.FluidTankHolder;
 import io.github.laptop59.concocti.common.machine.ItemsFluidsInputValue;
 import io.github.laptop59.concocti.common.machine.SettingsHolder;
@@ -620,10 +619,5 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
     public void changeBuildPreview() {
         buildPreview = !buildPreview;
         updateMultiblockState();
-    }
-
-    @Override
-    public Object getExtraData() {
-        return new ConcoctiMultiBlockMachine.Extra(valid, buildPreview);
     }
 }
