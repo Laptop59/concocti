@@ -5,10 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.laptop59.concocti.client.gui.AbstractConcoctiMachineScreen;
 import io.github.laptop59.concocti.client.gui.components.*;
-import io.github.laptop59.concocti.common.Concocti;
 import io.github.laptop59.concocti.common.ConcoctiSounds;
-import io.github.laptop59.concocti.common.abstraction.ConcoctiMachineComplexion;
-import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineOnlyItemsFluidsBlockEntity;
@@ -19,7 +16,6 @@ import io.github.laptop59.concocti.common.menu.ConcoctiUpgradeSlot;
 import io.github.laptop59.concocti.common.recipe.ItemRecipeIngredient;
 import io.github.laptop59.concocti.common.recipe.ItemsFluidsRecipeInput;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
-import io.github.laptop59.concocti.common.machine.AbstractConcoctiRecipeCategory;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -40,7 +36,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
@@ -56,7 +51,6 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.registries.datamaps.builtin.FurnaceFuel;
 import net.neoforged.neoforge.registries.datamaps.builtin.NeoForgeDataMaps;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -100,7 +94,6 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
                         SlotType.ENERGY_OUTPUT
                 ),
                 Menu::new,
-                blockEntity -> blockEntity.dataAccess,
                 new EnumMap<>(
                         Map.of(
                                 SlotType.ITEM_INPUT, List.of(INPUT_OUTPUT_SLOT),
@@ -149,8 +142,6 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
             return slot == INPUT_OUTPUT_SLOT;
         }
 
-        protected final ConcoctiMachineComplexion dataAccess = new ConcoctiMachineComplexion(this);
-
         public BlockEntity(BlockPos pos, BlockState blockState) {
             super(
                     INSTANCE.BLOCK_ENTITY, pos, blockState
@@ -182,14 +173,10 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
         }
 
         @Override
-        public void tick(Level level, BlockPos pos, BlockState state) {
+        protected void tickMachineSpecific(Level level, BlockPos pos, BlockState state) {
             BlockEntity entity = this;
 
             int currentUpgradeUnits = ConcoctiUpgradeSlot.getUpgradeUnits(entity.getItem(UPGRADE_SLOT));
-            if (currentUpgradeUnits != entity.lastUpgradeUnits) {
-                entity.lastUpgradeUnits = currentUpgradeUnits;
-                entity.setNewEnergyMultiplier(entity.getInefficientEnergyMultiplier());
-            }
             if (--entity.autoCooldown <= 0) {
                 entity.autoCooldown = AUTO_COOLDOWN;
                 entity.attemptToPull();
@@ -268,23 +255,16 @@ public class ConcoctiEnergyGenerator extends ConcoctiMachineOnlyItemsFluids<
     }
 
     public static class Menu extends AbstractConcoctiMachineMenu<Menu> {
-
-        @Contract(pure = true)
-        @Override
-        public List<Property<?>> getMachineSpecificProperties() {
-            return List.of();
-        }
-
         // Client
         public Menu(
-                int containerId, Inventory playerInventory
+                int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf
         ) {
-            super(containerId, playerInventory, 3, INSTANCE.MENU);
+            super(containerId, playerInventory, 3, buf, INSTANCE.MENU);
         }
 
         // Server
-        public Menu(int containerId, Inventory playerInventory, Container container, ContainerData data) {
-            super(containerId, playerInventory, container, data, INSTANCE.MENU);
+        public Menu(int containerId, Inventory playerInventory, Container container) {
+            super(containerId, playerInventory, container, INSTANCE.MENU);
         }
 
         @Override

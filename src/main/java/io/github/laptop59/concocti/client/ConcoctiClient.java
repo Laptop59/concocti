@@ -78,7 +78,7 @@ public class ConcoctiClient {
 
     @SubscribeEvent
     public static void onRegisterRenderer(EntityRenderersEvent.RegisterRenderers event) {
-        for (var machine : ConcoctiMachines.MACHINES) {
+        for (var machine : ConcoctiMachines.MACHINES.values()) {
             if (machine instanceof ConcoctiMultiBlockMachine multiBlockMachine) {
                 event.registerBlockEntityRenderer(
                         multiBlockMachine.BLOCK_ENTITY.get(),

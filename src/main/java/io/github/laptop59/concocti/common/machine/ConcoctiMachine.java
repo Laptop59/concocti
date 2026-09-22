@@ -6,7 +6,6 @@ import io.github.laptop59.concocti.common.ConcoctiRegisters;
 import io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
-import io.github.laptop59.concocti.common.machine.impl.ConcoctiEnergyGenerator;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
 import io.github.laptop59.concocti.common.util.Lazy;
@@ -14,8 +13,9 @@ import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
@@ -26,10 +26,13 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
+import net.neoforged.neoforge.network.IContainerFactory;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -49,7 +52,7 @@ public abstract class ConcoctiMachine<
         B extends AbstractConcoctiMachineBlock<B>,
         S extends AbstractConcoctiMachineScreen<M>,
         C extends AbstractConcoctiRecipeCategory<R>
-        > {
+> {
     public final DeferredBlock<Block> BLOCK;
     public final DeferredHolder<BlockEntityType<?>, BlockEntityType<T>> BLOCK_ENTITY;
     public final DeferredItem<BlockItem> ITEM;
@@ -60,6 +63,7 @@ public abstract class ConcoctiMachine<
     public final BlockBehaviour.Properties BLOCK_BEHAVIOUR_PROPERTIES;
     public final ConcoctiBlocks.BlockData BLOCK_DATA;
     public final String ID;
+    public final @Nullable StreamCodec<? super RegistryFriendlyByteBuf, ?> MACHINE_SPECIFIC_SYNCED_DATA_STREAM_CODEC;
 
     public interface BlockEntityConstructor<T extends AbstractConcoctiMachineBlockEntity<T, ?, ?, ?, ?>> extends BlockEntityType.BlockEntitySupplier<T> {
     }
@@ -68,7 +72,7 @@ public abstract class ConcoctiMachine<
         B create(BlockBehaviour.Properties properties);
     }
 
-    public interface MenuClientConstructor<M extends AbstractConcoctiMachineMenu<M>> extends MenuType.MenuSupplier<M> {
+    public interface MenuClientConstructor<M extends AbstractConcoctiMachineMenu<M>> extends IContainerFactory<M> {
     }
 
     @OnlyIn(Dist.CLIENT)
@@ -100,23 +104,22 @@ public abstract class ConcoctiMachine<
         ITEM = registerBlockItem(BLOCK);
         RECIPE_TYPE = RECIPE_TYPES.register(
                 id,
-                // We need the qualifying generic here due to generics being generics.
                 () -> RecipeType.simple(ResourceLocation.fromNamespaceAndPath(Concocti.MODID, id))
         );
         RECIPE_SERIALIZER = ConcoctiRegisters.RECIPE_SERIALIZERS.register(id, getRecipeSerializerConstructor());
-        MENU = MENUS.register(id + "_menu", () -> new MenuType<>(getMenuClientConstructor(), FeatureFlags.DEFAULT_FLAGS));
+        MENU = MENUS.register(id + "_menu", () -> IMenuTypeExtension.create(getMenuClientConstructor()));
         JEI_RECIPE_TYPE = new Lazy<>(() -> {
             try {
                 Class<?> recipeTypeJeiClass = Class.forName("mezz.jei.api.recipe.RecipeType");
                 Method method = recipeTypeJeiClass.getMethod("create", String.class, String.class, Class.class);
                 return method.invoke(null, Concocti.MODID, id, getRecipeClass());
-                // mezz.jei.api.recipe.RecipeType.create(Concocti.MODID, id, getRecipeClass());
             } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
         });
         BLOCK_BEHAVIOUR_PROPERTIES = properties;
         BLOCK_DATA = blockData;
+        MACHINE_SPECIFIC_SYNCED_DATA_STREAM_CODEC = getExtraDataStreamCodec();
         ConcoctiBlocks.BLOCK_MAP.put(BLOCK, BLOCK_DATA);
         Concocti.LOGGER.debug("Registered machine: {} ({})", this.getClass(), id);
     }
@@ -199,5 +202,13 @@ public abstract class ConcoctiMachine<
      */
     public List<RecipeHolder<R>> getRecipeProxies() {
         return List.of();
+    }
+
+    /**
+     * Gets the stream codec of the machine-specific data that is
+     * synchronized to the client when the menu is open.
+     */
+    public StreamCodec<? super RegistryFriendlyByteBuf, ?> getExtraDataStreamCodec() {
+        return null;
     }
 }

@@ -3,14 +3,12 @@ package io.github.laptop59.concocti.common.poi;
 import com.google.common.collect.ImmutableSet;
 import io.github.laptop59.concocti.common.ConcoctiRegisters;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
-import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachines;
 import io.github.laptop59.concocti.common.machine.ConcoctiMultiBlockMachine;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 

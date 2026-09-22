@@ -48,7 +48,7 @@ public class ConcoctiBlockStateProvider extends BlockStateProvider {
             this.simpleBlock(block);
         }
 
-        for (ConcoctiMachine<?, ?, ?, ?, ?, ?, ?, ?, ?> machine : ConcoctiMachines.MACHINES) {
+        for (ConcoctiMachine<?, ?, ?, ?, ?, ?, ?, ?, ?> machine : ConcoctiMachines.MACHINES.values()) {
             Block block = machine.BLOCK.get();
             var builder = getVariantBuilder(block);
             builder.forAllStates(blockState -> getModelForConcoctiMachine(machine, blockState));

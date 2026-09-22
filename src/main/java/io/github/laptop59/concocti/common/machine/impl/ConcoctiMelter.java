@@ -6,29 +6,22 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.laptop59.concocti.client.gui.AbstractConcoctiMachineScreen;
 import io.github.laptop59.concocti.client.gui.components.*;
 import io.github.laptop59.concocti.common.ConcoctiSounds;
-import io.github.laptop59.concocti.common.abstraction.ConcoctiMachineComplexion;
-import io.github.laptop59.concocti.common.abstraction.Properties;
-import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineOnlyItemsFluidsBlockEntity;
 import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
 import io.github.laptop59.concocti.common.detail.DetailCodec;
 import io.github.laptop59.concocti.common.detail.DetailHolder;
-import io.github.laptop59.concocti.common.machine.ConcoctiMachineDetails;
-import io.github.laptop59.concocti.common.machine.ConcoctiMachineOnlyItemsFluids;
-import io.github.laptop59.concocti.common.machine.InputOutput;
-import io.github.laptop59.concocti.common.machine.ItemsFluidsInputValue;
+import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTank;
+import io.github.laptop59.concocti.common.machine.*;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.recipe.ItemRecipeIngredient;
 import io.github.laptop59.concocti.common.recipe.ItemsFluidsRecipeInput;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
-import io.github.laptop59.concocti.common.machine.AbstractConcoctiRecipeCategory;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -38,13 +31,11 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -58,11 +49,13 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -83,6 +76,10 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
 
     // Details
     public final static String ID = "concocti_melter";
+
+    // Fluids
+    public static final int FLUID_PURE_OUTPUT = 0;
+    public static final int FLUID_BYPRODUCT_OUTPUT = 1;
 
     public ConcoctiMelter() {
         super(
@@ -116,7 +113,6 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
                         SlotType.BOTH_FLUIDS_OUTPUT
                 ),
                 Menu::new,
-                blockEntity -> blockEntity.dataAccess,
                 new EnumMap<>(
                         Map.of(
                                 SlotType.ITEM_INPUT, List.of(INPUT_SLOT)
@@ -148,19 +144,15 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
     public static class BlockEntity extends AbstractConcoctiMachineOnlyItemsFluidsBlockEntity
             <BlockEntity, Menu, Recipe> {
 
-        private final DetailHolder<FluidTank> pureFluidOutput = new DetailHolder<>(
-                DetailCodec.FLUID_TANK, "pure_fluid_output", new FluidTank(TANK_CAPACITY), this
+        private final DetailHolder<ConcoctiFluidTank> pureFluidOutput = new DetailHolder<>(
+                DetailCodec.FLUID_TANK, "pure_fluid_output", new ConcoctiFluidTank(TANK_CAPACITY), this
         );
-        private final DetailHolder<FluidTank> byproductFluidOutput = new DetailHolder<>(
-                DetailCodec.FLUID_TANK, "byproduct_fluid_output", new FluidTank(TANK_CAPACITY), this
+        private final DetailHolder<ConcoctiFluidTank> byproductFluidOutput = new DetailHolder<>(
+                DetailCodec.FLUID_TANK, "byproduct_fluid_output", new ConcoctiFluidTank(TANK_CAPACITY), this
         );
-
-        // Properties
-        public final Property<FluidStack> PURE_FLUID_OUTPUT = Properties.PURE_FLUID_OUTPUT.newWithLinker(() -> pureFluidOutput.get().getFluid());
-        public final Property<FluidStack> BYPRODUCT_FLUID_OUTPUT = Properties.BYPRODUCT_FLUID_OUTPUT.newWithLinker(() -> byproductFluidOutput.get().getFluid());
 
         @Override
-        public List<IFluidHandler> getIndexedFluidHandlers() {
+        public List<ConcoctiFluidTank> getIndexedFluidHandlers() {
             return List.of(
                     getPureFluidOutput(),
                     getByproductFluidOutput()
@@ -172,11 +164,11 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
             return INSTANCE;
         }
 
-        public FluidTank getPureFluidOutput() {
+        public ConcoctiFluidTank getPureFluidOutput() {
             return pureFluidOutput.get();
         }
 
-        public FluidTank getByproductFluidOutput() {
+        public ConcoctiFluidTank getByproductFluidOutput() {
             return byproductFluidOutput.get();
         }
 
@@ -212,12 +204,6 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
         protected boolean isItemValidInMachine(int slot, @NotNull ItemStack stack) {
             return slot == INPUT_SLOT;
         }
-
-        protected final ConcoctiMachineComplexion dataAccess = new ConcoctiMachineComplexion(
-                this,
-                PURE_FLUID_OUTPUT.of(FluidStack.EMPTY),
-                BYPRODUCT_FLUID_OUTPUT.of(FluidStack.EMPTY)
-        );
 
         public BlockEntity(BlockPos pos, BlockState blockState) {
             super(
@@ -428,25 +414,16 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
     }
 
     public static class Menu extends AbstractConcoctiMachineMenu<Menu> {
-        @Contract(pure = true)
-        @Override
-        public List<Property<?>> getMachineSpecificProperties() {
-            return List.of(
-                    Properties.PURE_FLUID_OUTPUT,
-                    Properties.BYPRODUCT_FLUID_OUTPUT
-            );
-        }
-
         // Client
         public Menu(
-                int containerId, Inventory playerInventory
+                int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf
         ) {
-            super(containerId, playerInventory, 3, INSTANCE.MENU);
+            super(containerId, playerInventory, 3, buf, INSTANCE.MENU);
         }
 
         // Server
-        public Menu(int containerId, Inventory playerInventory, Container container, ContainerData data) {
-            super(containerId, playerInventory, container, data, INSTANCE.MENU);
+        public Menu(int containerId, Inventory playerInventory, Container container) {
+            super(containerId, playerInventory, container, INSTANCE.MENU);
         }
 
         @Override
@@ -464,11 +441,11 @@ public class ConcoctiMelter extends ConcoctiMachineOnlyItemsFluids<
         }
 
         public FluidStack getPureFluidStack() {
-            return viewer.get(Properties.PURE_FLUID_OUTPUT);
+            return syncedFluids.get(FLUID_PURE_OUTPUT);
         }
 
         public FluidStack getByproductFluidStack() {
-            return viewer.get(Properties.BYPRODUCT_FLUID_OUTPUT);
+            return syncedFluids.get(FLUID_BYPRODUCT_OUTPUT);
         }
 
         public int getMaxFluidLeft() {

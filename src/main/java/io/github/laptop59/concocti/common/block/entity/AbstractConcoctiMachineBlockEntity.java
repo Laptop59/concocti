@@ -4,13 +4,13 @@ import io.github.laptop59.concocti.client.gui.components.MachineSettings;
 import io.github.laptop59.concocti.client.gui.components.MachineSettingsSlots;
 import io.github.laptop59.concocti.client.gui.components.SlotFlag;
 import io.github.laptop59.concocti.client.gui.components.SlotType;
-import io.github.laptop59.concocti.common.abstraction.Properties;
-import io.github.laptop59.concocti.common.abstraction.Property;
+import io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock;
 import io.github.laptop59.concocti.common.block.frame.FrameAttributes;
 import io.github.laptop59.concocti.common.detail.DetailContext;
 import io.github.laptop59.concocti.common.detail.DetailHolder;
 import io.github.laptop59.concocti.common.detail.DetailHolders;
 import io.github.laptop59.concocti.common.detail.Details;
+import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTank;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTankHandler;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTankSlotTypedHandler;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
@@ -23,6 +23,7 @@ import io.github.laptop59.concocti.common.menu.ConcoctiFrameSlot;
 import io.github.laptop59.concocti.common.menu.ConcoctiUpgradeSlot;
 import io.github.laptop59.concocti.common.menu.MenuServerConstructor;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
+import io.github.laptop59.concocti.common.synchronization.*;
 import io.github.laptop59.concocti.common.util.ConcoctiTransferrer;
 import io.github.laptop59.concocti.common.util.Lazy;
 import net.minecraft.core.BlockPos;
@@ -47,6 +48,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -58,7 +60,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock.FACING;
 import static io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock.LIT;
 
 /**
@@ -76,7 +77,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
         <T extends AbstractConcoctiMachineBlockEntity<T, M, V, I, R>,
                 M extends AbstractConcoctiMachineMenu<M>, V, I extends RecipeInput, R extends ProcessingRecipe<R, I>>
         extends AbstractPoweredBlockEntity
-        implements ItemHandlerBlockEntity, FluidHandlerBlockEntity, EnergyStorageBlockEntity, Details, SettingsHolder, FluidTankHolder {
+        implements ItemHandlerBlockEntity, FluidHandlerBlockEntity, EnergyStorageBlockEntity, Details, SettingsHolder, FluidTankHolder, SyncedDataCreator {
 
     public int ticksLeft = 0;
     public int totalTicks = 0;
@@ -84,6 +85,8 @@ public abstract class AbstractConcoctiMachineBlockEntity
     public float rateConsumption;
     public boolean ejectOn;
     public boolean pullOn;
+
+    protected DirtyTracker dirty = new DirtyTracker(this);
 
     public RecipeHolder<R> lastRecipe = null;
 
@@ -101,27 +104,6 @@ public abstract class AbstractConcoctiMachineBlockEntity
     // Slots
     public static final int UPGRADE_SLOT = 0;
     public static final int FRAME_SLOT = 1;
-
-    // Properties
-    public final Property<Integer> TICKS_LEFT =
-            Properties.TICKS_LEFT.newWithLinker(() -> ticksLeft);
-    public final Property<Integer> TOTAL_TICKS =
-            Properties.TOTAL_TICKS.newWithLinker(() -> totalTicks);
-    public final Property<Integer> TICK_MULTIPLIER =
-            Properties.TICK_MULTIPLIER.newWithLinker(this::getTickMultiplier);
-    public final Property<Integer> ENERGY_STORED =
-            Properties.ENERGY_STORED.newWithLinker(() -> energy.getEnergyStored());
-    public final Property<Integer> MAX_ENERGY_STORED =
-            Properties.MAX_ENERGY_STORED.newWithLinker(() -> energy.getMaxEnergyStored());
-    public final Property<Boolean> EJECT_ON =
-            Properties.EJECT_ON.newWithLinker(() -> ejectOn);
-    public final Property<Boolean> PULL_ON =
-            Properties.PULL_ON.newWithLinker(() -> pullOn);
-
-    public final Property<Direction> FACING_DIRECTION =
-            Properties.FACING_DIRECTION.newWithLinker(() -> getBlockState().getValue(FACING));
-    public final Property<MachineSettingsSlots> MACHINE_SETTINGS_SLOTS =
-            Properties.MACHINE_SETTINGS_SLOTS.newWithLinker(() -> machineSettings.slots);
 
     protected Lazy<IItemHandler> inputItemHandler;
     protected Lazy<IFluidHandler> inputFluidHandler;
@@ -417,10 +399,9 @@ public abstract class AbstractConcoctiMachineBlockEntity
      * Creates a menu for this block entity.
      */
     @Override
-    @SuppressWarnings("unchecked")
     protected @NotNull M createMenu(int containerId, @NotNull Inventory inventory) {
         MenuServerConstructor<M> menuClass = getMachineDetails().menuServerConstructor();
-        return menuClass.create(containerId, inventory, this, getMachineDetails().complexion().apply((T) this));
+        return menuClass.create(containerId, inventory, this);
     }
 
     /**
@@ -550,7 +531,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
     /**
      * Gets all the separate handlers of fluid stacks of this machine, which are indexed consistently.
      */
-    public List<IFluidHandler> getIndexedFluidHandlers() {
+    public List<ConcoctiFluidTank> getIndexedFluidHandlers() {
         return List.of();
     }
 
@@ -562,11 +543,23 @@ public abstract class AbstractConcoctiMachineBlockEntity
      * A basic implementation of a Concocti Machine's server tick.
      */
     public void tick(Level level, BlockPos pos, BlockState state) {
+        tickMachineSpecific(level, pos, state);
+
         int currentUpgradeUnits = ConcoctiUpgradeSlot.getUpgradeUnits(this.getItem(UPGRADE_SLOT));
         if (currentUpgradeUnits != this.lastUpgradeUnits) {
             this.lastUpgradeUnits = currentUpgradeUnits;
+            setNewEnergyMultiplier(getInefficientEnergyMultiplier());
             this.onUpgradeUnitsChange();
         }
+
+        dirty.update();
+        SyncedMachineDataUpdate update = createSyncedDataUpdate();
+        if (dirty.clearDirtyFlags()) {
+            updateToClients(level, update);
+        }
+    }
+
+    protected void tickMachineSpecific(Level level, BlockPos pos, BlockState state) {
         if (this.ticksLeft >= this.totalTicks) this.lastRecipe = null;
         if (--this.autoCooldown <= 0) {
             this.autoCooldown = AUTO_COOLDOWN;
@@ -626,6 +619,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
     @Override
     protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
         super.loadAdditional(tag, registries);
+
         this.ticksLeft = tag.getInt("ticks_left");
         this.lastRecipe = null;
         if (tag.contains("last_recipe_id", Tag.STRING_SIZE)) {
@@ -652,6 +646,7 @@ public abstract class AbstractConcoctiMachineBlockEntity
                 .getOrThrow();
         this.ejectOn = tag.contains("eject_on") && tag.getBoolean("eject_on");
         this.pullOn = tag.contains("pull_on") && tag.getBoolean("pull_on");
+
         deserialize(new DetailContext(tag, registries, null));
     }
 
@@ -673,6 +668,75 @@ public abstract class AbstractConcoctiMachineBlockEntity
         tag.putBoolean("eject_on", this.ejectOn);
         tag.putBoolean("pull_on", this.pullOn);
         serialize(new DetailContext(tag, registries, null));
+    }
+
+    public SyncedMachineData createSyncedData() {
+        return new SyncedMachineData(
+                createSyncedBase(),
+                createSyncedSettings(),
+                new SyncedFluids(
+                        getSyncedFluidStacks(true)
+                ),
+                new SyncedExtra(
+                        getMachineInstance(),
+                        getExtraData()
+                )
+        );
+    }
+
+    /** Creates a new update to sync data to the clients based on the dirty flags of the dirty tracker.
+     * This should be called before clearing the tracker's dirty flags.
+     * @return The update object.
+     */
+    public SyncedMachineDataUpdate createSyncedDataUpdate() {
+        return new SyncedMachineDataUpdate(
+                dirty.baseDirty ? Optional.of(createSyncedBase()) : Optional.empty(),
+                dirty.settingsDirty ? Optional.of(createSyncedSettings()) : Optional.empty(),
+                dirty.fluidsDirty ? Optional.of(new SyncedFluids(getSyncedFluidStacks(true))) : Optional.empty(),
+                dirty.extraDirty ? Optional.of(new SyncedExtra(
+                        getMachineInstance(),
+                        getExtraData()
+                )) : Optional.empty()
+        );
+    }
+
+    protected SyncedBase createSyncedBase() {
+        return new SyncedBase(
+                ticksLeft,
+                totalTicks,
+                getTickMultiplier(),
+                energy.getEnergyStored(),
+                energy.getMaxEnergyStored()
+        );
+    }
+
+    protected SyncedSettings createSyncedSettings() {
+        BlockState blockState = getBlockState();
+        return new SyncedSettings(
+                Optional.of(blockState.getValue(AbstractConcoctiMachineBlock.FACING)),
+                machineSettings.slots,
+                ejectOn,
+                pullOn
+        );
+    }
+
+    protected FluidStack[] getSyncedFluidStacks(boolean complete) {
+        if (complete) {
+            List<ConcoctiFluidTank> tanks = getIndexedFluidHandlers();
+            FluidStack[] fluidStacks = new FluidStack[tanks.size()];
+
+            int i = 0;
+            for (ConcoctiFluidTank tank : tanks)
+                fluidStacks[i++] = tank.getFluid();
+
+            return fluidStacks;
+        } else {
+            return this.dirty.getDirtyFluidStacks();
+        }
+    }
+
+    public Object getExtraData() {
+        return null;
     }
 
     @Override

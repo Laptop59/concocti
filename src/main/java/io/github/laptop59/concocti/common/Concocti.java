@@ -75,7 +75,7 @@ public class Concocti {
 
     @SubscribeEvent
     private static void registerScreens(RegisterMenuScreensEvent event) {
-        for (var machine : ConcoctiMachines.MACHINES) {
+        for (var machine : ConcoctiMachines.MACHINES.values()) {
             registerScreen(event, machine);
         }
         event.register(ConcoctiMenus.CONCOCTI_ITEM_HATCH_MENU.get(), ConcoctiItemHatchScreen::new);

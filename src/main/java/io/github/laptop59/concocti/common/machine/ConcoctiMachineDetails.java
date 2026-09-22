@@ -1,11 +1,8 @@
 package io.github.laptop59.concocti.common.machine;
 
 import io.github.laptop59.concocti.client.gui.components.SlotType;
-import io.github.laptop59.concocti.common.abstraction.Complexion;
-import io.github.laptop59.concocti.common.abstraction.ConcoctiMachineComplexion;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
 import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
-import io.github.laptop59.concocti.common.detail.DetailHolder;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.menu.MenuServerConstructor;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
@@ -42,7 +39,6 @@ public record ConcoctiMachineDetails<
         List<SlotType> allowedSlotTypes,
         MenuServerConstructor<M> menuServerConstructor,
 
-        Function<T, Complexion> complexion,
         EnumMap<SlotType, List<Integer>> itemSlotsMap,
         EnumMap<SlotType, List<Function<T, IFluidTank>>> fluidSlotsMap,
 

@@ -1,7 +1,5 @@
 package io.github.laptop59.concocti.network;
 
-import io.github.laptop59.concocti.common.machine.SettingsHolder;
-import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.menu.ConcoctiMultiblockMenu;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;

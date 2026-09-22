@@ -1,7 +1,5 @@
 package io.github.laptop59.concocti.common.machine;
 
-import dev.emi.emi.api.stack.EmiIngredient;
-import dev.emi.emi.api.stack.EmiStack;
 import io.github.laptop59.concocti.common.recipe.FluidOutput;
 import io.github.laptop59.concocti.common.recipe.FluidRecipeIngredient;
 import io.github.laptop59.concocti.common.recipe.ItemOutput;

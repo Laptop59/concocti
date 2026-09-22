@@ -4,15 +4,12 @@ import io.github.laptop59.concocti.client.gui.components.MachineSettings;
 import io.github.laptop59.concocti.client.gui.components.MachineSettingsSlots;
 import io.github.laptop59.concocti.client.gui.components.SlotFlag;
 import io.github.laptop59.concocti.client.gui.components.SlotType;
-import io.github.laptop59.concocti.common.Concocti;
-import io.github.laptop59.concocti.common.abstraction.Complexion;
-import io.github.laptop59.concocti.common.abstraction.Properties;
-import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.ConcoctiHatchBlock;
 import io.github.laptop59.concocti.common.block.HatchPurpose;
 import io.github.laptop59.concocti.common.block.HatchType;
 import io.github.laptop59.concocti.common.detail.*;
+import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTank;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTankHandler;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTankSlotTypedHandler;
 import io.github.laptop59.concocti.common.machine.FluidTankHolder;
@@ -20,6 +17,7 @@ import io.github.laptop59.concocti.common.machine.SettingsHolder;
 import io.github.laptop59.concocti.common.menu.ConcoctiEnergyHatchMenu;
 import io.github.laptop59.concocti.common.menu.ConcoctiFluidHatchMenu;
 import io.github.laptop59.concocti.common.menu.ConcoctiItemHatchMenu;
+import io.github.laptop59.concocti.common.synchronization.*;
 import io.github.laptop59.concocti.common.util.ConcoctiTransferrer;
 import io.github.laptop59.concocti.common.util.Lazy;
 import net.minecraft.core.BlockPos;
@@ -35,27 +33,28 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
-public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity implements ItemHandlerBlockEntity, FluidHandlerBlockEntity, EnergyStorageBlockEntity, Details, SettingsHolder, FluidTankHolder {
+public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity implements ItemHandlerBlockEntity, FluidHandlerBlockEntity, EnergyStorageBlockEntity, Details, SettingsHolder, FluidTankHolder, SyncedDataCreator {
     public boolean ejectOn;
     public boolean pullOn;
     public ConcoctiFluidTankHandler fluidHandler;
 
     public int autoCooldown = 0;
+
+    public boolean settingsUpdateQueued = false;
 
     public DetailHolders detailHolders = new DetailHolders();
     public final MachineSettings machineSettings = new MachineSettings(List.of(SlotType.NONE));
@@ -65,36 +64,14 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
     public static final int ENERGY_CAPACITY = 10_000_000;
 
     // Details
-    private final DetailHolder<FluidTank> fluidTank = new DetailHolder<>(
-            DetailCodec.FLUID_TANK, "fluid_tank", new FluidTank(TANK_CAPACITY), this
+    private final DetailHolder<ConcoctiFluidTank> fluidTank = new DetailHolder<>(
+            DetailCodec.FLUID_TANK, "fluid_tank", new ConcoctiFluidTank(TANK_CAPACITY), this
     );
-
-    // Properties
-    public final Property<Boolean> EJECT_ON =
-            Properties.EJECT_ON.newWithLinker(() -> ejectOn);
-    public final Property<Boolean> PULL_ON =
-            Properties.PULL_ON.newWithLinker(() -> pullOn);
-    public final Property<MachineSettingsSlots> MACHINE_SETTINGS_SLOTS =
-            Properties.MACHINE_SETTINGS_SLOTS.newWithLinker(() -> machineSettings.slots);
-    public final Property<Integer> ENERGY_STORED =
-            Properties.ENERGY_STORED.newWithLinker(() -> energy.getEnergyStored());
-    public final Property<Integer> MAX_ENERGY_STORED =
-            Properties.MAX_ENERGY_STORED.newWithLinker(() -> energy.getMaxEnergyStored());
-    public final Property<FluidStack> FLUID_TANK = Properties.FLUID_TANK.newWithLinker(() -> fluidTank.get().getFluid());
 
     protected final Lazy<IItemHandler> inputItemHandler;
     protected final Lazy<IFluidHandler> inputFluidHandler;
     protected final Lazy<IItemHandler> outputItemHandler;
     protected final Lazy<IFluidHandler> outputFluidHandler;
-
-    protected final Complexion dataAccess = new Complexion(
-            EJECT_ON.of(false),
-            PULL_ON.of(false),
-            MACHINE_SETTINGS_SLOTS.of(new MachineSettingsSlots()),
-            ENERGY_STORED.of(0),
-            MAX_ENERGY_STORED.of(0),
-            FLUID_TANK.of(new FluidStack(Fluids.EMPTY, 0))
-    );
 
     /**
      * Gets the item handler from a particular direction.
@@ -148,6 +125,7 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
     public boolean changeEjectOn() {
         ejectOn = !ejectOn;
         attemptToEject();
+        settingsUpdateQueued = true;
         return ejectOn;
     }
 
@@ -157,6 +135,7 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
     public boolean changePullOn() {
         pullOn = !pullOn;
         attemptToPull();
+        settingsUpdateQueued = true;
         return pullOn;
     }
 
@@ -295,8 +274,6 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
         ConcoctiHatchBlock block = (ConcoctiHatchBlock) blockState.getBlock();
 
         HatchType type = block.getType();
-        HatchPurpose purpose = block.getPurpose();
-
         if (type == HatchType.ITEM) {
             this.resetItemHandler(9);
         }
@@ -380,9 +357,9 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
     @Override
     protected @NotNull AbstractContainerMenu createMenu(int containerId, @NotNull Inventory inventory) {
         return switch (getBlock().getType()) {
-            case ITEM -> new ConcoctiItemHatchMenu(containerId, inventory, this, dataAccess);
-            case FLUID -> new ConcoctiFluidHatchMenu(containerId, inventory, this, dataAccess);
-            case ENERGY -> new ConcoctiEnergyHatchMenu(containerId, inventory, this, dataAccess);
+            case ITEM -> new ConcoctiItemHatchMenu(containerId, inventory, this);
+            case FLUID -> new ConcoctiFluidHatchMenu(containerId, inventory, this);
+            case ENERGY -> new ConcoctiEnergyHatchMenu(containerId, inventory, this);
         };
     }
 
@@ -402,6 +379,22 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
             entity.autoCooldown = AUTO_COOLDOWN;
             entity.attemptToPull();
             entity.attemptToEject();
+        }
+
+        boolean updateBase = false, updateSettings = false, updateFluidTank = false;
+
+        if (energy.clearDirtyFlag()) {
+            updateBase = true;
+        }
+        if (settingsUpdateQueued || machineSettings.clearDirtyFlag()) {
+            updateSettings = true;
+        }
+        if (fluidTank.get().clearDirtyFlag()) {
+            updateFluidTank = true;
+        }
+
+        if (updateBase || updateSettings || updateFluidTank) {
+            updateToClients(level, createSyncedDataUpdate(updateBase, updateSettings, updateFluidTank));
         }
     }
 
@@ -435,6 +428,61 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
         tag.putBoolean("eject_on", this.ejectOn);
         tag.putBoolean("pull_on", this.pullOn);
         serialize(new DetailContext(tag, registries, null));
+    }
+
+    public SyncedMachineData createSyncedData() {
+        FluidStack[] fluidStacks = new FluidStack[1];
+        fluidStacks[0] = fluidTank.get().getFluid();
+
+        return new SyncedMachineData(
+                new SyncedBase(
+                        0,
+                        0,
+                        0,
+                        energy.getEnergyStored(),
+                        energy.getMaxEnergyStored()
+                ),
+                new SyncedSettings(
+                        Optional.empty(),
+                        machineSettings.slots,
+                        ejectOn,
+                        pullOn
+                ),
+                new SyncedFluids(fluidStacks),
+                new SyncedExtra(
+                        null,
+                        null
+                )
+        );
+    }
+
+    public SyncedMachineDataUpdate createSyncedDataUpdate(boolean updateBase, boolean updateSettings, boolean updateFluidTank) {
+        FluidStack[] fluidStacks = new FluidStack[1];
+        fluidStacks[0] = fluidTank.get().getFluid();
+
+        return new SyncedMachineDataUpdate(
+                updateBase ? Optional.of(
+                    new SyncedBase(
+                            0,
+                            0,
+                            0,
+                            energy.getEnergyStored(),
+                            energy.getMaxEnergyStored()
+                    )
+                ) : Optional.empty(),
+                updateSettings ? Optional.of(
+                    new SyncedSettings(
+                            Optional.empty(),
+                            machineSettings.slots,
+                            ejectOn,
+                            pullOn
+                    )
+                ) : Optional.empty(),
+                updateFluidTank ? Optional.of(
+                    new SyncedFluids(fluidStacks)
+                ) : Optional.empty(),
+                Optional.empty()
+        );
     }
 
     @Override
@@ -488,7 +536,7 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
     }
 
     @Override
-    public List<IFluidHandler> getIndexedFluidHandlers() {
+    public List<ConcoctiFluidTank> getIndexedFluidHandlers() {
         return List.of(fluidTank.get());
     }
 

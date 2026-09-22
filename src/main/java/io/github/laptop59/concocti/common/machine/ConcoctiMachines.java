@@ -9,12 +9,12 @@ import io.github.laptop59.concocti.common.multiblock.*;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.Blocks;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
 public final class ConcoctiMachines {
-    public static final ArrayList<ConcoctiMachine<?, ?, ?, ?, ?, ?, ?, ?, ?>> MACHINES = new ArrayList<>();
+    public static final Map<String, ConcoctiMachine<?, ?, ?, ?, ?, ?, ?, ?, ?>> MACHINES = new HashMap<>();
 
     public static ConcoctiMelter MELTER;
     public static ConcoctiSolidifier SOLIDIFIER;
@@ -36,7 +36,7 @@ public final class ConcoctiMachines {
     public static int MAX_Z_RADIUS_SEARCHABLE = 0;
 
     private static <T extends ConcoctiMachine<?, ?, ?, ?, ?, ?, ?, ?, ?>> T register(T machine) {
-        MACHINES.add(machine);
+        MACHINES.put(machine.ID, machine);
         return machine;
     }
 
@@ -160,7 +160,8 @@ public final class ConcoctiMachines {
     }
 
     public static void forEach(Consumer<ConcoctiMachine<?, ?, ?, ?, ?, ?, ?, ?, ?>> consumer) {
-        MACHINES.forEach(consumer);
+        for (var machine : MACHINES.values())
+            consumer.accept(machine);
     }
 
     private ConcoctiMachines() {

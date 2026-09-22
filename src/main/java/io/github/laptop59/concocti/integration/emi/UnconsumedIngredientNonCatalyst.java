@@ -6,8 +6,6 @@ import dev.emi.emi.api.stack.EmiStack;
 import io.github.laptop59.concocti.client.ConcoctiClient;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 
 import java.util.ArrayList;
 import java.util.List;

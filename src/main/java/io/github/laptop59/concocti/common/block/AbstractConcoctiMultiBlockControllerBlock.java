@@ -3,7 +3,6 @@ package io.github.laptop59.concocti.common.block;
 import com.mojang.serialization.MapCodec;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMultiblockBlockEntity;
-import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
 import io.github.laptop59.concocti.common.menu.ConcoctiFrameSlot;
 import io.github.laptop59.concocti.common.menu.ConcoctiUpgradeSlot;
 import net.minecraft.core.BlockPos;
@@ -12,24 +11,22 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.*;
+import net.minecraft.world.Containers;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.EntityBlock;
-import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
 
@@ -151,11 +148,7 @@ public abstract class AbstractConcoctiMultiBlockControllerBlock<B extends Abstra
         if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         } else {
-            MenuProvider provider = this.getMenuProvider(state, level, pos);
-            if (provider != null) {
-                player.openMenu(provider);
-            }
-
+            openMenu(level, pos, player);
             return InteractionResult.CONSUME;
         }
     }
@@ -164,11 +157,6 @@ public abstract class AbstractConcoctiMultiBlockControllerBlock<B extends Abstra
 
     public AbstractConcoctiMultiblockBlockEntity<?, ?> getBlockEntity(@NotNull Level level, @NotNull BlockPos blockPos) {
         return (AbstractConcoctiMultiblockBlockEntity<?, ?>) level.getBlockEntity(blockPos);
-    }
-
-    @Override
-    public MenuProvider getMenuProvider(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos) {
-        return getBlockEntity(level, pos);
     }
 
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> blockEntityType) {

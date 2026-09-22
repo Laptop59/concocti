@@ -5,31 +5,29 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.laptop59.concocti.client.gui.AbstractConcoctiMachineScreen;
 import io.github.laptop59.concocti.client.gui.components.*;
-import io.github.laptop59.concocti.common.abstraction.ConcoctiMachineComplexion;
-import io.github.laptop59.concocti.common.abstraction.Properties;
-import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
 import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
 import io.github.laptop59.concocti.common.detail.DetailCodec;
 import io.github.laptop59.concocti.common.detail.DetailHolder;
+import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTank;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
+import io.github.laptop59.concocti.common.machine.AbstractConcoctiRecipeCategory;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachineDetails;
 import io.github.laptop59.concocti.common.machine.InputOutput;
-import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
+import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenuSyncedExtra;
 import io.github.laptop59.concocti.common.recipe.FluidOutput;
 import io.github.laptop59.concocti.common.recipe.LightningRecipeInput;
 import io.github.laptop59.concocti.common.recipe.LightningState;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
-import io.github.laptop59.concocti.common.machine.AbstractConcoctiRecipeCategory;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -40,7 +38,6 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -59,8 +56,6 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -88,6 +83,9 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
     // Details
     public final static String ID = "concocti_electron_collector";
 
+    // Fluids
+    public static final int FLUID_OUTPUT = 0;
+
     public Supplier<ConcoctiMachineDetails<BlockEntity, Menu, LightningState, LightningRecipeInput, Recipe>> getDetails() {
         return () -> new ConcoctiMachineDetails<>(
                 BlockEntity.class,
@@ -100,7 +98,6 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
                 Component.translatable("block.concocti.concocti_electron_collector"),
                 List.of(SlotType.FLUID_OUTPUT),
                 Menu::new,
-                blockEntity -> blockEntity.dataAccess,
                 new EnumMap<>(SlotType.class),
                 new EnumMap<>(
                         Map.of(
@@ -131,18 +128,12 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
     public static class BlockEntity extends AbstractConcoctiMachineBlockEntity
             <BlockEntity, Menu, LightningState, LightningRecipeInput, Recipe> {
 
-        private final DetailHolder<FluidTank> fluidOutput = new DetailHolder<>(
-                DetailCodec.FLUID_TANK, "fluid_output", new FluidTank(TANK_CAPACITY), this
+        private final DetailHolder<ConcoctiFluidTank> fluidOutput = new DetailHolder<>(
+                DetailCodec.FLUID_TANK, "fluid_output", new ConcoctiFluidTank(TANK_CAPACITY), this
         );
         private final DetailHolder<LightningState> lightningState = new DetailHolder<>(
                 DetailCodec.LIGHTNING_STATE, "lightning_state", new LightningState(false), this
         );
-
-        // Slots: NONE
-
-        // Properties
-        public final Property<FluidStack> FLUID_OUTPUT = Properties.FLUID_OUTPUT.newWithLinker(() -> fluidOutput.get().getFluid());
-        public final Property<LightningState> LIGHTNING_STATE = Properties.LIGHTNING_STATE.newWithLinker(lightningState::get);
 
         @Override
         protected ConcoctiElectronCollector getMachineInstance() {
@@ -150,7 +141,7 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
         }
 
         @Override
-        public List<IFluidHandler> getIndexedFluidHandlers() {
+        public List<ConcoctiFluidTank> getIndexedFluidHandlers() {
             return List.of(fluidOutput.get());
         }
 
@@ -162,12 +153,6 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
         protected boolean isItemValidInMachine(int slot, @NotNull ItemStack stack) {
             return false;
         }
-
-        protected final ConcoctiMachineComplexion dataAccess = new ConcoctiMachineComplexion(
-                this,
-                FLUID_OUTPUT.of(FluidStack.EMPTY),
-                LIGHTNING_STATE.of(new LightningState(false))
-        );
 
         public BlockEntity(BlockPos pos, BlockState blockState) {
             super(
@@ -209,6 +194,11 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
 
         public void markLightningState() {
             lightningState.get().setLightningCollected(true);
+        }
+
+        @Override
+        public Object getExtraData() {
+            return new Extra(lightningState.get());
         }
     }
 
@@ -358,27 +348,17 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
         }
     }
 
-    public static class Menu extends AbstractConcoctiMachineMenu<Menu> {
-
-        @Contract(pure = true)
-        @Override
-        public List<Property<?>> getMachineSpecificProperties() {
-            return List.of(
-                    Properties.FLUID_OUTPUT,
-                    Properties.LIGHTNING_STATE
-            );
-        }
-
+    public static class Menu extends AbstractConcoctiMachineMenuSyncedExtra<Menu, Extra> {
         // Client
         public Menu(
-                int containerId, Inventory playerInventory
+                int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf
         ) {
-            super(containerId, playerInventory, 2, INSTANCE.MENU);
+            super(containerId, playerInventory, 2, buf, INSTANCE.MENU);
         }
 
         // Server
-        public Menu(int containerId, Inventory playerInventory, Container container, ContainerData data) {
-            super(containerId, playerInventory, container, data, INSTANCE.MENU);
+        public Menu(int containerId, Inventory playerInventory, Container container) {
+            super(containerId, playerInventory, container, INSTANCE.MENU);
         }
 
         @Override
@@ -391,7 +371,7 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
         }
 
         public FluidStack getFluidOutput() {
-            return viewer.get(Properties.FLUID_OUTPUT);
+            return syncedFluids.get(FLUID_OUTPUT);
         }
 
         public int getMaxFluidOutput() {
@@ -399,7 +379,7 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
         }
 
         public LightningState getLightningState() {
-            return viewer.get(Properties.LIGHTNING_STATE);
+            return syncedExtra.lightningState();
         }
     }
 
@@ -512,6 +492,28 @@ public class ConcoctiElectronCollector extends ConcoctiMachine<
 
             builder.addCatalystSlot(8, 16, Ingredient.of(rod));
         }
+    }
+
+    public record Extra(LightningState lightningState) {
+        public static StreamCodec<ByteBuf, Extra> STREAM_CODEC = LightningState.STREAM_CODEC.map(
+                Extra::new,
+                Extra::lightningState
+        );
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof Extra(LightningState state) && lightningState.equals(state);
+        }
+
+        @Override
+        public int hashCode() {
+            return lightningState.hashCode();
+        }
+    }
+
+    @Override
+    public StreamCodec<? super RegistryFriendlyByteBuf, ?> getExtraDataStreamCodec() {
+        return Extra.STREAM_CODEC;
     }
 
     public BlockEntityConstructor<BlockEntity> getBlockEntityConstructor() {

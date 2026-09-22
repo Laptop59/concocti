@@ -8,12 +8,12 @@ import net.minecraft.network.codec.StreamCodec;
 public class LightningState {
     private boolean lightningCollected;
 
-    public final Codec<LightningState> CODEC = Codec.BOOL.xmap(
+    public static final Codec<LightningState> CODEC = Codec.BOOL.xmap(
             LightningState::new,
             LightningState::getLightningCollected
     );
 
-    public final StreamCodec<ByteBuf, LightningState> STREAM_CODEC = ByteBufCodecs.BOOL.map(
+    public static final StreamCodec<ByteBuf, LightningState> STREAM_CODEC = ByteBufCodecs.BOOL.map(
             LightningState::new,
             LightningState::getLightningCollected
     );
@@ -28,5 +28,15 @@ public class LightningState {
 
     public boolean getLightningCollected() {
         return lightningCollected;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof LightningState other && lightningCollected == other.lightningCollected;
+    }
+
+    @Override
+    public int hashCode() {
+        return Boolean.hashCode(lightningCollected);
     }
 }

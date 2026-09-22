@@ -1,8 +1,5 @@
 package io.github.laptop59.concocti.common.block.entity;
 
-import io.github.laptop59.concocti.common.abstraction.Complexion;
-import io.github.laptop59.concocti.common.abstraction.Properties;
-import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.ConcoctiHatchBlock;
 import io.github.laptop59.concocti.common.block.Hatch;
 import io.github.laptop59.concocti.common.block.HatchPurpose;
@@ -12,9 +9,10 @@ import io.github.laptop59.concocti.common.detail.DetailContext;
 import io.github.laptop59.concocti.common.detail.DetailHolder;
 import io.github.laptop59.concocti.common.detail.DetailHolders;
 import io.github.laptop59.concocti.common.detail.Details;
-import io.github.laptop59.concocti.common.energy.ViewOnlyEnergyStorage;
-import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTankHandler;
 import io.github.laptop59.concocti.common.energy.MergedEnergyStorage;
+import io.github.laptop59.concocti.common.energy.ViewOnlyEnergyStorage;
+import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTank;
+import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTankHandler;
 import io.github.laptop59.concocti.common.fluid.MergedViewOnlyFluidHandler;
 import io.github.laptop59.concocti.common.fluid.ViewOnlyFluidHandler;
 import io.github.laptop59.concocti.common.item.MergedItemHandler;
@@ -22,7 +20,9 @@ import io.github.laptop59.concocti.common.item.ViewOnlyItemHandler;
 import io.github.laptop59.concocti.common.machine.FluidTankHolder;
 import io.github.laptop59.concocti.common.machine.ItemsFluidsInputValue;
 import io.github.laptop59.concocti.common.machine.SettingsHolder;
-import io.github.laptop59.concocti.common.menu.*;
+import io.github.laptop59.concocti.common.menu.ConcoctiFrameSlot;
+import io.github.laptop59.concocti.common.menu.ConcoctiMultiblockMenu;
+import io.github.laptop59.concocti.common.menu.ConcoctiUpgradeSlot;
 import io.github.laptop59.concocti.common.multiblock.MultiblockBlockPredicate;
 import io.github.laptop59.concocti.common.multiblock.MultiblockHatchAllowedPredicate;
 import io.github.laptop59.concocti.common.multiblock.MultiblockResult;
@@ -93,32 +93,12 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
     public static final int UPGRADE_SLOT = 0;
     public static final int FRAME_SLOT = 1;
 
-    // Properties
-    public final Property<Boolean> VALID =
-            Properties.VALID.newWithLinker(() -> valid);
-    public final Property<Integer> TICKS_LEFT =
-            Properties.TICKS_LEFT.newWithLinker(() -> ticksLeft);
-    public final Property<Integer> TOTAL_TICKS =
-            Properties.TOTAL_TICKS.newWithLinker(() -> totalTicks);
-    public final Property<Integer> TICK_MULTIPLIER =
-            Properties.TICK_MULTIPLIER.newWithLinker(() -> ticksProcessed);
-    public final Property<Boolean> BUILD_PREVIEW =
-            Properties.BUILD_PREVIEW.newWithLinker(() -> buildPreview);
-
     public IItemHandler itemStackInputHandler = null;
     public IFluidHandler fluidStackInputHandler = null;
     public IEnergyStorage energyInputStorage = null;
     public IItemHandler itemStackOutputHandler = null;
     public IFluidHandler fluidStackOutputHandler = null;
     public IEnergyStorage energyOutputStorage = null;
-
-    protected final Complexion dataAccess = new Complexion(
-            VALID.of(false),
-            BUILD_PREVIEW.of(false),
-            TICKS_LEFT.of(0),
-            TOTAL_TICKS.of(0),
-            TICK_MULTIPLIER.of(1)
-    );
 
     /**
      * Tells whether an item is valid in a specific tank index.
@@ -143,7 +123,7 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
      */
     @Override
     protected @NotNull ConcoctiMultiblockMenu createMenu(int containerId, @NotNull Inventory inventory) {
-        return new ConcoctiMultiblockMenu(getMachineInstance().MENU, containerId, inventory, this, dataAccess);
+        return new ConcoctiMultiblockMenu(getMachineInstance().MENU, containerId, inventory, this);
     }
 
     /**
@@ -350,7 +330,7 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
     /**
      * Gets all the separate handlers of fluid stacks of this machine, which are indexed consistently.
      */
-    public List<IFluidHandler> getIndexedFluidHandlers() {
+    public List<ConcoctiFluidTank> getIndexedFluidHandlers() {
         return List.of();
     }
 
@@ -445,15 +425,10 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
     /**
      * A basic implementation of a Concocti Machine's server tick.
      */
-    public void tick(Level level, BlockPos pos, BlockState state) {
+    protected void tickMachineSpecific(Level level, BlockPos pos, BlockState state) {
         ticksProcessed = 0;
 
         AbstractConcoctiMultiblockBlockEntity<T, R> entity = this;
-        int currentUpgradeUnits = ConcoctiUpgradeSlot.getUpgradeUnits(entity.getItem(UPGRADE_SLOT));
-        if (currentUpgradeUnits != entity.lastUpgradeUnits) {
-            entity.lastUpgradeUnits = currentUpgradeUnits;
-            entity.setNewEnergyMultiplier(entity.getInefficientEnergyMultiplier());
-        }
         if (entity.ticksLeft >= entity.totalTicks) entity.lastRecipe = null;
         int consumableTicks = getTickMultiplier();
         // int subticks = 0;
@@ -523,6 +498,7 @@ public abstract class AbstractConcoctiMultiblockBlockEntity
         // Fill in the total ticks.
         this.totalTicks = tag.getInt("total_ticks");
         this.buildPreview = tag.contains("build_preview") && tag.getBoolean("build_preview");
+
         deserialize(new DetailContext(tag, registries, null));
     }
 

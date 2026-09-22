@@ -5,9 +5,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.laptop59.concocti.client.gui.AbstractConcoctiMachineScreen;
 import io.github.laptop59.concocti.client.gui.components.*;
-import io.github.laptop59.concocti.common.abstraction.ConcoctiMachineComplexion;
-import io.github.laptop59.concocti.common.abstraction.Properties;
-import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineBlockEntity;
@@ -15,12 +12,14 @@ import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineOn
 import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
 import io.github.laptop59.concocti.common.detail.DetailCodec;
 import io.github.laptop59.concocti.common.detail.DetailHolder;
+import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTank;
 import io.github.laptop59.concocti.common.fluid.ConcoctiFluids;
 import io.github.laptop59.concocti.common.machine.*;
-import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
+import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenuSyncedExtra;
 import io.github.laptop59.concocti.common.menu.ConcoctiUpgradeSlot;
 import io.github.laptop59.concocti.common.menu.ResultSlot;
 import io.github.laptop59.concocti.common.recipe.*;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -37,7 +36,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
@@ -56,16 +54,12 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
-
-import static io.github.laptop59.concocti.common.Concocti.MODID;
 
 public class ConcoctiSolarCollector extends ConcoctiMachine<
         ConcoctiSolarCollector.BlockEntity,
@@ -86,6 +80,13 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
     // Details
     public final static String ID = "concocti_solar_collector";
 
+    // Fluids
+    public static final int FLUID_INPUT = 0;
+    public static final int FLUID_OUTPUT = 1;
+
+    // at coefficient = 1 (coefficient can be less or greater than 1)
+    public static final long NORMALIZED_SOLAR_UNITS_PER_TICK = 1_000L;
+
     public Supplier<ConcoctiMachineDetails<BlockEntity, Menu, ItemsFluidsSolarInputValue, ItemsFluidsSolarRecipeInput, Recipe>> getDetails() {
         return () -> new ConcoctiMachineDetails<>(
                 BlockEntity.class,
@@ -98,7 +99,6 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
                 Component.translatable("block.concocti.concocti_solar_collector"),
                 List.of(SlotType.ITEM_INPUT, SlotType.FLUID_INPUT, SlotType.SOLAR_INPUT, SlotType.ITEM_OUTPUT, SlotType.FLUID_OUTPUT, SlotType.ITEM_INPUT_OUTPUT),
                 Menu::new,
-                blockEntity -> blockEntity.dataAccess,
                 new EnumMap<>(
                         Map.of(
                                 SlotType.ITEM_INPUT, List.of(INPUT_SLOT),
@@ -141,21 +141,13 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
 
     public static class BlockEntity extends AbstractConcoctiMachineOnlyItemsFluidsSolarBlockEntity<BlockEntity, Menu, Recipe> {
 
-        private final DetailHolder<FluidTank> fluidInput = new DetailHolder<>(
-                DetailCodec.FLUID_TANK, "fluid_input", new FluidTank(TANK_CAPACITY), this
+        private final DetailHolder<ConcoctiFluidTank> fluidInput = new DetailHolder<>(
+                DetailCodec.FLUID_TANK, "fluid_input", new ConcoctiFluidTank(TANK_CAPACITY), this
         );
-        private final DetailHolder<FluidTank> fluidOutput = new DetailHolder<>(
-                DetailCodec.FLUID_TANK, "fluid_output", new FluidTank(TANK_CAPACITY), this
+        private final DetailHolder<ConcoctiFluidTank> fluidOutput = new DetailHolder<>(
+                DetailCodec.FLUID_TANK, "fluid_output", new ConcoctiFluidTank(TANK_CAPACITY), this
         );
 
-        // Properties
-        public final Property<SolarState> SOLAR = Properties.SOLAR_STATE.newWithLinker(solar::get);
-        public final Property<FluidStack> FLUID_INPUT = Properties.FLUID_INPUT.newWithLinker(() -> fluidInput.get().getFluid());
-        public final Property<FluidStack> FLUID_OUTPUT = Properties.FLUID_OUTPUT.newWithLinker(() -> fluidOutput.get().getFluid());
-        public final Property<Long> SOLAR_PRODUCTION_RATE = Properties.SOLAR_PRODUCTION_RATE.newWithLinker(this::solarEarnedPerTick);
-
-        // at coefficient = 1 (coefficient can be less or greater than 1)
-        public final long NORMALIZED_SOLAR_UNITS_PER_TICK = 1_000L;
         public static final long SOLAR_PER_MOLTEN_SOLARIUM_MILLIBUCKET = 1_000L; // constant, DO NOT CHANGE! WON'T BE CHANGEABLE, EVEN IN CONFIG!
 
         @Override
@@ -164,7 +156,7 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
         }
 
         @Override
-        public List<IFluidHandler> getIndexedFluidHandlers() {
+        public List<ConcoctiFluidTank> getIndexedFluidHandlers() {
             return List.of(fluidInput.get(), fluidOutput.get());
         }
 
@@ -176,14 +168,6 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
         protected boolean isItemValidInMachine(int slot, @NotNull ItemStack stack) {
             return false;
         }
-
-        protected final ConcoctiMachineComplexion dataAccess = new ConcoctiMachineComplexion(
-                this,
-                SOLAR.of(new SolarState(0, 0)),
-                FLUID_INPUT.of(FluidStack.EMPTY),
-                FLUID_OUTPUT.of(FluidStack.EMPTY),
-                SOLAR_PRODUCTION_RATE.of(0L)
-        );
 
         public BlockEntity(BlockPos pos, BlockState blockState) {
             super(
@@ -204,46 +188,6 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
         public void onUpgradeUnitsChange() {
             super.onUpgradeUnitsChange();
             solar.get().setMaxSolarAmount(calculateMaxSolarAmount());
-        }
-
-        public long solarEarnedPerTick() {
-            assert getLevel() != null;
-
-            BlockPos checkedPos = getBlockPos().above();
-            if (!getLevel().canSeeSky(checkedPos) || !getLevel().isDay() || getLevel().dimensionType().hasFixedTime()) return 0L; // No sun!
-
-            float rainLevel = Mth.clamp(getLevel().getRainLevel(1.0f), 0, 1);
-            float thunderLevel = Mth.clamp(getLevel().getThunderLevel(1.0f), 0, 1);
-            Biome biome = getLevel().getBiome(checkedPos).getDelegate().value();
-            float humidity = 0f;
-            switch (biome.getPrecipitationAt(checkedPos)) {
-                case RAIN -> humidity = 0.75f;
-                case SNOW -> humidity = 0.9f;
-            }
-            humidity = Mth.clamp(humidity, 0, 1);
-
-            double relativeTime = Mth.clamp(getLevel().getDayTime() % 24000L / 6000.0 - 1.0, -1, 1);
-            double timeScale = 1.0 - relativeTime * relativeTime;
-            double tempScale = getTemperatureScale(biome);
-
-            // Formula is: (not 100% realistic)
-            double coefficient = timeScale * tempScale * (1 - 0.2 * rainLevel - 0.3 * thunderLevel) * (1 - 0.15 * humidity);
-            return (long) (NORMALIZED_SOLAR_UNITS_PER_TICK * coefficient);
-        }
-
-        /** Returns a scale due to temperature in the range (0, 2).
-         * Higher the temperature, higher will be the scale.
-         * This function satisfies the following conditions:
-         * <ul>
-         * <li>f(x) ∈ (0, 2) for any x ∈ R</li>
-         * <li>f(0) = 0.5</li>
-         * <li>f(1) = 1.0</li>
-         * <li>f(2) = 1.5</li>
-         * </ul>
-         */
-        private double getTemperatureScale(Biome biome) {
-            float temperatureDelta = biome.getBaseTemperature() - 1.0f; // ranges between -1f to +1f (for normal biomes)
-            return 2.0 / (1.0 + Math.pow(3.0, -temperatureDelta));
         }
 
         @Override
@@ -326,9 +270,9 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
         }
 
         @Override
-        public void tick(Level level, BlockPos pos, BlockState state) {
-            solar.get().receiveSolar(solarEarnedPerTick(), false);
-            super.tick(level, pos, state);
+        protected void tickMachineSpecific(Level level, BlockPos pos, BlockState state) {
+            solar.get().receiveSolar(solarEarnedPerTick(level, pos), false);
+            super.tickMachineSpecific(level, pos, state);
         }
 
         @Override
@@ -358,6 +302,12 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
         @Override
         public List<IFluidTank> getFluidTanks() {
             return List.of(fluidOutput.get());
+        }
+
+        @Override
+        public Object getExtraData() {
+            SolarState solarState = solar.get();
+            return new Extra(solarState.getSolarAmount(), solarState.getMaxSolarAmount(), solarEarnedPerTick(level, getBlockPos()));
         }
     }
 
@@ -567,29 +517,17 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
         }
     }
 
-    public static class Menu extends AbstractConcoctiMachineMenu<Menu> {
-
-        @Contract(pure = true)
-        @Override
-        public List<Property<?>> getMachineSpecificProperties() {
-            return List.of(
-                    Properties.SOLAR_STATE,
-                    Properties.FLUID_INPUT,
-                    Properties.FLUID_OUTPUT,
-                    Properties.SOLAR_PRODUCTION_RATE
-            );
-        }
-
+    public static class Menu extends AbstractConcoctiMachineMenuSyncedExtra<Menu, Extra> {
         // Client
         public Menu(
-                int containerId, Inventory playerInventory
+                int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf
         ) {
-            super(containerId, playerInventory, 4, INSTANCE.MENU);
+            super(containerId, playerInventory, 4, buf, INSTANCE.MENU);
         }
 
         // Server
-        public Menu(int containerId, Inventory playerInventory, Container container, ContainerData data) {
-            super(containerId, playerInventory, container, data, INSTANCE.MENU);
+        public Menu(int containerId, Inventory playerInventory, Container container) {
+            super(containerId, playerInventory, container, INSTANCE.MENU);
         }
 
         @Override
@@ -607,7 +545,7 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
         }
 
         public FluidStack getFluidInput() {
-            return viewer.get(Properties.FLUID_INPUT);
+            return syncedFluids.get(FLUID_INPUT);
         }
 
         public int getMaxFluidInput() {
@@ -615,7 +553,7 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
         }
 
         public FluidStack getFluidOutput() {
-            return viewer.get(Properties.FLUID_OUTPUT);
+            return syncedFluids.get(FLUID_OUTPUT);
         }
 
         public int getMaxFluidOutput() {
@@ -626,12 +564,11 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
          * Returns the amount of solar/maximum solar left in this block.
          */
         public long getNumberSolarLeft(boolean max) {
-            SolarState state = viewer.get(Properties.SOLAR_STATE);
-            return max ? state.getMaxSolarAmount() : state.getSolarAmount();
+            return max ? syncedExtra.maxSolarAmount : syncedExtra.solarAmount;
         }
 
         public Long getProductionRate() {
-            return viewer.get(Properties.SOLAR_PRODUCTION_RATE);
+            return syncedExtra.solarProductionRate();
         }
     }
 
@@ -759,6 +696,75 @@ public class ConcoctiSolarCollector extends ConcoctiMachine<
         public int getHorizontalArrowOffset(@NotNull Recipe recipe) {
             return 6;
         }
+    }
+
+    public record Extra(
+            long solarAmount,
+            long maxSolarAmount,
+            long solarProductionRate
+    ) {
+        public static StreamCodec<ByteBuf, Extra> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.VAR_LONG, Extra::solarAmount,
+                ByteBufCodecs.VAR_LONG, Extra::maxSolarAmount,
+                ByteBufCodecs.VAR_LONG, Extra::solarProductionRate,
+                Extra::new
+        );
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof Extra(long solarAmount, long maxSolarAmount, long solarProductionRate)
+                    && this.solarAmount == solarAmount
+                    && this.maxSolarAmount == maxSolarAmount
+                    && this.solarProductionRate == solarProductionRate;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(solarAmount, maxSolarAmount, solarProductionRate);
+        }
+    }
+
+    public static long solarEarnedPerTick(@NotNull Level level, BlockPos blockPos) {
+        BlockPos checkedPos = blockPos.above();
+        if (!level.canSeeSky(checkedPos) || !level.isDay() || level.dimensionType().hasFixedTime()) return 0L; // No sun!
+
+        float rainLevel = Mth.clamp(level.getRainLevel(1.0f), 0, 1);
+        float thunderLevel = Mth.clamp(level.getThunderLevel(1.0f), 0, 1);
+        Biome biome = level.getBiome(checkedPos).getDelegate().value();
+        float humidity = 0f;
+        switch (biome.getPrecipitationAt(checkedPos)) {
+            case RAIN -> humidity = 0.75f;
+            case SNOW -> humidity = 0.9f;
+        }
+        humidity = Mth.clamp(humidity, 0, 1);
+
+        double relativeTime = Mth.clamp(level.getDayTime() % 24000L / 6000.0 - 1.0, -1, 1);
+        double timeScale = 1.0 - relativeTime * relativeTime;
+        double tempScale = getTemperatureScale(biome);
+
+        // Formula is: (not 100% realistic)
+        double coefficient = timeScale * tempScale * (1 - 0.2 * rainLevel - 0.3 * thunderLevel) * (1 - 0.15 * humidity);
+        return (long) (NORMALIZED_SOLAR_UNITS_PER_TICK * coefficient);
+    }
+
+    /** Returns a scale due to temperature in the range (0, 2).
+     * Higher the temperature, higher will be the scale.
+     * This function satisfies the following conditions:
+     * <ul>
+     * <li>f(x) ∈ (0, 2) for any x ∈ R</li>
+     * <li>f(0) = 0.5</li>
+     * <li>f(1) = 1.0</li>
+     * <li>f(2) = 1.5</li>
+     * </ul>
+     */
+    private static double getTemperatureScale(Biome biome) {
+        float temperatureDelta = biome.getBaseTemperature() - 1.0f; // ranges between -1f to +1f (for normal biomes)
+        return 2.0 / (1.0 + Math.pow(3.0, -temperatureDelta));
+    }
+
+    @Override
+    public StreamCodec<? super RegistryFriendlyByteBuf, ?> getExtraDataStreamCodec() {
+        return Extra.STREAM_CODEC;
     }
 
     public BlockEntityConstructor<BlockEntity> getBlockEntityConstructor() {

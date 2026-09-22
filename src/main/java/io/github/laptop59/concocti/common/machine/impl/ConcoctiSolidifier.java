@@ -5,9 +5,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.laptop59.concocti.client.gui.AbstractConcoctiMachineScreen;
 import io.github.laptop59.concocti.client.gui.components.*;
-import io.github.laptop59.concocti.common.abstraction.ConcoctiMachineComplexion;
-import io.github.laptop59.concocti.common.abstraction.Properties;
-import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.AbstractConcoctiMachineBlock;
 import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMachineOnlyItemsFluidsBlockEntity;
@@ -15,10 +12,8 @@ import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
 import io.github.laptop59.concocti.common.block.entity.FluidHandlerBlockEntity;
 import io.github.laptop59.concocti.common.detail.DetailCodec;
 import io.github.laptop59.concocti.common.detail.DetailHolder;
-import io.github.laptop59.concocti.common.machine.ConcoctiMachineDetails;
-import io.github.laptop59.concocti.common.machine.ConcoctiMachineOnlyItemsFluids;
-import io.github.laptop59.concocti.common.machine.InputOutput;
-import io.github.laptop59.concocti.common.machine.ItemsFluidsInputValue;
+import io.github.laptop59.concocti.common.fluid.ConcoctiFluidTank;
+import io.github.laptop59.concocti.common.machine.*;
 import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
 import io.github.laptop59.concocti.common.menu.IconSlot;
 import io.github.laptop59.concocti.common.menu.ResultSlot;
@@ -26,13 +21,11 @@ import io.github.laptop59.concocti.common.recipe.FluidRecipeIngredient;
 import io.github.laptop59.concocti.common.recipe.ItemRecipeIngredient;
 import io.github.laptop59.concocti.common.recipe.ItemsFluidsRecipeInput;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
-import io.github.laptop59.concocti.common.machine.AbstractConcoctiRecipeCategory;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -40,31 +33,27 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
-
-import static io.github.laptop59.concocti.common.Concocti.MODID;
 
 public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
         ConcoctiSolidifier.BlockEntity,
@@ -85,6 +74,9 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
     private static final int BASE_ITEM_SLOT = 3;
     private static final int OUTPUT_SLOT = 4;
 
+    // Fluids
+    public static final int FLUID_INPUT = 0;
+
     public Supplier<ConcoctiMachineDetails<BlockEntity, Menu, ItemsFluidsInputValue, ItemsFluidsRecipeInput, Recipe>> getDetails() {
         return () -> new ConcoctiMachineDetails<>(
                 BlockEntity.class,
@@ -102,7 +94,6 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
                         SlotType.ITEM_OUTPUT
                 ),
                 Menu::new,
-                blockEntity -> blockEntity.dataAccess,
                 new EnumMap<>(
                         Map.of(
                                 SlotType.ITEM_OUTPUT, List.of(OUTPUT_SLOT),
@@ -152,16 +143,8 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
             <BlockEntity, Menu, Recipe>
             implements FluidHandlerBlockEntity {
 
-        private final DetailHolder<FluidTank> fluidInput = new DetailHolder<>(
-                DetailCodec.FLUID_TANK, "fluid_input", new FluidTank(TANK_CAPACITY), this
-        );
-
-        // Properties
-        public final Property<FluidStack> FLUID_INPUT = Properties.FLUID_INPUT.newWithLinker(() -> fluidInput.get().getFluid());
-
-        protected final ConcoctiMachineComplexion dataAccess = new ConcoctiMachineComplexion(
-                this,
-                FLUID_INPUT.of(FluidStack.EMPTY)
+        private final DetailHolder<ConcoctiFluidTank> fluidInput = new DetailHolder<>(
+                DetailCodec.FLUID_TANK, "fluid_input", new ConcoctiFluidTank(TANK_CAPACITY), this
         );
 
         @Override
@@ -214,7 +197,7 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
         }
 
         @Override
-        public List<IFluidHandler> getIndexedFluidHandlers() {
+        public List<ConcoctiFluidTank> getIndexedFluidHandlers() {
             return List.of(fluidInput.get());
         }
 
@@ -386,24 +369,16 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
     }
 
     public static class Menu extends AbstractConcoctiMachineMenu<Menu> {
-        @Contract(pure = true)
-        @Override
-        public List<Property<?>> getMachineSpecificProperties() {
-            return List.of(
-                    Properties.FLUID_INPUT
-            );
-        }
-
         // Client
         public Menu(
-                int containerId, Inventory playerInventory
+                int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf
         ) {
-            super(containerId, playerInventory, 5, INSTANCE.MENU);
+            super(containerId, playerInventory, 5, buf, INSTANCE.MENU);
         }
 
         // Server
-        public Menu(int containerId, Inventory playerInventory, Container container, ContainerData data) {
-            super(containerId, playerInventory, container, data, INSTANCE.MENU);
+        public Menu(int containerId, Inventory playerInventory, Container container) {
+            super(containerId, playerInventory, container, INSTANCE.MENU);
         }
 
         @Override
@@ -426,7 +401,7 @@ public class ConcoctiSolidifier extends ConcoctiMachineOnlyItemsFluids<
         }
 
         public FluidStack getInputFluidStack() {
-            return viewer.get(Properties.FLUID_INPUT);
+            return syncedFluids.get(FLUID_INPUT);
         }
 
         public int getMaxFluidLeft() {

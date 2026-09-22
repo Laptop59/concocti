@@ -24,6 +24,14 @@ public final class ConcoctiPayloads {
                         FluidBarSoundPayloadS2CHandler::handleData
                 )
         );
+        registrar.playToClient(
+                SyncMachinePayloadS2C.TYPE,
+                SyncMachinePayloadS2C.STREAM_CODEC,
+                new DirectionalPayloadHandler<>(
+                        SyncMachinePayloadS2CHandler::handleData,
+                        SyncMachinePayloadS2CHandler::handleData
+                )
+        );
         registrar.playToServer(
                 FluidBarInteractionPayloadC2S.TYPE,
                 FluidBarInteractionPayloadC2S.STREAM_CODEC,

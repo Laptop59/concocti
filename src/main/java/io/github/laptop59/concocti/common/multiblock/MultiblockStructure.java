@@ -1,11 +1,7 @@
 package io.github.laptop59.concocti.common.multiblock;
 
-import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
-import io.github.laptop59.concocti.common.block.HatchPurpose;
-import io.github.laptop59.concocti.common.block.HatchType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;

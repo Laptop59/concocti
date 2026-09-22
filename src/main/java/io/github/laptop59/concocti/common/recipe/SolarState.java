@@ -4,11 +4,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.laptop59.concocti.common.machine.SolarStorage;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.Mth;
-import net.minecraft.world.item.crafting.Ingredient;
 
 public class SolarState implements SolarStorage {
     private long solarAmount;
@@ -86,5 +84,16 @@ public class SolarState implements SolarStorage {
     @Override
     public boolean canReceive() {
         return true;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof SolarState other && solarAmount == other.solarAmount
+                && maxSolarAmount == other.maxSolarAmount;
+    }
+
+    @Override
+    public int hashCode() {
+        return Long.hashCode(solarAmount ^ maxSolarAmount);
     }
 }

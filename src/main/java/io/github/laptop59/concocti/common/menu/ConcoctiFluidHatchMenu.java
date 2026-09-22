@@ -1,72 +1,33 @@
 package io.github.laptop59.concocti.common.menu;
 
-import io.github.laptop59.concocti.client.gui.components.MachineSettingsSlots;
-import io.github.laptop59.concocti.common.abstraction.Complexion;
-import io.github.laptop59.concocti.common.abstraction.ComplexionViewer;
-import io.github.laptop59.concocti.common.abstraction.Properties;
-import io.github.laptop59.concocti.common.abstraction.Property;
 import io.github.laptop59.concocti.common.block.entity.ConcoctiHatchBlockEntity;
 import net.minecraft.core.Direction;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.Container;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.ContainerData;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-import java.util.function.Supplier;
-
 /**
  * A class which serves as a base for a hatch's menu.
  */
 public class ConcoctiFluidHatchMenu extends AbstractConcoctiMachineMenu<ConcoctiFluidHatchMenu> {
-    protected static final List<Property<?>> BASE_PROPERTIES = List.of(
-            Properties.EJECT_ON,
-            Properties.PULL_ON,
-            Properties.MACHINE_SETTINGS_SLOTS,
-            Properties.ENERGY_STORED,
-            Properties.MAX_ENERGY_STORED,
-            Properties.FLUID_TANK
-    );
+    public static final int FLUID_TANK = 0;
 
     // client constructor
     public ConcoctiFluidHatchMenu(
-            int containerId, Inventory playerInventory
+            int containerId, Inventory playerInventory, RegistryFriendlyByteBuf buf
     ) {
-        this(containerId, playerInventory, new SimpleContainer(0), ConcoctiMenus.CONCOCTI_FLUID_HATCH_MENU, false);
-        initializeViewer((SimpleContainerData) this.data);
+        super(containerId, playerInventory, 0, buf, ConcoctiMenus.CONCOCTI_FLUID_HATCH_MENU);
     }
 
     // server constructor
-    public ConcoctiFluidHatchMenu(
-            int containerId, Inventory playerInventory, Container container, ContainerData data
-    ) {
-        this(containerId, playerInventory, container, data, ConcoctiMenus.CONCOCTI_FLUID_HATCH_MENU, false);
-        initializeViewer((Complexion) data);
-    }
-
-
-    private ConcoctiFluidHatchMenu(
-            int containerId, Inventory playerInventory, Container container,
-            Supplier<MenuType<ConcoctiFluidHatchMenu>> menuSupplier, boolean ignoredViewer) {
-        super(containerId, playerInventory, 0, menuSupplier);
-        // Place the machine, player inventory and hotbar slots.
-        addSlots(playerInventory);
-    }
-
-    private ConcoctiFluidHatchMenu(
-            int containerId, Inventory playerInventory, Container container, ContainerData data,
-            Supplier<MenuType<ConcoctiFluidHatchMenu>> menuSupplier, boolean ignoredViewer) {
-        super(containerId, playerInventory, container, data, menuSupplier);
-        // Place the machine, player inventory and hotbar slots.
-        addSlots(playerInventory);
+    public ConcoctiFluidHatchMenu(int containerId, Inventory playerInventory, Container container) {
+        super(containerId, playerInventory, container, ConcoctiMenus.CONCOCTI_FLUID_HATCH_MENU);
     }
 
     protected void addSlots(Inventory playerInventory) {
@@ -79,24 +40,6 @@ public class ConcoctiFluidHatchMenu extends AbstractConcoctiMachineMenu<Concocti
         for (int k = 0; k < 9; k++) {
             this.addSlot(new Slot(playerInventory, k, 8 + k * 18, 142));
         }
-
-        this.addDataSlots(data);
-    }
-
-    @Override
-    public List<Property<?>> getMachineSpecificProperties() {
-        return getMachineProperties();
-    }
-
-    public List<Property<?>> getMachineProperties() {
-        return BASE_PROPERTIES;
-    }
-
-    protected int getPropertiesSize() {
-        int size = 0;
-        for (Property<?> property : getMachineProperties())
-            size += property.codec().size();
-        return size;
     }
 
     /**
@@ -105,47 +48,6 @@ public class ConcoctiFluidHatchMenu extends AbstractConcoctiMachineMenu<Concocti
     @Override
     public Direction getFacingDirection() {
         return null;
-    }
-
-    protected void initializeViewer(SimpleContainerData containerData) {
-        ConcoctiFluidHatchMenu menu = this;
-        viewer = new ComplexionViewer(containerData) {
-            @Override
-            public List<Property<?>> getProperties() {
-                return menu.getMachineProperties();
-            }
-        };
-    }
-
-    protected void initializeViewer(Complexion containerData) {
-        ConcoctiFluidHatchMenu menu = this;
-        viewer = new ComplexionViewer(containerData) {
-            @Override
-            public List<Property<?>> getProperties() {
-                return menu.getMachineProperties();
-            }
-        };
-    }
-
-    /**
-     * Gets the machine settings slots associated with this menu.
-     */
-    public MachineSettingsSlots getMachineSettingsSlots() {
-        return viewer.get(Properties.MACHINE_SETTINGS_SLOTS);
-    }
-
-    /**
-     * Whether this machine is set to eject.
-     */
-    public boolean shouldEject() {
-        return viewer.get(Properties.EJECT_ON);
-    }
-
-    /**
-     * Whether this machine is set to pull.
-     */
-    public boolean shouldPull() {
-        return viewer.get(Properties.PULL_ON);
     }
 
     @Override
@@ -171,7 +73,7 @@ public class ConcoctiFluidHatchMenu extends AbstractConcoctiMachineMenu<Concocti
     }
 
     public FluidStack getFluidStack() {
-        return viewer.get(Properties.FLUID_TANK);
+        return syncedFluids.get(FLUID_TANK);
     }
 
     public int getFluidStackSize() {

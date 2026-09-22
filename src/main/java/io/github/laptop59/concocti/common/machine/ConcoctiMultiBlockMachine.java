@@ -2,20 +2,25 @@ package io.github.laptop59.concocti.common.machine;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.laptop59.concocti.client.gui.AbstractConcoctiMachineScreen;
-import io.github.laptop59.concocti.client.gui.components.*;
-import io.github.laptop59.concocti.common.abstraction.Complexion;
-import io.github.laptop59.concocti.common.block.*;
+import io.github.laptop59.concocti.client.gui.components.ProgressBar;
+import io.github.laptop59.concocti.client.gui.components.RenderInfo;
+import io.github.laptop59.concocti.client.gui.components.Renderable;
+import io.github.laptop59.concocti.client.gui.components.SlotType;
+import io.github.laptop59.concocti.common.block.AbstractConcoctiMultiBlockControllerBlock;
+import io.github.laptop59.concocti.common.block.ConcoctiBlocks;
 import io.github.laptop59.concocti.common.block.entity.AbstractConcoctiMultiblockBlockEntity;
 import io.github.laptop59.concocti.common.block.entity.DynamicEnergyStorage;
-import io.github.laptop59.concocti.common.menu.ConcoctiEnergyHatchMenu;
 import io.github.laptop59.concocti.common.menu.ConcoctiMultiblockMenu;
 import io.github.laptop59.concocti.common.multiblock.MultiblockStructure;
 import io.github.laptop59.concocti.common.recipe.*;
 import io.github.laptop59.concocti.network.ConcoctiMachineSettingsBuildPreviewChangeC2S;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -89,8 +94,7 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
                 this.RECIPE_TYPE,
                 Component.translatable("block.concocti." + id),
                 List.of(),
-                (a, b, c, d) -> new ConcoctiMultiblockMenu(getInstance(id).MENU, a, b, c, d),
-                BlockEntity::getDataAccess,
+                (a, b, c) -> new ConcoctiMultiblockMenu(getInstance(id).MENU, a, b, c),
                 new EnumMap<>(SlotType.class),
                 new EnumMap<>(SlotType.class),
                 InputOutput.empty(),
@@ -111,7 +115,7 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
 
     @Override
     public MenuClientConstructor<ConcoctiMultiblockMenu> getMenuClientConstructor() {
-        return (containerId, inventory) -> new ConcoctiMultiblockMenu(getInstance(id).MENU, containerId, inventory);
+        return (containerId, inventory, buf) -> new ConcoctiMultiblockMenu(getInstance(id).MENU, containerId, inventory, buf);
     }
 
     @Override
@@ -155,10 +159,6 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
             updateHatchPositions();
         }
 
-        public Complexion getDataAccess() {
-            return dataAccess;
-        }
-
         @Override
         protected boolean isItemValidInMachine(int slot, @NotNull ItemStack stack) {
             return true;
@@ -187,6 +187,11 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
         @Override
         protected Class<Recipe> getRecipeClass() {
             return getInstance(machineId).getRecipeClass();
+        }
+
+        @Override
+        public Object getExtraData() {
+            return new ConcoctiMultiBlockMachine.Extra(valid, buildPreview);
         }
     }
 
@@ -446,5 +451,38 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
             }
             return super.mouseClicked(mouseX, mouseY, button);
         }
+    }
+
+    public record Extra(
+            boolean valid,
+            boolean buildPreview
+    ) {
+        public static final byte VALID_FLAG = 1 << 0;
+        public static final byte BUILD_PREVIEW_FLAG = 1 << 1;
+
+        public static final StreamCodec<ByteBuf, Extra> STREAM_CODEC = StreamCodec.of(
+                (buffer, value) -> {
+                    int flags = (value.valid ? VALID_FLAG : 0) | (value.buildPreview ? BUILD_PREVIEW_FLAG : 0);
+                    buffer.writeByte(flags);
+                },
+                buffer -> {
+                    byte b = buffer.readByte();
+
+                    boolean valid = (b & VALID_FLAG) != 0;
+                    boolean buildPreview = (b & BUILD_PREVIEW_FLAG) != 0;
+
+                    return new Extra(valid, buildPreview);
+                }
+        );
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof Extra(boolean valid1, boolean preview) && valid == valid1 && buildPreview == preview;
+        }
+    }
+
+    @Override
+    public StreamCodec<? super RegistryFriendlyByteBuf, ?> getExtraDataStreamCodec() {
+        return Extra.STREAM_CODEC;
     }
 }
