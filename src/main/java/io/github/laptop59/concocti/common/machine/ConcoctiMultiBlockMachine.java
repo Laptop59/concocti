@@ -18,6 +18,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
@@ -186,6 +187,11 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
         @Override
         protected Class<Recipe> getRecipeClass() {
             return getInstance(machineId).getRecipeClass();
+        }
+
+        @Override
+        public Object getExtraData() {
+            return new ConcoctiMultiBlockMachine.Extra(valid, buildPreview);
         }
     }
 
@@ -473,5 +479,10 @@ public class ConcoctiMultiBlockMachine extends ConcoctiMachineOnlyItemsFluids<
         public boolean equals(Object obj) {
             return obj instanceof Extra(boolean valid1, boolean preview) && valid == valid1 && buildPreview == preview;
         }
+    }
+
+    @Override
+    public StreamCodec<? super RegistryFriendlyByteBuf, ?> getExtraDataStreamCodec() {
+        return Extra.STREAM_CODEC;
     }
 }

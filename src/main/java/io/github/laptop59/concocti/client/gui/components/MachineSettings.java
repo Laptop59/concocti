@@ -104,7 +104,7 @@ public class MachineSettings {
 
     public boolean clearDirtyFlag() {
         boolean flag = dirty;
-        dirty = true;
+        dirty = false;
         return flag;
     }
 }
