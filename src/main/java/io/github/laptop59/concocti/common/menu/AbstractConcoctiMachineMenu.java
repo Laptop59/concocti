@@ -2,6 +2,10 @@ package io.github.laptop59.concocti.common.menu;
 
 import io.github.laptop59.concocti.client.gui.components.MachineSettingsSlots;
 import io.github.laptop59.concocti.common.item.ConcoctiItems;
+import io.github.laptop59.concocti.common.synchronization.SyncedBase;
+import io.github.laptop59.concocti.common.synchronization.SyncedMachineData;
+import io.github.laptop59.concocti.common.synchronization.SyncedMachineDataUpdate;
+import io.github.laptop59.concocti.common.synchronization.SyncedSettings;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -29,8 +33,8 @@ import java.util.function.Supplier;
 public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMachineMenu<T>> extends AbstractContainerMenu {
     protected final Container container;
 
-    protected SyncedMachineData.Base syncedBase;
-    protected SyncedMachineData.Settings syncedSettings;
+    protected SyncedBase syncedBase;
+    protected SyncedSettings syncedSettings;
     protected SyncedFluids syncedFluids;
 
     // server constructor
@@ -56,13 +60,15 @@ public abstract class AbstractConcoctiMachineMenu<T extends AbstractConcoctiMach
     }
 
     public void updateWithSyncedData(SyncedMachineData data) {
-        this.syncedBase = data.base();
-        this.syncedSettings = data.settings();
-        if (syncedFluids == null) {
-            syncedFluids = new SyncedFluids(data.fluids());
-        } else {
-            syncedFluids.sync(data.fluids());
-        }
+        syncedBase = data.base();
+        syncedSettings = data.settings();
+        syncedFluids = new SyncedFluids(data.fluids());
+    }
+
+    public void updateWithSyncedData(SyncedMachineDataUpdate update) {
+        update.base().ifPresent(base -> syncedBase = base);
+        update.settings().ifPresent(settings -> syncedSettings = settings);
+        update.fluids().ifPresent(fluids -> syncedFluids.sync(fluids));
     }
 
     protected void addSlots(Inventory playerInventory) {

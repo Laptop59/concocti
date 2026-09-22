@@ -18,11 +18,14 @@ import io.github.laptop59.concocti.common.machine.ConcoctiMachine;
 import io.github.laptop59.concocti.common.machine.ConcoctiMachineDetails;
 import io.github.laptop59.concocti.common.machine.FluidTankHolder;
 import io.github.laptop59.concocti.common.machine.SettingsHolder;
-import io.github.laptop59.concocti.common.menu.*;
+import io.github.laptop59.concocti.common.menu.AbstractConcoctiMachineMenu;
+import io.github.laptop59.concocti.common.menu.ConcoctiFrameSlot;
+import io.github.laptop59.concocti.common.menu.ConcoctiUpgradeSlot;
+import io.github.laptop59.concocti.common.menu.MenuServerConstructor;
 import io.github.laptop59.concocti.common.recipe.ProcessingRecipe;
+import io.github.laptop59.concocti.common.synchronization.*;
 import io.github.laptop59.concocti.common.util.ConcoctiTransferrer;
 import io.github.laptop59.concocti.common.util.Lazy;
-import io.github.laptop59.concocti.network.SyncMachinePayloadS2C;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -32,8 +35,6 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ContainerData;
@@ -51,7 +52,6 @@ import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.IFluidTank;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -553,22 +553,9 @@ public abstract class AbstractConcoctiMachineBlockEntity
         }
 
         dirty.update();
-        if (dirty.clearDirtyFlag()) {
-            updateToClients();
-        }
-    }
-
-    protected void updateToClients() {
-        if (level instanceof ServerLevel serverLevel) {
-            SyncedMachineData data = createSyncedData(false);
-            for (ServerPlayer player : serverLevel.players()) {
-                if (player.containerMenu instanceof AbstractConcoctiMachineMenu<?> menu && menu.getContainer() == this) {
-                    PacketDistributor.sendToPlayer(player, new SyncMachinePayloadS2C(
-                            menu.containerId,
-                            data
-                    ));
-                }
-            }
+        SyncedMachineDataUpdate update = createSyncedDataUpdate();
+        if (dirty.clearDirtyFlags()) {
+            updateToClients(level, update);
         }
     }
 
@@ -683,29 +670,53 @@ public abstract class AbstractConcoctiMachineBlockEntity
         serialize(new DetailContext(tag, registries, null));
     }
 
-    public SyncedMachineData createSyncedData(boolean complete) {
-        BlockState blockState = getBlockState();
+    public SyncedMachineData createSyncedData() {
         return new SyncedMachineData(
-                new SyncedMachineData.Base(
-                        ticksLeft,
-                        totalTicks,
-                        getTickMultiplier(),
-                        energy.getEnergyStored(),
-                        energy.getMaxEnergyStored()
+                createSyncedBase(),
+                createSyncedSettings(),
+                new SyncedFluids(
+                        getSyncedFluidStacks(true)
                 ),
-                new SyncedMachineData.Settings(
-                        Optional.of(blockState.getValue(AbstractConcoctiMachineBlock.FACING)),
-                        machineSettings.slots,
-                        ejectOn,
-                        pullOn
-                ),
-                new SyncedMachineData.Fluids(
-                        getSyncedFluidStacks(complete)
-                ),
-                new SyncedMachineData.Extra(
+                new SyncedExtra(
                         getMachineInstance(),
                         getExtraData()
                 )
+        );
+    }
+
+    /** Creates a new update to sync data to the clients based on the dirty flags of the dirty tracker.
+     * This should be called before clearing the tracker's dirty flags.
+     * @return The update object.
+     */
+    public SyncedMachineDataUpdate createSyncedDataUpdate() {
+        return new SyncedMachineDataUpdate(
+                dirty.baseDirty ? Optional.of(createSyncedBase()) : Optional.empty(),
+                dirty.settingsDirty ? Optional.of(createSyncedSettings()) : Optional.empty(),
+                dirty.fluidsDirty ? Optional.of(new SyncedFluids(getSyncedFluidStacks(true))) : Optional.empty(),
+                dirty.extraDirty ? Optional.of(new SyncedExtra(
+                        getMachineInstance(),
+                        getExtraData()
+                )) : Optional.empty()
+        );
+    }
+
+    protected SyncedBase createSyncedBase() {
+        return new SyncedBase(
+                ticksLeft,
+                totalTicks,
+                getTickMultiplier(),
+                energy.getEnergyStored(),
+                energy.getMaxEnergyStored()
+        );
+    }
+
+    protected SyncedSettings createSyncedSettings() {
+        BlockState blockState = getBlockState();
+        return new SyncedSettings(
+                Optional.of(blockState.getValue(AbstractConcoctiMachineBlock.FACING)),
+                machineSettings.slots,
+                ejectOn,
+                pullOn
         );
     }
 

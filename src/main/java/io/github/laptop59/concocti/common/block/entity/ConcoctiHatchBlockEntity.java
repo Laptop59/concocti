@@ -17,7 +17,7 @@ import io.github.laptop59.concocti.common.machine.SettingsHolder;
 import io.github.laptop59.concocti.common.menu.ConcoctiEnergyHatchMenu;
 import io.github.laptop59.concocti.common.menu.ConcoctiFluidHatchMenu;
 import io.github.laptop59.concocti.common.menu.ConcoctiItemHatchMenu;
-import io.github.laptop59.concocti.common.menu.SyncedMachineData;
+import io.github.laptop59.concocti.common.synchronization.*;
 import io.github.laptop59.concocti.common.util.ConcoctiTransferrer;
 import io.github.laptop59.concocti.common.util.Lazy;
 import net.minecraft.core.BlockPos;
@@ -53,6 +53,8 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
     public ConcoctiFluidTankHandler fluidHandler;
 
     public int autoCooldown = 0;
+
+    public boolean settingsUpdateQueued = false;
 
     public DetailHolders detailHolders = new DetailHolders();
     public final MachineSettings machineSettings = new MachineSettings(List.of(SlotType.NONE));
@@ -123,6 +125,7 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
     public boolean changeEjectOn() {
         ejectOn = !ejectOn;
         attemptToEject();
+        settingsUpdateQueued = true;
         return ejectOn;
     }
 
@@ -132,6 +135,7 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
     public boolean changePullOn() {
         pullOn = !pullOn;
         attemptToPull();
+        settingsUpdateQueued = true;
         return pullOn;
     }
 
@@ -376,6 +380,22 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
             entity.attemptToPull();
             entity.attemptToEject();
         }
+
+        boolean updateBase = false, updateSettings = false, updateFluidTank = false;
+
+        if (energy.clearDirtyFlag()) {
+            updateBase = true;
+        }
+        if (settingsUpdateQueued || machineSettings.clearDirtyFlag()) {
+            updateSettings = true;
+        }
+        if (fluidTank.get().clearDirtyFlag()) {
+            updateFluidTank = true;
+        }
+
+        if (updateBase || updateSettings || updateFluidTank) {
+            updateToClients(level, createSyncedDataUpdate(updateBase, updateSettings, updateFluidTank));
+        }
     }
 
     /**
@@ -410,27 +430,58 @@ public class ConcoctiHatchBlockEntity extends AbstractPoweredBlockEntity impleme
         serialize(new DetailContext(tag, registries, null));
     }
 
-    public SyncedMachineData createSyncedData(boolean complete) {
+    public SyncedMachineData createSyncedData() {
+        FluidStack[] fluidStacks = new FluidStack[1];
+        fluidStacks[0] = fluidTank.get().getFluid();
+
         return new SyncedMachineData(
-                new SyncedMachineData.Base(
+                new SyncedBase(
                         0,
                         0,
                         0,
                         energy.getEnergyStored(),
                         energy.getMaxEnergyStored()
                 ),
-                new SyncedMachineData.Settings(
+                new SyncedSettings(
                         Optional.empty(),
                         machineSettings.slots,
                         ejectOn,
                         pullOn
                 ),
-                // TODO: Complete fluids
-                new SyncedMachineData.Fluids(new FluidStack[0]),
-                new SyncedMachineData.Extra(
+                new SyncedFluids(fluidStacks),
+                new SyncedExtra(
                         null,
                         null
                 )
+        );
+    }
+
+    public SyncedMachineDataUpdate createSyncedDataUpdate(boolean updateBase, boolean updateSettings, boolean updateFluidTank) {
+        FluidStack[] fluidStacks = new FluidStack[1];
+        fluidStacks[0] = fluidTank.get().getFluid();
+
+        return new SyncedMachineDataUpdate(
+                updateBase ? Optional.of(
+                    new SyncedBase(
+                            0,
+                            0,
+                            0,
+                            energy.getEnergyStored(),
+                            energy.getMaxEnergyStored()
+                    )
+                ) : Optional.empty(),
+                updateSettings ? Optional.of(
+                    new SyncedSettings(
+                            Optional.empty(),
+                            machineSettings.slots,
+                            ejectOn,
+                            pullOn
+                    )
+                ) : Optional.empty(),
+                updateFluidTank ? Optional.of(
+                    new SyncedFluids(fluidStacks)
+                ) : Optional.empty(),
+                Optional.empty()
         );
     }
 

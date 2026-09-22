@@ -1,5 +1,7 @@
 package io.github.laptop59.concocti.common.menu;
 
+import io.github.laptop59.concocti.common.synchronization.SyncedMachineData;
+import io.github.laptop59.concocti.common.synchronization.SyncedMachineDataUpdate;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
@@ -28,6 +30,17 @@ public abstract class AbstractConcoctiMachineMenuSyncedExtra<T extends AbstractC
 
         this.syncedExtra = (E) data.extra().data();
         onExtraSync(syncedExtra);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void updateWithSyncedData(SyncedMachineDataUpdate update) {
+        super.updateWithSyncedData(update);
+
+        update.extra().ifPresent(extra -> {
+            this.syncedExtra = (E) extra.data();
+            onExtraSync(syncedExtra);
+        });
     }
 
     protected void onExtraSync(E data) {}
