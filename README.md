@@ -8,7 +8,7 @@ you will be able to achieve **MINERAL DOMINATION**!
 
 # Features
 - **Somewhat of a linear progression.**
-- Pure Concocti Ingots to start up your mechanic journey!
+- Variants of Concocti Ingots to start up your mechanic journey!
 - Metallic seeds!
 - Molds to create the kind of metals you want!
 - Solarium catalysts, to extract the solar out of the sun!
