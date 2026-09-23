@@ -1,25 +1,19 @@
+# Concocti
+A Minecraft mod that adds a new, weird metal-like mineral with various other things alongside it.
+As you create weird materials from this mod, you will discover, craft, and power new machines! Finally,
+you will be able to achieve **MINERAL DOMINATION**!
 
-Installation information
-=======
+> [!WARNING]
+> This mod is not yet complete!
 
-This template repository can be directly cloned to get you started with a new
-mod. Simply create a new repository cloned from this one, by following the
-instructions provided by [GitHub](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template).
-
-Once you have your clone, simply open the repository in the IDE of your choice. The usual recommendation for an IDE is either IntelliJ IDEA or Eclipse.
-
-If at any point you are missing libraries in your IDE, or you've run into problems you can
-run `gradlew --refresh-dependencies` to refresh the local cache. `gradlew clean` to reset everything 
-{this does not affect your code} and then start the process again.
-
-Mapping Names:
-============
-By default, the MDK is configured to use the official mapping names from Mojang for methods and fields 
-in the Minecraft codebase. These names are covered by a specific license. All modders should be aware of this
-license. For the latest license text, refer to the mapping file itself, or the reference copy here:
-https://github.com/NeoForged/NeoForm/blob/main/Mojang.md
-
-Additional Resources: 
-==========
-Community Documentation: https://docs.neoforged.net/  
-NeoForged Discord: https://discord.neoforged.net/
+# Features
+- **Somewhat of a linear progression.**
+- Pure Concocti Ingots to start up your mechanic journey!
+- Metallic seeds!
+- Molds to create the kind of metals you want!
+- Solarium catalysts, to extract the solar out of the sun!
+- Tons of molten fluids!
+- Both single-block and multiblock machines can be crafted and used!
+- Machine upgrades and frames to increase their speed and efficiency.
+- Pull and Eject functions in machines and hatches to take/push items, fluids, or energy!
+- JEI and EMI integration!
